@@ -1,4 +1,4 @@
-# AkreDasi - Sistem Akreditasi Jurusan
+# Akreditasi - Sistem Akreditasi Jurusan
 
 Repositori ini menyimpan dokumen dan source code untuk aplikasi sistem akreditasi jurusan Teknologi Informasi. Proyek ini merupakan tugas akhir untuk semester 4.
 
