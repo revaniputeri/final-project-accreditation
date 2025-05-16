@@ -14,7 +14,7 @@ Panduan penggunaan sistem secara lengkap tersedia pada [USAGE guide](documents/U
 
 ## Members of the Project
 Proyek ini dikerjakan oleh kelompok 3 yang terdiri dari:
-- Revani Nanda Putri
+- Revani Nanda Putri (2341760056)
 - ⁠Muhammad Satria Rahmad David (2441760076)
 - Susilowati Syafa Adilah (2341760095)
 - Khoir Karol Nurzuraidah (2341760048)
