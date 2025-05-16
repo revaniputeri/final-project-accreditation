@@ -40,7 +40,7 @@
                 </div>
                 <div class="mt-6 text-center text-gray-600 dark:text-gray-400">
                     <p class="text-lg">
-                        Accreditation System for Higher Education
+                        Akreditasi Sistem Akademik
                     </p>
                 </div>
             </div>
