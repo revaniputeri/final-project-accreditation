@@ -18,4 +18,4 @@ Proyek ini dikerjakan oleh kelompok 3 yang terdiri dari:
 - ⁠Muhammad Satria Rahmad David (2441760076)
 - Susilowati Syafa Adilah (2341760095)
 - Khoir Karol Nurzuraidah (2341760048)
-- 
+- Bagas Nusa Tama (2341760003)
