@@ -13,6 +13,9 @@ Rincian teknis terkait implementasi proyek seperti teknologi yang digunakan, des
 Panduan penggunaan sistem secara lengkap tersedia pada [USAGE guide](documents/USAGE.md).
 
 ## Members of the Project
-
-Proyek ini dikerjakan oleh kelompok 3 & 4. Daftar anggota kelompok sebagai berikut:
+Proyek ini dikerjakan oleh kelompok 3 yang terdiri dari:
+- Revani Nanda Putri
+- ⁠Muhammad Satria Rahmad David (2441760076)
+- Susilowati Syafa Adilah (2341760095)
+- Khoir Karol Nurzuraidah (2341760048)
 - 
