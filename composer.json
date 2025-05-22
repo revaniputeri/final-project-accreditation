@@ -6,10 +6,18 @@
     "license": "MIT",
     "require": {
         "php": "^8.1",
+        "barryvdh/laravel-dompdf": "^3.1",
         "guzzlehttp/guzzle": "^7.2",
+        "jeroennoten/laravel-adminlte": "^3.15",
         "laravel/framework": "^10.10",
         "laravel/sanctum": "^3.3",
-        "laravel/tinker": "^2.8"
+        "laravel/tinker": "^2.8",
+        "laravel/ui": "^4.6",
+        "yajra/laravel-datatables-buttons": "^10.0",
+        "yajra/laravel-datatables-editor": "^1.25",
+        "yajra/laravel-datatables-fractal": "^10.0",
+        "yajra/laravel-datatables-html": "^10.12",
+        "yajra/laravel-datatables-oracle": "^10.11"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",
