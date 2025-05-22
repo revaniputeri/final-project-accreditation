@@ -6,7 +6,7 @@ Repositori ini menyimpan dokumen dan source code untuk aplikasi sistem akreditas
 
 Proyek ini adalah aplikasi web yang bertujuan untuk membantu proses pencatatan, pengelolaan, dan evaluasi data akreditasi jurusan Teknologi Informasi di Politeknik Negeri Malang. Aplikasi ini menjadi bagian dari penerapan kurikulum Project Based Learning (PBL) yang baru.
 
-Untuk informasi lebih detail terkait use case dan alur sistem, silakan lihat [dokumen use case](documents/dokuem-use-case.pdf).
+Untuk informasi lebih detail terkait use case dan alur sistem, silakan lihat [dokumen use case](documents/dokumen-use-case.pdf).
 
 Rincian teknis terkait implementasi proyek seperti teknologi yang digunakan, desain antarmuka pengguna, dan arsitektur sistem tersedia pada dokumen [rencana implementasi proyek](documents/[KEL%XX-SIB2E]%20-%20SISTEM%20AKREDITASI%20JURUSAN.pdf).
 
