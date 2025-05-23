@@ -1,3 +1,9 @@
+# Abaikan semua isi storage kecuali yang diizinkan
+/storage/*
+!/storage/app
+!/storage/app/public
+!/storage/app/public/*
+
 /.phpunit.cache
 /node_modules
 /public/build
@@ -8,7 +14,6 @@
 .env
 .env.backup
 .env.production
-.phpunit.result.cache
 Homestead.json
 Homestead.yaml
 auth.json
