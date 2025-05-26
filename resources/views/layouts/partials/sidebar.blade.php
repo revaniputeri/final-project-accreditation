@@ -133,8 +133,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="{{ url('/p_profesi') }}"
-                            class="nav-link {{ request()->is('p_profesi') ? 'active' : '' }}">
+                        <a href="{{ url('/p_profesi') }}" class="nav-link {{ request()->is('p_profesi') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-user-tie"></i>
                             <p>Profesi</p>
                         </a>
@@ -241,18 +240,6 @@
                         </a>
                     </li>
                 @endif
-
-                <div class="dropdown-divider"></div>
-
-                <li class="nav-item bg-danger rounded">
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button type="submit" class="nav-link btn btn-link text-left" style="color: inherit;">
-                            <i class="nav-icon fas fa-sign-out-alt"></i>
-                            <p>Logout</p>
-                        </button>
-                    </form>
-                </li>
             </ul>
         </nav>
     </div>

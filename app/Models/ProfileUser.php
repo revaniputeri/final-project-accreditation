@@ -30,6 +30,10 @@ class ProfileUser extends Model
         'updated_at',
     ];
 
+    public function user()
+    {
+        return $this->belongsTo(UserModel::class,'id_user');
+    }
     // Relationships with all portfolio tables
     public function sertifikasi()
     {
