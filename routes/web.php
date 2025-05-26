@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LevelController;
 use App\Http\Controllers\PSertifikasiController;
 use App\Http\Controllers\AuthController;
-
+use App\Http\Controllers\ValidasiController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -31,6 +31,8 @@ Route::middleware('auth')->group(function () {
 
     Route::prefix('manage-level')->name('level.')->middleware('authorize:ADM')->group(function () {
         Route::get('/', [LevelController::class, 'index'])->name('level.index');
+
+
 
         // CRUD routes
         Route::get('/create_ajax', [LevelController::class, 'create_ajax'])->name('create_ajax');
@@ -67,5 +69,12 @@ Route::middleware('auth')->group(function () {
         Route::post('/import_ajax', [PSertifikasiController::class, 'import_ajax'])->name('import_ajax');
         Route::get('/export_excel', [PSertifikasiController::class, 'export_excel'])->name('export_excel');
         Route::get('/export_pdf', [PSertifikasiController::class, 'export_pdf'])->name('export_pdf');
+
+    });
+    Route::prefix('validasi')->name('validasi.')->middleware('authorize:ADM,VAL')->group(function () {
+        Route::GET('/', [ValidasiController::class, 'index'])->name('index');
+        Route::POST('/showFile', [ValidasiController::class, 'showFile'])->name('showFile');
+        Route::PUT('/valid', [ValidasiController::class,'valid'])->name('valid');
+        Route::PUT('/store', [ValidasiController::class, 'store'])->name('store');
     });
 });
