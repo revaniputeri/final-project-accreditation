@@ -2,7 +2,7 @@
 
 namespace App\DataTables;
 
-use App\Models\PSertifikasiModel;
+use App\Models\PKegiatanModel;
 use App\Models\ProfileUser;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 use Yajra\DataTables\EloquentDataTable;
@@ -12,7 +12,7 @@ use Yajra\DataTables\Html\Column;
 use Yajra\DataTables\Services\DataTable;
 use Illuminate\Support\Facades\Auth;
 
-class PSertifikasiDataTable extends DataTable
+class PKegiatanDataTable extends DataTable
 {
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
@@ -25,22 +25,22 @@ class PSertifikasiDataTable extends DataTable
         return (new EloquentDataTable($query))
             ->addColumn('aksi', function ($row) use ($user, $isDos, $isAdm) {
                 $buttons = [];
-                $detailUrl = route('p_sertifikasi.detail_ajax', $row->id_sertifikasi);
+                $detailUrl = route('p_kegiatan.detail_ajax', $row->id_kegiatan);
 
                 $buttons[] = '<button onclick="modalAction(\'' . $detailUrl . '\')" class="btn btn-sm btn-info" style="margin-left: 5px;">
                     <i class="fas fa-info-circle"></i> Detail
                 </button>';
 
                 if ($isDos) {
-                    $validasiUrl = route('p_sertifikasi.validasi_ajax', $row->id_sertifikasi);
+                    $validasiUrl = route('p_kegiatan.validasi_ajax', $row->id_kegiatan);
                     $buttons[] = '<button onclick="modalAction(\'' . $validasiUrl . '\')" class="btn btn-sm btn-warning" style="margin-left: 5px;">
                         <i class="fas fa-check-circle"></i> Validasi
                     </button>';
                 }
 
                 if ($isDos || $isAdm) {
-                    $editUrl = route('p_sertifikasi.edit_ajax', $row->id_sertifikasi);
-                    $deleteUrl = route('p_sertifikasi.confirm_ajax', $row->id_sertifikasi);
+                    $editUrl = route('p_kegiatan.edit_ajax', $row->id_kegiatan);
+                    $deleteUrl = route('p_kegiatan.confirm_ajax', $row->id_kegiatan);
 
                     $buttons[] = '<button onclick="modalAction(\'' . $editUrl . '\')" class="btn btn-sm btn-primary" style="margin-left: 5px;">
                         <i class="fas fa-edit"></i> Ubah
@@ -55,9 +55,12 @@ class PSertifikasiDataTable extends DataTable
                     implode('', $buttons) .
                     '</div>';
             })
-            ->addColumn('nama_lengkap', function ($row) use ($isDos) {
-                return $isDos ? '-' : ($row->user->profile->nama_lengkap ?? '-');
-            })
+        ->addColumn('nama_dosen', function ($row) {
+            return $row->user->profile->nama_lengkap ?? '-';
+        })
+        ->addColumn('waktu', function ($row) {
+            return $row->waktu ? date('d-m-Y', strtotime($row->waktu)) : '-';
+        })
             ->editColumn('status', function ($row) {
                 $badgeClass = [
                     'tervalidasi' => 'badge-success',
@@ -76,10 +79,10 @@ class PSertifikasiDataTable extends DataTable
                     . strtoupper($row->sumber_data) . '</span>';
             })
             ->rawColumns(['aksi', 'status', 'sumber_data'])
-            ->setRowId('id_sertifikasi');
+            ->setRowId('id_kegiatan');
     }
 
-    public function query(PSertifikasiModel $model): QueryBuilder
+    public function query(PKegiatanModel $model): QueryBuilder
     {
         /** @var UserModel|null $user */
         $user = Auth::user();
@@ -108,7 +111,7 @@ class PSertifikasiDataTable extends DataTable
         $isAng = $user->hasRole('ANG');
 
         $builder = $this->builder()
-            ->setTableId('p_sertifikasi-table')
+            ->setTableId('p_kegiatan-table')
             ->columns($this->getColumns())
             ->minifiedAjax()
             ->orderBy(1)
@@ -149,32 +152,22 @@ class PSertifikasiDataTable extends DataTable
         $isDos = $user->hasRole('DOS');
 
         $columns = [
-            Column::make('id_sertifikasi')->title('ID'),
-            Column::make('tahun_diperoleh')->title('Tahun Diperoleh'),
-            Column::make('penerbit')->title('Penerbit'),
-            Column::make('nama_sertifikasi')->title('Nama Sertifikasi'),
-            Column::make('nomor_sertifikat')->title('Nomor Sertifikat'),
-            Column::make('masa_berlaku')->title('Masa Berlaku'),
+            Column::make('id_kegiatan')->title('ID'),
+            Column::make('nama_dosen')->title('Nama Dosen'),
+            Column::make('jenis_kegiatan')->title('Jenis Kegiatan'),
+            Column::make('tempat')->title('Tempat'),
+            Column::make('waktu')->title('Waktu'),
+            Column::make('peran')->title('Peran'),
             Column::make('status')->title('Status')->addClass('text-center'),
             Column::make('sumber_data')->title('Sumber Data')->addClass('text-center'),
-            Column::computed('aksi')
-                ->exportable(false)
-                ->printable(false)
-                ->width(60)
-                ->addClass('text-center'),
+            Column::computed('aksi')->title('Aksi')->addClass('text-center'),
         ];
-
-        if (!$isDos) {
-            array_splice($columns, 1, 0, [
-                Column::make('nama_lengkap')->title('Nama Dosen')
-            ]);
-        }
 
         return $columns;
     }
 
     protected function filename(): string
     {
-        return 'PSertifikasi_' . date('YmdHis');
+        return 'PKegiatan_' . date('YmdHis');
     }
 }
