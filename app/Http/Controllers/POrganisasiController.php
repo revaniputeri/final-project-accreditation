@@ -3,11 +3,11 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\PSertifikasiModel;
+use App\Models\POrganisasiModel;
 use App\Models\UserModel;
 use Illuminate\Support\Facades\Validator;
 use Yajra\DataTables\DataTables;
-use App\DataTables\PSertifikasiDataTable;
+use App\DataTables\POrganisasiDataTable;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
@@ -16,9 +16,9 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\DB;
 
-class PSertifikasiController extends Controller
+class POrganisasiController extends Controller
 {
-    public function index(PSertifikasiDataTable $dataTable)
+    public function index(POrganisasiDataTable $dataTable)
     {
         /** @var UserModel|null $user */
         $user = Auth::user();
@@ -27,7 +27,7 @@ class PSertifikasiController extends Controller
         $isDos = $user->hasRole('DOS');
         $isAng = $user->hasRole('ANG');
 
-        return $dataTable->render('p_sertifikasi.index', compact('isAdm', 'isAng', 'isDos'));
+        return $dataTable->render('p_organisasi.index', compact('isAdm', 'isAng', 'isDos'));
     }
 
     private function generateUniqueFilename($directory, $filename)
@@ -56,7 +56,7 @@ class PSertifikasiController extends Controller
         $user = Auth::user();
         $role = $user ? $user->getRole() : null;
 
-        return view('p_sertifikasi.create_ajax', compact('dosens', 'role'));
+        return view('p_organisasi.create_ajax', compact('dosens', 'role'));
     }
 
     public function store_ajax(Request $request)
@@ -67,11 +67,9 @@ class PSertifikasiController extends Controller
             $role = $user ? $user->getRole() : null;
 
             $rules = [
-                'tahun_diperoleh' => 'required|integer',
-                'penerbit' => 'required|string|max:255',
-                'nama_sertifikasi' => 'required|string|max:255',
-                'nomor_sertifikat' => 'required|string|max:255',
-                'masa_berlaku' => 'required|string|max:50',
+                'nama_organisasi' => 'required|string|max:255',
+                'kurun_waktu' => 'required|string|max:100',
+                'tingkat' => 'required|in:Nasional,Internasional',
                 'bukti' => $role === 'DOS' ? 'required|file|mimes:pdf,jpg,jpeg,png|max:2048' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             ];
 
@@ -118,37 +116,35 @@ class PSertifikasiController extends Controller
                     ]);
                 }
 
-                // Custom duplicate check for id_user and nomor_sertifikat
-                $exists = PSertifikasiModel::where('id_user', $id_user)
-                    ->where('nomor_sertifikat', $request->input('nomor_sertifikat'))
+                // Custom duplicate check for id_user and nama organisasi
+                $exists = POrganisasiModel::where('id_user', $id_user)
+                    ->where('nama_organisasi', $request->input('nama_organisasi'))
                     ->exists();
 
                 if ($exists) {
                     return response()->json([
                         'status' => false,
                         'alert' => 'error',
-                        'message' => 'Data dengan NIDN dan Nomor Sertifikat yang sama sudah ada.',
+                        'message' => 'Data dengan NIDN dan Nama Organisasi yang sama sudah ada.',
                     ]);
                 }
 
                 $data = $request->only([
-                    'tahun_diperoleh',
-                    'penerbit',
-                    'nama_sertifikasi',
-                    'nomor_sertifikat',
-                    'masa_berlaku',
+                    'nama_organisasi',
+                    'kurun_waktu',
+                    'tingkat',
                 ]);
 
                 $data['id_user'] = $id_user;
 
                 if ($role === 'DOS') {
-                    $data['status'] = 'Tervalidasi';
+                    $data['status'] = 'tervalidasi';
                     $data['sumber_data'] = 'dosen';
                 } elseif ($role === 'ADM') {
-                    $data['status'] = 'Perlu Validasi';
+                    $data['status'] = 'perlu validasi';
                     $data['sumber_data'] = 'p3m';
                 } else {
-                    $data['status'] = $request->input('status', 'Perlu Validasi');
+                    $data['status'] = $request->input('status', 'perlu validasi');
                     $data['sumber_data'] = $request->input('sumber_data', 'p3m');
                 }
 
@@ -163,24 +159,24 @@ class PSertifikasiController extends Controller
                     }
                     $originalName = $file->getClientOriginalName();
                     $filename = $nidnPrefix . $originalName;
-                    $filename = $this->generateUniqueFilename('public/p_sertifikasi', $filename);
-                    $path = $file->storeAs('public/p_sertifikasi', $filename);
+                    $filename = $this->generateUniqueFilename('public/p_organisasi', $filename);
+                    $path = $file->storeAs('public/p_organisasi', $filename);
                     $data['bukti'] = $filename;
                 }
 
-                PSertifikasiModel::create($data);
+                POrganisasiModel::create($data);
 
                 return response()->json([
                     'status' => true,
                     'alert' => 'success',
-                    'message' => 'Data sertifikasi berhasil disimpan'
+                    'message' => 'Data organisasi berhasil disimpan'
                 ]);
             } catch (\Exception $e) {
                 Log::error('Exception in store_ajax: ' . $e->getMessage());
                 return response()->json([
                     'status' => false,
                     'alert' => 'error',
-                    'message' => 'Gagal menyimpan data sertifikasi',
+                    'message' => 'Gagal menyimpan data organisasi',
                 ]);
             }
         }
@@ -202,8 +198,8 @@ class PSertifikasiController extends Controller
         $user = Auth::user();
         $role = $user ? $user->getRole() : null;
 
-        $sertifikasi = PSertifikasiModel::findOrFail($id);
-        return view('p_sertifikasi.edit_ajax', compact('sertifikasi', 'dosens', 'role'));
+        $organisasi = POrganisasiModel::findOrFail($id);
+        return view('p_organisasi.edit_ajax', compact('organisasi', 'dosens', 'role'));
     }
 
     public function update_ajax(Request $request, $id)
@@ -214,11 +210,9 @@ class PSertifikasiController extends Controller
 
         if ($request->ajax() || $request->wantsJson()) {
             $rules = [
-                'tahun_diperoleh' => 'required|integer',
-                'penerbit' => 'required|string|max:255',
-                'nama_sertifikasi' => 'required|string|max:255',
-                'nomor_sertifikat' => 'required|string|max:255',
-                'masa_berlaku' => 'required|string|max:50',
+                'nama_organisasi' => 'required|string|max:255',
+                'kurun_waktu' => 'required|string|max:100',
+                'tingkat' => 'required|in:Nasional,Internasional',
                 'bukti' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             ];
 
@@ -237,7 +231,7 @@ class PSertifikasiController extends Controller
                 ]);
             }
 
-            $sertifikasi = PSertifikasiModel::findOrFail($id);
+            $organisasi = POrganisasiModel::findOrFail($id);
 
             try {
                 if ($role === 'ADM') {
@@ -267,58 +261,55 @@ class PSertifikasiController extends Controller
                     ]);
                 }
 
-                // Custom duplicate check for id_user and nomor_sertifikat excluding current record
-                $exists = PSertifikasiModel::where('id_user', $id_user)
-                    ->where('nomor_sertifikat', $request->input('nomor_sertifikat'))
-                    ->where('id_sertifikasi', '!=', $id)
+                // Custom duplicate check for id_user and nama organisasi excluding current record
+                $exists = POrganisasiModel::where('id_user', $id_user)
+                    ->where('nama_organisasi', $request->input('nama_organisasi'))
+                    ->where('id_organisasi', '!=', $id)
                     ->exists();
 
                 if ($exists) {
                     return response()->json([
                         'status' => false,
                         'alert' => 'error',
-                        'message' => 'Data dengan NIDN dan Nomor Sertifikat yang sama sudah ada.',
+                        'message' => 'Data dengan NIDN dan Nama Organisasi yang sama sudah ada.',
                     ]);
                 }
 
                 $data = $request->only([
-                    'tahun_diperoleh',
-                    'penerbit',
-                    'nama_sertifikasi',
-                    'nomor_sertifikat',
-                    'masa_berlaku',
-                    'bukti',
+                    'nama_organisasi',
+                    'kurun_waktu',
+                    'tingkat',
                 ]);
 
                 if ($request->hasFile('bukti')) {
-                    if ($sertifikasi->bukti && Storage::exists('public/p_sertifikasi/' . $sertifikasi->bukti)) {
-                        Storage::delete('public/p_sertifikasi/' . $sertifikasi->bukti);
+                    if ($organisasi->bukti && Storage::exists('public/p_organisasi/' . $organisasi->bukti)) {
+                        Storage::delete('public/p_organisasi/' . $organisasi->bukti);
                     }
                     $file = $request->file('bukti');
                     $nidnPrefix = '';
-                    if ($sertifikasi->user && $sertifikasi->user->profile) {
-                        $nidnPrefix = $sertifikasi->user->profile->nidn ? $sertifikasi->user->profile->nidn . '_' : '';
+                    if ($organisasi->user && $organisasi->user->profile) {
+                        $nidnPrefix = $organisasi->user->profile->nidn ? $organisasi->user->profile->nidn . '_' : '';
                     }
                     $originalName = $file->getClientOriginalName();
                     $filename = $nidnPrefix . $originalName;
-                    $filename = $this->generateUniqueFilename('public/p_sertifikasi', $filename);
-                    $path = $file->storeAs('public/p_sertifikasi', $filename);
+                    $filename = $this->generateUniqueFilename('public/p_organisasi', $filename);
+                    $path = $file->storeAs('public/p_organisasi', $filename);
                     $data['bukti'] = $filename;
                 }
 
-                $sertifikasi->update($data);
+                $organisasi->update($data);
 
                 return response()->json([
                     'status' => true,
                     'alert' => 'success',
-                    'message' => 'Data sertifikasi berhasil diupdate'
+                    'message' => 'Data organisasi berhasil diupdate'
                 ]);
             } catch (\Exception $e) {
                 Log::error('Exception in update_ajax: ' . $e->getMessage());
                 return response()->json([
                     'status' => false,
                     'alert' => 'error',
-                    'message' => 'Gagal mengupdate data sertifikasi',
+                    'message' => 'Gagal mengupdate data organisasi',
                 ]);
             }
         }
@@ -332,19 +323,19 @@ class PSertifikasiController extends Controller
 
     public function confirm_ajax($id)
     {
-        $sertifikasi = PSertifikasiModel::findOrFail($id);
-        return view('p_sertifikasi.confirm_ajax', compact('sertifikasi'));
+        $organisasi = POrganisasiModel::findOrFail($id);
+        return view('p_organisasi.confirm_ajax', compact('organisasi'));
     }
 
     public function delete_ajax(Request $request, $id)
     {
-        $sertifikasi = PSertifikasiModel::findOrFail($id);
+        $organisasi = POrganisasiModel::findOrFail($id);
 
         try {
-            if ($sertifikasi->bukti && Storage::exists('public/p_sertifikasi/' . $sertifikasi->bukti)) {
-                Storage::delete('public/p_sertifikasi/' . $sertifikasi->bukti);
+            if ($organisasi->bukti && Storage::exists('public/p_organisasi/' . $organisasi->bukti)) {
+                Storage::delete('public/p_organisasi/' . $organisasi->bukti);
             }
-            $sertifikasi->delete();
+            $organisasi->delete();
 
             return response()->json([
                 'status' => true,
@@ -361,21 +352,21 @@ class PSertifikasiController extends Controller
 
     public function detail_ajax($id)
     {
-        $sertifikasi = PSertifikasiModel::with('user.profile')->findOrFail($id);
-        return view('p_sertifikasi.detail_ajax', compact('sertifikasi'));
+        $organisasi = POrganisasiModel::with('user.profile')->findOrFail($id);
+        return view('p_organisasi.detail_ajax', compact('organisasi'));
     }
 
     public function validasi_ajax(Request $request, $id)
     {
-        $sertifikasi = PSertifikasiModel::findOrFail($id);
+        $organisasi = POrganisasiModel::findOrFail($id);
 
         if ($request->isMethod('post')) {
             $request->validate([
-                'status' => 'required|in:Tervalidasi,Tidak Valid',
+                'status' => 'required|in:tervalidasi,tidak valid',
             ]);
 
-            $sertifikasi->status = $request->input('status');
-            $sertifikasi->save();
+            $organisasi->status = $request->input('status');
+            $organisasi->save();
 
             return response()->json([
                 'status' => true,
@@ -383,22 +374,22 @@ class PSertifikasiController extends Controller
             ]);
         }
 
-        return view('p_sertifikasi.validasi_ajax', compact('sertifikasi'));
+        return view('p_organisasi.validasi_ajax', compact('organisasi'));
     }
 
     public function import()
     {
-        return view('p_sertifikasi.import');
+        return view('p_organisasi.import');
     }
 
     public function import_ajax(Request $request)
     {
         $request->validate([
-            'file_p_sertifikasi' => 'required|mimes:xlsx,xls|max:2048'
+            'file_organisasi' => 'required|mimes:xlsx,xls|max:2048'
         ]);
 
         try {
-            $file = $request->file('file_p_sertifikasi');
+            $file = $request->file('file_organisasi');
             $spreadsheet = IOFactory::load($file->getRealPath());
             $sheet = $spreadsheet->getActiveSheet();
             $data = $sheet->toArray(null, true, true, true);
@@ -410,49 +401,60 @@ class PSertifikasiController extends Controller
             /** @var UserModel|null $user */
             $user = Auth::user();
             $role = $user ? $user->getRole() : null;
-            $userNidn = DB::table('profile_user')->where('id_user', $user->id_user)->value('nidn');
+            $userNidn = null;
+            
+            if ($role === 'DOS') {
+                $userNidn = DB::table('profile_user')->where('id_user', $user->id_user)->value('nidn');
+            }
 
             foreach ($data as $row => $values) {
-                if ($row == 1) continue;
+                if ($row == 1) continue; // Skip header row
 
-                $nidn = trim($values['A']); // pastikan tidak ada ' di awal
-                $nomorSertifikat = trim($values['E']);
+                $nidn = trim($values['A'] ?? '');
+                $namaOrganisasi = trim($values['B'] ?? '');
+                $kurunWaktu = trim($values['C'] ?? '');
+                $tingkat = trim($values['D'] ?? '');
 
+                // Validasi data kosong
+                if (empty($nidn) || empty($namaOrganisasi) || empty($kurunWaktu) || empty($tingkat)) {
+                    $errors[] = "Baris $row: Data tidak lengkap. Pastikan semua kolom terisi.";
+                    continue;
+                }
+
+                // Cek jika DOS hanya bisa import data dengan NIDN sendiri
                 if ($role === 'DOS' && $nidn !== $userNidn) {
                     $errors[] = "Baris $row: Anda hanya dapat mengimpor data dengan NIDN milik Anda ($userNidn).";
                     continue;
                 }
 
-                $user = DB::table('profile_user')->where('nidn', $nidn)->first();
-                if (!$user) {
+                // Cari user berdasarkan NIDN
+                $profileUser = DB::table('profile_user')->where('nidn', $nidn)->first();
+                if (!$profileUser) {
                     $errors[] = "Baris $row: NIDN $nidn tidak ditemukan di data profil user";
                     continue;
                 }
 
-                // Cek duplikat kombinasi id_user dan nomor_sertifikat
-                $isDuplicate = PSertifikasiModel::where('id_user', $user->id_user)
-                    ->where('nomor_sertifikat', $nomorSertifikat)
+                // Cek duplikat kombinasi id_user dan nama organisasi
+                $isDuplicate = POrganisasiModel::where('id_user', $profileUser->id_user)
+                    ->where('nama_organisasi', $namaOrganisasi)
                     ->exists();
 
                 if ($isDuplicate) {
-                    $skippedData[] = "Baris $row: Kombinasi NIDN $nidn dan Nomor Sertifikat $nomorSertifikat sudah ada.";
+                    $skippedData[] = "Baris $row: Kombinasi NIDN $nidn dan Nama Organisasi '$namaOrganisasi' sudah ada.";
                     continue;
                 }
 
+                // Validasi data
                 $validator = Validator::make([
-                    'id_user' => $user->id_user,
-                    'tahun_diperoleh' => $values['B'],
-                    'penerbit' => $values['C'],
-                    'nama_sertifikasi' => $values['D'],
-                    'nomor_sertifikat' => $nomorSertifikat,
-                    'masa_berlaku' => $values['F'],
+                    'id_user' => $profileUser->id_user,
+                    'nama_organisasi' => $namaOrganisasi,
+                    'kurun_waktu' => $kurunWaktu,
+                    'tingkat' => $tingkat,
                 ], [
                     'id_user' => 'required|integer|exists:user,id_user',
-                    'tahun_diperoleh' => 'required|integer|min:1900|max:' . (date('Y') + 5),
-                    'penerbit' => 'required|string|max:255',
-                    'nama_sertifikasi' => 'required|string|max:255',
-                    'nomor_sertifikat' => 'required|string|max:255',
-                    'masa_berlaku' => 'required|string|max:50',
+                    'nama_organisasi' => 'required|string|max:255',
+                    'kurun_waktu' => 'required|string|max:100',
+                    'tingkat' => 'required|in:Nasional,Internasional',
                 ]);
 
                 if ($validator->fails()) {
@@ -461,13 +463,11 @@ class PSertifikasiController extends Controller
                 }
 
                 $insertData[] = [
-                    'id_user' => $user->id_user,
-                    'tahun_diperoleh' => $values['B'],
-                    'penerbit' => $values['C'],
-                    'nama_sertifikasi' => $values['D'],
-                    'nomor_sertifikat' => $nomorSertifikat,
-                    'masa_berlaku' => $values['F'],
-                    'status' => $role === 'DOS' ? 'Tervalidasi' : 'perlu validasi',
+                    'id_user' => $profileUser->id_user,
+                    'nama_organisasi' => $namaOrganisasi,
+                    'kurun_waktu' => $kurunWaktu,
+                    'tingkat' => $tingkat,
+                    'status' => $role === 'DOS' ? 'tervalidasi' : 'perlu validasi',
                     'sumber_data' => $role === 'DOS' ? 'dosen' : 'p3m',
                     'created_at' => now(),
                     'updated_at' => now(),
@@ -480,31 +480,40 @@ class PSertifikasiController extends Controller
                 return response()->json([
                     'status' => false,
                     'alert' => 'error',
-                    'message' => 'Tidak ada data baru yang valid untuk diimport:' .
-                        "\n" . implode("\n", array_slice($allMessages, 0, 1)) .
-                        (count($allMessages) > 3 ? "\n...dan " . (count($allMessages) - 3) . " lainnya." : ''),
+                    'message' => 'Tidak ada data baru yang valid untuk diimport.' .
+                        (count($allMessages) > 0 ? "\n\nDetail:\n" . implode("\n", array_slice($allMessages, 0, 5)) .
+                        (count($allMessages) > 5 ? "\n...dan " . (count($allMessages) - 5) . " error lainnya." : '') : ''),
                     'showConfirmButton' => true
                 ], 422);
             }
 
-            $insertedCount = PSertifikasiModel::insert($insertData);
+            $insertedCount = count($insertData);
+            POrganisasiModel::insert($insertData);
+
+            $message = "Import data berhasil! $insertedCount data organisasi berhasil ditambahkan.";
+            if (count($skippedData) > 0) {
+                $message .= "\n" . count($skippedData) . " data dilewati karena sudah ada.";
+            }
+            if (count($errors) > 0) {
+                $message .= "\n" . count($errors) . " data gagal diimport karena error validasi.";
+            }
 
             return response()->json([
                 'status' => true,
                 'alert' => 'success',
-                'message' => 'Import data berhasil',
+                'message' => $message,
                 'inserted_count' => $insertedCount,
                 'skipped_count' => count($skippedData),
-                'info' => $allMessages,
-                'error_count' => count($errors)
+                'error_count' => count($errors),
+                'details' => count($allMessages) > 0 ? array_slice($allMessages, 0, 10) : []
             ]);
+
         } catch (\Exception $e) {
             Log::error('Import error: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
             return response()->json([
                 'status' => false,
                 'alert' => 'error',
-                'message' => 'Terjadi kesalahan saat memproses file',
-                'error' => $e->getMessage(),
+                'message' => 'Terjadi kesalahan saat memproses file: ' . $e->getMessage(),
                 'showConfirmButton' => true
             ], 500);
         }
@@ -512,95 +521,89 @@ class PSertifikasiController extends Controller
 
     public function export_excel()
     {
-        $query = PSertifikasiModel::join('user', 'p_sertifikasi.id_user', '=', 'user.id_user')
+        $query = POrganisasiModel::join('user', 'p_organisasi.id_user', '=', 'user.id_user')
             ->join('profile_user', 'user.id_user', '=', 'profile_user.id_user')
             ->select(
-                'p_sertifikasi.id_sertifikasi',
+                'p_organisasi.id_organisasi',
                 'profile_user.nama_lengkap as nama_user',
-                'p_sertifikasi.tahun_diperoleh',
-                'p_sertifikasi.penerbit',
-                'p_sertifikasi.nama_sertifikasi',
-                'p_sertifikasi.nomor_sertifikat',
-                'p_sertifikasi.masa_berlaku',
-                'p_sertifikasi.status',
-                'p_sertifikasi.sumber_data',
-                'p_sertifikasi.bukti', // tambahkan kolom bukti
-                'p_sertifikasi.created_at',
-                'p_sertifikasi.updated_at'
+                'p_organisasi.nama_organisasi',
+                'p_organisasi.kurun_waktu',
+                'p_organisasi.tingkat',
+                'p_organisasi.status',
+                'p_organisasi.sumber_data',
+                'p_organisasi.bukti',
+                'p_organisasi.created_at',
+                'p_organisasi.updated_at'
             );
 
         /** @var UserModel|null $user */
         $user = Auth::user();
         $role = $user->getRole();
         if ($role === 'DOS' && $user->id_user) {
-            $query->where('p_sertifikasi.id_user', $user->id_user);
+            $query->where('p_organisasi.id_user', $user->id_user);
         }
 
         if ($status = request('filter_status')) {
-            $query->where('p_sertifikasi.status', $status);
+            $query->where('p_organisasi.status', $status);
         }
 
         if ($sumber = request('filter_sumber')) {
-            $query->where('p_sertifikasi.sumber_data', $sumber);
+            $query->where('p_organisasi.sumber_data', $sumber);
         }
 
-        $sertifikasi = $query->orderBy('p_sertifikasi.id_sertifikasi')->get();
+        $organisasi = $query->orderBy('p_organisasi.id_organisasi')->get();
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
 
         $sheet->setCellValue('A1', 'No');
-        $sheet->setCellValue('B1', 'ID Sertifikasi');
+        $sheet->setCellValue('B1', 'ID Organisasi');
         $sheet->setCellValue('C1', 'Nama Dosen');
-        $sheet->setCellValue('D1', 'Tahun Diperoleh');
-        $sheet->setCellValue('E1', 'Penerbit');
-        $sheet->setCellValue('F1', 'Nama Sertifikasi');
-        $sheet->setCellValue('G1', 'Nomor Sertifikat');
-        $sheet->setCellValue('H1', 'Masa Berlaku');
-        $sheet->setCellValue('I1', 'Status');
-        $sheet->setCellValue('J1', 'Sumber Data');
-        $sheet->setCellValue('K1', 'Bukti');
-        $sheet->setCellValue('L1', 'Created At');
-        $sheet->setCellValue('M1', 'Updated At');
+        $sheet->setCellValue('D1', 'Nama Organisasi');
+        $sheet->setCellValue('E1', 'Kurun Waktu');
+        $sheet->setCellValue('F1', 'Tingkat');
+        $sheet->setCellValue('G1', 'Status');
+        $sheet->setCellValue('H1', 'Sumber Data');
+        $sheet->setCellValue('I1', 'Bukti');
+        $sheet->setCellValue('J1', 'Created At');
+        $sheet->setCellValue('K1', 'Updated At');
 
-        $sheet->getStyle('A1:M1')->getFont()->setBold(true);
+        $sheet->getStyle('A1:K1')->getFont()->setBold(true);
 
         $no = 1;
         $row = 2;
-        foreach ($sertifikasi as $data) {
+        foreach ($organisasi as $data) {
             $sheet->setCellValue('A' . $row, $no);
-            $sheet->setCellValue('B' . $row, $data->id_sertifikasi);
+            $sheet->setCellValue('B' . $row, $data->id_organisasi);
             $sheet->setCellValue('C' . $row, $data->nama_user);
-            $sheet->setCellValue('D' . $row, $data->tahun_diperoleh);
-            $sheet->setCellValue('E' . $row, $data->penerbit);
-            $sheet->setCellValue('F' . $row, $data->nama_sertifikasi);
-            $sheet->setCellValue('G' . $row, $data->nomor_sertifikat);
-            $sheet->setCellValue('H' . $row, $data->masa_berlaku);
-            $sheet->setCellValue('I' . $row, $data->status);
-            $sheet->setCellValue('J' . $row, $data->sumber_data);
+            $sheet->setCellValue('D' . $row, $data->nama_organisasi);
+            $sheet->setCellValue('E' . $row, $data->kurun_waktu);
+            $sheet->setCellValue('F' . $row, $data->tingkat);
+            $sheet->setCellValue('G' . $row, $data->status);
+            $sheet->setCellValue('H' . $row, $data->sumber_data);
             // Tambahkan link ke file bukti
             if ($data->bukti) {
-                $url = url('storage/p_sertifikasi/' . $data->bukti);
-                $sheet->setCellValue('K' . $row, 'Lihat File');
-                $sheet->getCell('K' . $row)->getHyperlink()->setUrl($url);
+                $url = url('storage/p_organisasi/' . $data->bukti);
+                $sheet->setCellValue('I' . $row, 'Lihat File');
+                $sheet->getCell('I' . $row)->getHyperlink()->setUrl($url);
             } else {
-                $sheet->setCellValue('K' . $row, 'Tidak ada file');
+                $sheet->setCellValue('I' . $row, 'Tidak ada file');
             }
-            $sheet->setCellValue('L' . $row, $data->created_at);
-            $sheet->setCellValue('M' . $row, $data->updated_at);
+            $sheet->setCellValue('J' . $row, $data->created_at);
+            $sheet->setCellValue('K' . $row, $data->updated_at);
 
             $row++;
             $no++;
         }
 
-        foreach (range('A', 'M') as $columnID) {
+        foreach (range('A', 'K') as $columnID) {
             $sheet->getColumnDimension($columnID)->setAutoSize(true);
         }
 
-        $sheet->setTitle("Data Sertifikasi");
+        $sheet->setTitle("Data Organisasi");
 
         $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
-        $filename = 'Data Sertifikasi ' . date("Y-m-d H-i-s") . '.xlsx';
+        $filename = 'Data Organisasi ' . date("Y-m-d H-i-s") . '.xlsx';
 
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Content-Disposition: attachment;filename="' . $filename . '"');
@@ -616,7 +619,7 @@ class PSertifikasiController extends Controller
 
     public function export_pdf()
     {
-        $query = PSertifikasiModel::with('user.profile')->orderBy('id_sertifikasi');
+        $query = POrganisasiModel::with('user.profile')->orderBy('id_organisasi');
 
         /** @var UserModel|null $user */
         $user = Auth::user();
@@ -633,17 +636,15 @@ class PSertifikasiController extends Controller
             $query->where('sumber_data', $sumber);
         }
 
-        $sertifikasi = $query->get();
+        $organisasi = $query->get();
 
-        $data = $sertifikasi->map(function ($item) {
+        $data = $organisasi->map(function ($item) {
             return [
-                'id_sertifikasi' => $item->id_sertifikasi,
+                'id_organisasi' => $item->id_organisasi,
                 'nama_dosen' => $item->user && $item->user->profile ? $item->user->profile->nama_lengkap : '-',
-                'tahun_diperoleh' => $item->tahun_diperoleh,
-                'penerbit' => $item->penerbit,
-                'nama_sertifikasi' => $item->nama_sertifikasi,
-                'nomor_sertifikat' => $item->nomor_sertifikat,
-                'masa_berlaku' => $item->masa_berlaku,
+                'nama_organisasi' => $item->nama_organisasi,
+                'kurun_waktu' => $item->kurun_waktu,
+                'tingkat' => $item->tingkat,
                 'status' => $item->status,
                 'sumber_data' => $item->sumber_data,
                 'bukti' => $item->bukti,
@@ -652,8 +653,8 @@ class PSertifikasiController extends Controller
             ];
         });
 
-        $pdf = Pdf::loadView('p_sertifikasi.export_pdf', [
-            'sertifikasi' => $data
+        $pdf = Pdf::loadView('p_organisasi.export_pdf', [
+            'organisasi' => $data
         ]);
 
         $pdf->setPaper('a4', 'landscape');
@@ -661,6 +662,6 @@ class PSertifikasiController extends Controller
         $pdf->setOption('isHtml5ParserEnabled', true);
         $pdf->setOption('chroot', base_path('public'));
 
-        return $pdf->stream('Data Sertifikasi ' . date('d-m-Y H:i:s') . '.pdf');
+        return $pdf->stream('Data Organisasi ' . date('d-m-Y H:i:s') . '.pdf');
     }
 }
