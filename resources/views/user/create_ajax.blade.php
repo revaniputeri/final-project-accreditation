@@ -42,13 +42,13 @@
 
         <div class="mb-3">
             <label for="gelar_depan" class=" form-label">Gelar Depan</label>
-            <input type="text" class="form-control" id="gelar_depan" name="gelar_depan" required>
+            <input type="text" class="form-control" id="gelar_depan" name="gelar_depan">
             <div class="invalid-feedback" id="error_gelar_depan"></div>
         </div>
 
         <div class="mb-3">
             <label for="gelar_belakang" class="form-label">Gelar Belakang</label>
-            <input type="text" class="form-control" id="gelar_belakang" name="gelar_belakang" required>
+            <input type="text" class="form-control" id="gelar_belakang" name="gelar_belakang">
             <div class="invalid-feedback" id="error_gelar_belakang"></div>
         </div>
 
@@ -59,12 +59,12 @@
         </div>
         <div class="mb-3">
             <label for="pangkat" class="form-label">Pangkat</label>
-            <input type="text" class="form-control" id="pangkat" name="pangkat" required>
+            <input type="text" class="form-control" id="pangkat" name="pangkat">
             <div class="invalid-feedback" id="error_pangkat"></div>
         </div>
         <div class="mb-3">
             <label for="jabatan_fungsional" class="form-label">Jabatan Fungsional</label>
-            <input type="text" class="form-control" id="jabatan_fungsional" name="jabatan_fungsional" required>
+            <input type="text" class="form-control" id="jabatan_fungsional" name="jabatan_fungsional">
             <div class="invalid-feedback" id="error_jabatan_fungsional"></div>
         </div>
         <div class="mb-3">

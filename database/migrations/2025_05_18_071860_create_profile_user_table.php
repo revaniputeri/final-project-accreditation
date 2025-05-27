@@ -18,8 +18,8 @@ return new class extends Migration
             $table->string('gelar_depan', 20)->nullable();
             $table->string('gelar_belakang', 20)->nullable();
             $table->string('pendidikan_terakhir', 50);
-            $table->string('pangkat', 50);
-            $table->string('jabatan_fungsional', 100);
+            $table->string('pangkat', 50)->nullable();
+            $table->string('jabatan_fungsional', 100)->nullable();
             $table->string('no_telp', 20)->nullable();
             $table->text('alamat')->nullable();
             $table->timestamps();
