@@ -1,14 +1,14 @@
 @extends('layouts.app')
 
-@section('title', 'Sertifikasi')
-@section('subtitle', 'Sertifikasi')
+@section('title', 'Organisasi')
+@section('subtitle', 'Organisasi')
 
 @section('content_header')
     <div class="container-fluid">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{{ url('/') }}">Beranda</a></li>
-                <li class="breadcrumb-item active">Sertifikasi</li>
+                <li class="breadcrumb-item active">Organisasi</li>
             </ol>
         </nav>
     </div>
@@ -21,20 +21,20 @@
         <div class="card shadow-sm">
             <div class="card-header bg-primary border-bottom">
                 <div class="d-flex justify-content-between align-items-center">
-                    <h3 class="card-title mb-0 text-white">Daftar Sertifikasi</h3>
+                    <h3 class="card-title mb-0 text-white">Daftar Organisasi</h3>
                     <div class="card-tools">
-                        <a id="exportPdfBtn" class="btn btn-custom-blue me-2" href="{{ route('p_sertifikasi.export_pdf') }}">
+                        <a id="exportPdfBtn" class="btn btn-custom-blue me-2" href="{{ route('p_organisasi.export_pdf') }}">
                             <i class="fa-solid fa-file-pdf me-2"></i> Export PDF
                         </a>
-                        <a id="exportExcelBtn" class="btn btn-custom-blue me-2" href="{{ route('p_sertifikasi.export_excel') }}">
+                        <a id="exportExcelBtn" class="btn btn-custom-blue me-2" href="{{ route('p_organisasi.export_excel') }}">
                             <i class="fas fa-file-excel me-2"></i> Export Excel
                         </a>
                         @if ($isAdm || $isDos)
                             <button class="btn btn-custom-blue me-2"
-                                onclick="modalAction('{{ route('p_sertifikasi.import') }}')">
+                                onclick="modalAction('{{ route('p_organisasi.import') }}')">
                                 <i class="fa-solid fa-file-arrow-up me-2"></i> Import Data
                             </button>
-                            <button onclick="modalAction('{{ route('p_sertifikasi.create_ajax') }}')"
+                            <button onclick="modalAction('{{ route('p_organisasi.create_ajax') }}')"
                                 class="btn btn-custom-blue me-2">
                                 <i class="fas fa-plus me-2"></i> Tambah Data
                             </button>
@@ -66,7 +66,7 @@
 
                 <div class="table-responsive">
                     {{ $dataTable->table([
-                        'id' => 'p_sertifikasi-table',
+                        'id' => 'p_organisasi-table',
                         'class' => 'table table-hover table-bordered table-striped',
                         'style' => 'width:100%',
                     ]) }}
@@ -95,9 +95,9 @@
                     $('#myModal .modal-content').html(response);
                     $('#myModal').modal('show');
 
-                    $(document).off('submit', '#formCreateSertifikasi, #formEditSertifikasi');
+                    $(document).off('submit', '#formCreateOrganisasi, #formEditOrganisasi');
 
-                    $(document).on('submit', '#formCreateSertifikasi, #formEditSertifikasi', function(e) {
+                    $(document).on('submit', '#formCreateOrganisasi, #formEditOrganisasi', function(e) {
                         e.preventDefault();
                         var form = $(this);
                         var formData = new FormData(form[0]);
@@ -119,7 +119,7 @@
                             },
                             success: function(res) {
                                 $('#myModal').modal('hide');
-                                window.LaravelDataTables["p_sertifikasi-table"].ajax.reload();
+                                window.LaravelDataTables["p_organisasi-table"].ajax.reload();
                                 if (res.alert && res.message) {
                                     Swal.fire({
                                         icon: res.alert,
@@ -142,7 +142,7 @@
                                     });
                                 } else {
                                     $('#myModal').modal('hide');
-                                    window.LaravelDataTables["p_sertifikasi-table"].ajax.reload();
+                                    window.LaravelDataTables["p_organisasi-table"].ajax.reload();
                                     if (xhr.responseJSON && xhr.responseJSON.alert && xhr
                                         .responseJSON.message) {
                                         Swal.fire({
@@ -190,7 +190,7 @@
                                         timer: 2000,
                                         showConfirmButton: false
                                     }).then(() => {
-                                        window.LaravelDataTables["p_sertifikasi-table"].ajax
+                                        window.LaravelDataTables["p_organisasi-table"].ajax
                                             .reload();
                                     });
                                 }
@@ -226,7 +226,7 @@
                 });
         }
 
-        $(document).on('submit', '#formDeleteSertifikasi', function(e) {
+        $(document).on('submit', '#formDeleteOrganisasi', function(e) {
             e.preventDefault();
             var form = $(this);
             $.ajax({
@@ -235,11 +235,11 @@
                 data: form.serialize(),
                 success: function(response) {
                     $('#myModal').modal('hide');
-                    window.LaravelDataTables["p_sertifikasi-table"].ajax.reload();
+                    window.LaravelDataTables["p_organisasi-table"].ajax.reload();
                     Swal.fire({
                         icon: 'success',
                         title: 'Berhasil',
-                        text: 'Data sertifikasi berhasil dihapus.',
+                        text: 'Data organisasi berhasil dihapus.',
                         timer: 2000,
                         showConfirmButton: false
                     });
@@ -248,7 +248,7 @@
                     Swal.fire({
                         icon: 'error',
                         title: 'Gagal',
-                        text: 'Tidak dapat menghapus data sertifikasi.'
+                        text: 'Tidak dapat menghapus data organisasi.'
                     });
                 }
             });
@@ -256,12 +256,12 @@
 
         $(document).ready(function() {
             $('#filterStatus, #filterSumberData').change(function() {
-                window.LaravelDataTables["p_sertifikasi-table"].draw();
+                window.LaravelDataTables["p_organisasi-table"].draw();
             });
         });
 
         // Kirim parameter filter ke server saat DataTable ajax request
-        $('#p_sertifikasi-table').on('preXhr.dt', function(e, settings, data) {
+        $('#p_organisasi-table').on('preXhr.dt', function(e, settings, data) {
             data.filter_status = $('#filterStatus').val();
             data.filter_sumber = $('#filterSumberData').val();
         });
@@ -270,7 +270,7 @@
         function updateExportPdfLink() {
             var status = $('#filterStatus').val();
             var sumber = $('#filterSumberData').val();
-            var url = new URL("{{ route('p_sertifikasi.export_pdf') }}", window.location.origin);
+            var url = new URL("{{ route('p_organisasi.export_pdf') }}", window.location.origin);
             if (status) {
                 url.searchParams.set('filter_status', status);
             }
@@ -284,7 +284,7 @@
         function updateExportExcelLink() {
             var status = $('#filterStatus').val();
             var sumber = $('#filterSumberData').val();
-            var url = new URL("{{ route('p_sertifikasi.export_excel') }}", window.location.origin);
+            var url = new URL("{{ route('p_organisasi.export_excel') }}", window.location.origin);
             if (status) {
                 url.searchParams.set('filter_status', status);
             }

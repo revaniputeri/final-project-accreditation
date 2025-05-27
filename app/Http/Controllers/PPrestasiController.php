@@ -3,11 +3,11 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\PSertifikasiModel;
+use App\Models\PPrestasiModel;
 use App\Models\UserModel;
 use Illuminate\Support\Facades\Validator;
 use Yajra\DataTables\DataTables;
-use App\DataTables\PSertifikasiDataTable;
+use App\DataTables\PPrestasiDataTable;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
@@ -16,9 +16,9 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\DB;
 
-class PSertifikasiController extends Controller
+class PPrestasiController extends Controller
 {
-    public function index(PSertifikasiDataTable $dataTable)
+    public function index(PPrestasiDataTable $dataTable)
     {
         /** @var UserModel|null $user */
         $user = Auth::user();
@@ -27,7 +27,7 @@ class PSertifikasiController extends Controller
         $isDos = $user->hasRole('DOS');
         $isAng = $user->hasRole('ANG');
 
-        return $dataTable->render('p_sertifikasi.index', compact('isAdm', 'isAng', 'isDos'));
+        return $dataTable->render('p_prestasi.index', compact('isAdm', 'isAng', 'isDos'));
     }
 
     private function generateUniqueFilename($directory, $filename)
@@ -56,7 +56,7 @@ class PSertifikasiController extends Controller
         $user = Auth::user();
         $role = $user ? $user->getRole() : null;
 
-        return view('p_sertifikasi.create_ajax', compact('dosens', 'role'));
+        return view('p_prestasi.create_ajax', compact('dosens', 'role'));
     }
 
     public function store_ajax(Request $request)
@@ -67,11 +67,9 @@ class PSertifikasiController extends Controller
             $role = $user ? $user->getRole() : null;
 
             $rules = [
-                'tahun_diperoleh' => 'required|integer',
-                'penerbit' => 'required|string|max:255',
-                'nama_sertifikasi' => 'required|string|max:255',
-                'nomor_sertifikat' => 'required|string|max:255',
-                'masa_berlaku' => 'required|string|max:50',
+                'prestasi_yang_dicapai' => 'required|string|max:255',
+                'waktu_pencapaian' => 'required|date',
+                'tingkat' => 'required|in:Lokal,Nasional,Internasional',
                 'bukti' => $role === 'DOS' ? 'required|file|mimes:pdf,jpg,jpeg,png|max:2048' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             ];
 
@@ -118,25 +116,23 @@ class PSertifikasiController extends Controller
                     ]);
                 }
 
-                // Custom duplicate check for id_user and nomor_sertifikat
-                $exists = PSertifikasiModel::where('id_user', $id_user)
-                    ->where('nomor_sertifikat', $request->input('nomor_sertifikat'))
+                $exists = PPrestasiModel::where('id_user', $id_user)
+                    ->where('prestasi_yang_dicapai', $request->input('prestasi_yang_dicapai'))
+                    ->where('waktu_pencapaian', $request->input('waktu_pencapaian'))
                     ->exists();
 
                 if ($exists) {
                     return response()->json([
                         'status' => false,
                         'alert' => 'error',
-                        'message' => 'Data dengan NIDN dan Nomor Sertifikat yang sama sudah ada.',
+                        'message' => 'Data dengan prestasi dan waktu pencapaian yang sama sudah ada.',
                     ]);
                 }
 
                 $data = $request->only([
-                    'tahun_diperoleh',
-                    'penerbit',
-                    'nama_sertifikasi',
-                    'nomor_sertifikat',
-                    'masa_berlaku',
+                    'prestasi_yang_dicapai',
+                    'waktu_pencapaian',
+                    'tingkat',
                 ]);
 
                 $data['id_user'] = $id_user;
@@ -163,24 +159,24 @@ class PSertifikasiController extends Controller
                     }
                     $originalName = $file->getClientOriginalName();
                     $filename = $nidnPrefix . $originalName;
-                    $filename = $this->generateUniqueFilename('public/p_sertifikasi', $filename);
-                    $path = $file->storeAs('public/p_sertifikasi', $filename);
+                    $filename = $this->generateUniqueFilename('public/p_prestasi', $filename);
+                    $path = $file->storeAs('public/p_prestasi', $filename);
                     $data['bukti'] = $filename;
                 }
 
-                PSertifikasiModel::create($data);
+                PPrestasiModel::create($data);
 
                 return response()->json([
                     'status' => true,
                     'alert' => 'success',
-                    'message' => 'Data sertifikasi berhasil disimpan'
+                    'message' => 'Data prestasi berhasil disimpan'
                 ]);
             } catch (\Exception $e) {
                 Log::error('Exception in store_ajax: ' . $e->getMessage());
                 return response()->json([
                     'status' => false,
                     'alert' => 'error',
-                    'message' => 'Gagal menyimpan data sertifikasi',
+                    'message' => 'Gagal menyimpan data prestasi',
                 ]);
             }
         }
@@ -202,8 +198,8 @@ class PSertifikasiController extends Controller
         $user = Auth::user();
         $role = $user ? $user->getRole() : null;
 
-        $sertifikasi = PSertifikasiModel::findOrFail($id);
-        return view('p_sertifikasi.edit_ajax', compact('sertifikasi', 'dosens', 'role'));
+        $prestasi = PPrestasiModel::findOrFail($id);
+        return view('p_prestasi.edit_ajax', compact('prestasi', 'dosens', 'role'));
     }
 
     public function update_ajax(Request $request, $id)
@@ -214,11 +210,9 @@ class PSertifikasiController extends Controller
 
         if ($request->ajax() || $request->wantsJson()) {
             $rules = [
-                'tahun_diperoleh' => 'required|integer',
-                'penerbit' => 'required|string|max:255',
-                'nama_sertifikasi' => 'required|string|max:255',
-                'nomor_sertifikat' => 'required|string|max:255',
-                'masa_berlaku' => 'required|string|max:50',
+                'prestasi_yang_dicapai' => 'required|string|max:255',
+                'waktu_pencapaian' => 'required|date',
+                'tingkat' => 'required|in:Lokal,Nasional,Internasional',
                 'bukti' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             ];
 
@@ -237,7 +231,7 @@ class PSertifikasiController extends Controller
                 ]);
             }
 
-            $sertifikasi = PSertifikasiModel::findOrFail($id);
+            $prestasi = PPrestasiModel::findOrFail($id);
 
             try {
                 if ($role === 'ADM') {
@@ -267,58 +261,55 @@ class PSertifikasiController extends Controller
                     ]);
                 }
 
-                // Custom duplicate check for id_user and nomor_sertifikat excluding current record
-                $exists = PSertifikasiModel::where('id_user', $id_user)
-                    ->where('nomor_sertifikat', $request->input('nomor_sertifikat'))
-                    ->where('id_sertifikasi', '!=', $id)
+                $exists = PPrestasiModel::where('id_user', $id_user)
+                    ->where('prestasi_yang_dicapai', $request->input('prestasi_yang_dicapai'))
+                    ->where('waktu_pencapaian', $request->input('waktu_pencapaian'))
+                    ->where('id_prestasi', '!=', $id)
                     ->exists();
 
                 if ($exists) {
                     return response()->json([
                         'status' => false,
                         'alert' => 'error',
-                        'message' => 'Data dengan NIDN dan Nomor Sertifikat yang sama sudah ada.',
+                        'message' => 'Data dengan prestasi dan waktu pencapaian yang sama sudah ada.',
                     ]);
                 }
 
                 $data = $request->only([
-                    'tahun_diperoleh',
-                    'penerbit',
-                    'nama_sertifikasi',
-                    'nomor_sertifikat',
-                    'masa_berlaku',
-                    'bukti',
+                    'prestasi_yang_dicapai',
+                    'waktu_pencapaian',
+                    'tingkat',
                 ]);
 
                 if ($request->hasFile('bukti')) {
-                    if ($sertifikasi->bukti && Storage::exists('public/p_sertifikasi/' . $sertifikasi->bukti)) {
-                        Storage::delete('public/p_sertifikasi/' . $sertifikasi->bukti);
+                    if ($prestasi->bukti && Storage::exists('public/p_prestasi/' . $prestasi->bukti)) {
+                        Storage::delete('public/p_prestasi/' . $prestasi->bukti);
                     }
                     $file = $request->file('bukti');
                     $nidnPrefix = '';
-                    if ($sertifikasi->user && $sertifikasi->user->profile) {
-                        $nidnPrefix = $sertifikasi->user->profile->nidn ? $sertifikasi->user->profile->nidn . '_' : '';
+                    if ($prestasi->user && $prestasi->user->profile) {
+                        $nidnPrefix = $prestasi->user->profile->nidn ? $prestasi->user->profile->nidn . '_' : '';
                     }
                     $originalName = $file->getClientOriginalName();
                     $filename = $nidnPrefix . $originalName;
-                    $filename = $this->generateUniqueFilename('public/p_sertifikasi', $filename);
-                    $path = $file->storeAs('public/p_sertifikasi', $filename);
+                    $filename = $this->generateUniqueFilename('public/p_prestasi', $filename);
+                    $path = $file->storeAs('public/p_prestasi', $filename);
                     $data['bukti'] = $filename;
                 }
 
-                $sertifikasi->update($data);
+                $prestasi->update($data);
 
                 return response()->json([
                     'status' => true,
                     'alert' => 'success',
-                    'message' => 'Data sertifikasi berhasil diupdate'
+                    'message' => 'Data prestasi berhasil diupdate'
                 ]);
             } catch (\Exception $e) {
                 Log::error('Exception in update_ajax: ' . $e->getMessage());
                 return response()->json([
                     'status' => false,
                     'alert' => 'error',
-                    'message' => 'Gagal mengupdate data sertifikasi',
+                    'message' => 'Gagal mengupdate data prestasi',
                 ]);
             }
         }
@@ -332,19 +323,19 @@ class PSertifikasiController extends Controller
 
     public function confirm_ajax($id)
     {
-        $sertifikasi = PSertifikasiModel::findOrFail($id);
-        return view('p_sertifikasi.confirm_ajax', compact('sertifikasi'));
+        $prestasi = PPrestasiModel::findOrFail($id);
+        return view('p_prestasi.confirm_ajax', compact('prestasi'));
     }
 
     public function delete_ajax(Request $request, $id)
     {
-        $sertifikasi = PSertifikasiModel::findOrFail($id);
+        $prestasi = PPrestasiModel::findOrFail($id);
 
         try {
-            if ($sertifikasi->bukti && Storage::exists('public/p_sertifikasi/' . $sertifikasi->bukti)) {
-                Storage::delete('public/p_sertifikasi/' . $sertifikasi->bukti);
+            if ($prestasi->bukti && Storage::exists('public/p_prestasi/' . $prestasi->bukti)) {
+                Storage::delete('public/p_prestasi/' . $prestasi->bukti);
             }
-            $sertifikasi->delete();
+            $prestasi->delete();
 
             return response()->json([
                 'status' => true,
@@ -361,21 +352,21 @@ class PSertifikasiController extends Controller
 
     public function detail_ajax($id)
     {
-        $sertifikasi = PSertifikasiModel::with('user.profile')->findOrFail($id);
-        return view('p_sertifikasi.detail_ajax', compact('sertifikasi'));
+        $prestasi = PPrestasiModel::with('user.profile')->findOrFail($id);
+        return view('p_prestasi.detail_ajax', compact('prestasi'));
     }
 
     public function validasi_ajax(Request $request, $id)
     {
-        $sertifikasi = PSertifikasiModel::findOrFail($id);
+        $prestasi = PPrestasiModel::findOrFail($id);
 
         if ($request->isMethod('post')) {
             $request->validate([
                 'status' => 'required|in:Tervalidasi,Tidak Valid',
             ]);
 
-            $sertifikasi->status = $request->input('status');
-            $sertifikasi->save();
+            $prestasi->status = $request->input('status');
+            $prestasi->save();
 
             return response()->json([
                 'status' => true,
@@ -383,22 +374,22 @@ class PSertifikasiController extends Controller
             ]);
         }
 
-        return view('p_sertifikasi.validasi_ajax', compact('sertifikasi'));
+        return view('p_prestasi.validasi_ajax', compact('prestasi'));
     }
 
     public function import()
     {
-        return view('p_sertifikasi.import');
+        return view('p_prestasi.import');
     }
 
     public function import_ajax(Request $request)
     {
         $request->validate([
-            'file_p_sertifikasi' => 'required|mimes:xlsx,xls|max:2048'
+            'file_p_prestasi' => 'required|mimes:xlsx,xls|max:2048'
         ]);
 
         try {
-            $file = $request->file('file_p_sertifikasi');
+            $file = $request->file('file_p_prestasi');
             $spreadsheet = IOFactory::load($file->getRealPath());
             $sheet = $spreadsheet->getActiveSheet();
             $data = $sheet->toArray(null, true, true, true);
@@ -415,8 +406,9 @@ class PSertifikasiController extends Controller
             foreach ($data as $row => $values) {
                 if ($row == 1) continue;
 
-                $nidn = trim($values['A']); // pastikan tidak ada ' di awal
-                $nomorSertifikat = trim($values['E']);
+                $nidn = trim($values['A']);
+                $prestasiYangDicapai = trim($values['B']);
+                $waktuPencapaian = trim($values['C']);
 
                 if ($role === 'DOS' && $nidn !== $userNidn) {
                     $errors[] = "Baris $row: Anda hanya dapat mengimpor data dengan NIDN milik Anda ($userNidn).";
@@ -429,30 +421,26 @@ class PSertifikasiController extends Controller
                     continue;
                 }
 
-                // Cek duplikat kombinasi id_user dan nomor_sertifikat
-                $isDuplicate = PSertifikasiModel::where('id_user', $user->id_user)
-                    ->where('nomor_sertifikat', $nomorSertifikat)
+                $isDuplicate = PPrestasiModel::where('id_user', $user->id_user)
+                    ->where('prestasi_yang_dicapai', $prestasiYangDicapai)
+                    ->where('waktu_pencapaian', $waktuPencapaian)
                     ->exists();
 
                 if ($isDuplicate) {
-                    $skippedData[] = "Baris $row: Kombinasi NIDN $nidn dan Nomor Sertifikat $nomorSertifikat sudah ada.";
+                    $skippedData[] = "Baris $row: Kombinasi NIDN $nidn, prestasi dan waktu pencapaian sudah ada.";
                     continue;
                 }
 
                 $validator = Validator::make([
                     'id_user' => $user->id_user,
-                    'tahun_diperoleh' => $values['B'],
-                    'penerbit' => $values['C'],
-                    'nama_sertifikasi' => $values['D'],
-                    'nomor_sertifikat' => $nomorSertifikat,
-                    'masa_berlaku' => $values['F'],
+                    'prestasi_yang_dicapai' => $prestasiYangDicapai,
+                    'waktu_pencapaian' => $waktuPencapaian,
+                    'tingkat' => $values['D'],
                 ], [
                     'id_user' => 'required|integer|exists:user,id_user',
-                    'tahun_diperoleh' => 'required|integer|min:1900|max:' . (date('Y') + 5),
-                    'penerbit' => 'required|string|max:255',
-                    'nama_sertifikasi' => 'required|string|max:255',
-                    'nomor_sertifikat' => 'required|string|max:255',
-                    'masa_berlaku' => 'required|string|max:50',
+                    'prestasi_yang_dicapai' => 'required|string|max:255',
+                    'waktu_pencapaian' => 'required|date',
+                    'tingkat' => 'required|in:Lokal,Nasional,Internasional',
                 ]);
 
                 if ($validator->fails()) {
@@ -462,11 +450,9 @@ class PSertifikasiController extends Controller
 
                 $insertData[] = [
                     'id_user' => $user->id_user,
-                    'tahun_diperoleh' => $values['B'],
-                    'penerbit' => $values['C'],
-                    'nama_sertifikasi' => $values['D'],
-                    'nomor_sertifikat' => $nomorSertifikat,
-                    'masa_berlaku' => $values['F'],
+                    'prestasi_yang_dicapai' => $prestasiYangDicapai,
+                    'waktu_pencapaian' => $waktuPencapaian,
+                    'tingkat' => $values['D'],
                     'status' => $role === 'DOS' ? 'Tervalidasi' : 'perlu validasi',
                     'sumber_data' => $role === 'DOS' ? 'dosen' : 'p3m',
                     'created_at' => now(),
@@ -487,7 +473,7 @@ class PSertifikasiController extends Controller
                 ], 422);
             }
 
-            $insertedCount = PSertifikasiModel::insert($insertData);
+            $insertedCount = PPrestasiModel::insert($insertData);
 
             return response()->json([
                 'status' => true,
@@ -512,95 +498,88 @@ class PSertifikasiController extends Controller
 
     public function export_excel()
     {
-        $query = PSertifikasiModel::join('user', 'p_sertifikasi.id_user', '=', 'user.id_user')
+        $query = PPrestasiModel::join('user', 'p_prestasi.id_user', '=', 'user.id_user')
             ->join('profile_user', 'user.id_user', '=', 'profile_user.id_user')
             ->select(
-                'p_sertifikasi.id_sertifikasi',
+                'p_prestasi.id_prestasi',
                 'profile_user.nama_lengkap as nama_user',
-                'p_sertifikasi.tahun_diperoleh',
-                'p_sertifikasi.penerbit',
-                'p_sertifikasi.nama_sertifikasi',
-                'p_sertifikasi.nomor_sertifikat',
-                'p_sertifikasi.masa_berlaku',
-                'p_sertifikasi.status',
-                'p_sertifikasi.sumber_data',
-                'p_sertifikasi.bukti', // tambahkan kolom bukti
-                'p_sertifikasi.created_at',
-                'p_sertifikasi.updated_at'
+                'p_prestasi.prestasi_yang_dicapai',
+                'p_prestasi.waktu_pencapaian',
+                'p_prestasi.tingkat',
+                'p_prestasi.status',
+                'p_prestasi.sumber_data',
+                'p_prestasi.bukti',
+                'p_prestasi.created_at',
+                'p_prestasi.updated_at'
             );
 
         /** @var UserModel|null $user */
         $user = Auth::user();
         $role = $user->getRole();
         if ($role === 'DOS' && $user->id_user) {
-            $query->where('p_sertifikasi.id_user', $user->id_user);
+            $query->where('p_prestasi.id_user', $user->id_user);
         }
 
         if ($status = request('filter_status')) {
-            $query->where('p_sertifikasi.status', $status);
+            $query->where('p_prestasi.status', $status);
         }
 
         if ($sumber = request('filter_sumber')) {
-            $query->where('p_sertifikasi.sumber_data', $sumber);
+            $query->where('p_prestasi.sumber_data', $sumber);
         }
 
-        $sertifikasi = $query->orderBy('p_sertifikasi.id_sertifikasi')->get();
+        $prestasi = $query->orderBy('p_prestasi.id_prestasi')->get();
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
 
         $sheet->setCellValue('A1', 'No');
-        $sheet->setCellValue('B1', 'ID Sertifikasi');
+        $sheet->setCellValue('B1', 'ID Prestasi');
         $sheet->setCellValue('C1', 'Nama Dosen');
-        $sheet->setCellValue('D1', 'Tahun Diperoleh');
-        $sheet->setCellValue('E1', 'Penerbit');
-        $sheet->setCellValue('F1', 'Nama Sertifikasi');
-        $sheet->setCellValue('G1', 'Nomor Sertifikat');
-        $sheet->setCellValue('H1', 'Masa Berlaku');
-        $sheet->setCellValue('I1', 'Status');
-        $sheet->setCellValue('J1', 'Sumber Data');
-        $sheet->setCellValue('K1', 'Bukti');
-        $sheet->setCellValue('L1', 'Created At');
-        $sheet->setCellValue('M1', 'Updated At');
+        $sheet->setCellValue('D1', 'Prestasi Yang Dicapai');
+        $sheet->setCellValue('E1', 'Waktu Pencapaian');
+        $sheet->setCellValue('F1', 'Tingkat');
+        $sheet->setCellValue('G1', 'Status');
+        $sheet->setCellValue('H1', 'Sumber Data');
+        $sheet->setCellValue('I1', 'Bukti');
+        $sheet->setCellValue('J1', 'Created At');
+        $sheet->setCellValue('K1', 'Updated At');
 
-        $sheet->getStyle('A1:M1')->getFont()->setBold(true);
+        $sheet->getStyle('A1:K1')->getFont()->setBold(true);
 
         $no = 1;
         $row = 2;
-        foreach ($sertifikasi as $data) {
+        foreach ($prestasi as $data) {
             $sheet->setCellValue('A' . $row, $no);
-            $sheet->setCellValue('B' . $row, $data->id_sertifikasi);
+            $sheet->setCellValue('B' . $row, $data->id_prestasi);
             $sheet->setCellValue('C' . $row, $data->nama_user);
-            $sheet->setCellValue('D' . $row, $data->tahun_diperoleh);
-            $sheet->setCellValue('E' . $row, $data->penerbit);
-            $sheet->setCellValue('F' . $row, $data->nama_sertifikasi);
-            $sheet->setCellValue('G' . $row, $data->nomor_sertifikat);
-            $sheet->setCellValue('H' . $row, $data->masa_berlaku);
-            $sheet->setCellValue('I' . $row, $data->status);
-            $sheet->setCellValue('J' . $row, $data->sumber_data);
-            // Tambahkan link ke file bukti
+            $sheet->setCellValue('D' . $row, $data->prestasi_yang_dicapai);
+            $sheet->setCellValue('E' . $row, date('d-m-Y', strtotime($data->waktu_pencapaian)));
+            $sheet->setCellValue('F' . $row, $data->tingkat);
+            $sheet->setCellValue('G' . $row, $data->status);
+            $sheet->setCellValue('H' . $row, $data->sumber_data);
             if ($data->bukti) {
-                $url = url('storage/p_sertifikasi/' . $data->bukti);
-                $sheet->setCellValue('K' . $row, 'Lihat File');
-                $sheet->getCell('K' . $row)->getHyperlink()->setUrl($url);
+                $url = url('storage/p_prestasi/' . $data->bukti);
+                $sheet->setCellValue('I' . $row, 'Lihat File');
+                $sheet->getCell('I' . $row)->getHyperlink()->setUrl($url);
             } else {
-                $sheet->setCellValue('K' . $row, 'Tidak ada file');
+                $sheet->setCellValue('I' . $row, 'Tidak ada file');
             }
-            $sheet->setCellValue('L' . $row, $data->created_at);
-            $sheet->setCellValue('M' . $row, $data->updated_at);
+            $sheet->setCellValue('J' . $row, $data->created_at);
+            $sheet->setCellValue('K' . $row, $data->updated_at);
 
             $row++;
             $no++;
         }
 
-        foreach (range('A', 'M') as $columnID) {
+        foreach (range('A', 'K') as $columnID) {
             $sheet->getColumnDimension($columnID)->setAutoSize(true);
         }
 
-        $sheet->setTitle("Data Sertifikasi");
+        $sheet->setTitle("Data Prestasi");
 
         $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
-        $filename = 'Data Sertifikasi ' . date("Y-m-d H-i-s") . '.xlsx';
+        $filename = 'Data Prestasi ' . date("Y-m-d H-i-s") . '.xlsx';
 
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Content-Disposition: attachment;filename="' . $filename . '"');
@@ -616,7 +595,7 @@ class PSertifikasiController extends Controller
 
     public function export_pdf()
     {
-        $query = PSertifikasiModel::with('user.profile')->orderBy('id_sertifikasi');
+        $query = PPrestasiModel::with('user.profile')->orderBy('id_prestasi');
 
         /** @var UserModel|null $user */
         $user = Auth::user();
@@ -633,17 +612,15 @@ class PSertifikasiController extends Controller
             $query->where('sumber_data', $sumber);
         }
 
-        $sertifikasi = $query->get();
+        $prestasi = $query->get();
 
-        $data = $sertifikasi->map(function ($item) {
+        $data = $prestasi->map(function ($item) {
             return [
-                'id_sertifikasi' => $item->id_sertifikasi,
+                'id_prestasi' => $item->id_prestasi,
                 'nama_dosen' => $item->user && $item->user->profile ? $item->user->profile->nama_lengkap : '-',
-                'tahun_diperoleh' => $item->tahun_diperoleh,
-                'penerbit' => $item->penerbit,
-                'nama_sertifikasi' => $item->nama_sertifikasi,
-                'nomor_sertifikat' => $item->nomor_sertifikat,
-                'masa_berlaku' => $item->masa_berlaku,
+                'prestasi_yang_dicapai' => $item->prestasi_yang_dicapai,
+                'waktu_pencapaian' => date('d-m-Y', strtotime($item->waktu_pencapaian)),
+                'tingkat' => $item->tingkat,
                 'status' => $item->status,
                 'sumber_data' => $item->sumber_data,
                 'bukti' => $item->bukti,
@@ -652,8 +629,8 @@ class PSertifikasiController extends Controller
             ];
         });
 
-        $pdf = Pdf::loadView('p_sertifikasi.export_pdf', [
-            'sertifikasi' => $data
+        $pdf = Pdf::loadView('p_prestasi.export_pdf', [
+            'prestasi' => $data
         ]);
 
         $pdf->setPaper('a4', 'landscape');
@@ -661,6 +638,23 @@ class PSertifikasiController extends Controller
         $pdf->setOption('isHtml5ParserEnabled', true);
         $pdf->setOption('chroot', base_path('public'));
 
-        return $pdf->stream('Data Sertifikasi ' . date('d-m-Y H:i:s') . '.pdf');
+        return $pdf->stream('Data Prestasi ' . date('d-m-Y H:i:s') . '.pdf');
+    }
+
+    public function validasi_update(Request $request, $id)
+    {
+        $prestasi = PPrestasiModel::findOrFail($id);
+
+        $request->validate([
+            'status' => 'required|in:Tervalidasi,Tidak Valid',
+        ]);
+
+        $prestasi->status = $request->input('status');
+        $prestasi->save();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Status berhasil diperbarui',
+        ]);
     }
 }
