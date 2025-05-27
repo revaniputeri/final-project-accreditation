@@ -133,8 +133,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="{{ url('/p_profesi') }}"
-                            class="nav-link {{ request()->is('p_profesi') ? 'active' : '' }}">
+                        <a href="{{ url('/p_profesi') }}" class="nav-link {{ request()->is('p_profesi') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-user-tie"></i>
                             <p>Profesi</p>
                         </a>
@@ -220,66 +219,10 @@
                     <li class="nav-header">Validasi Kriteria</li>
 
                     <li class="nav-item">
-                        <a href="{{ url('/validasi-kriteria/1') }}"
-                            class="nav-link {{ request()->is('validasi-kriteria/1') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-eye"></i>
-                            <p>Kriteria 1</p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{{ url('/validasi-kriteria/2') }}"
-                            class="nav-link {{ request()->is('validasi-kriteria/2') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-gavel"></i>
-                            <p>Kriteria 2</p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{{ url('/validasi-kriteria/3') }}"
-                            class="nav-link {{ request()->is('validasi-kriteria/3') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-user-graduate"></i>
-                            <p>Kriteria 3</p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{{ url('/validasi-kriteria/4') }}"
-                            class="nav-link {{ request()->is('validasi-kriteria/4') ? 'active' : '' }}">
+                        <a href="{{ url('/validasi') }}"
+                            class="nav-link {{ request()->is('validasi') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-users"></i>
-                            <p>Kriteria 4</p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{{ url('/validasi-kriteria/5') }}"
-                            class="nav-link {{ request()->is('validasi-kriteria/5') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-coins"></i>
-                            <p>Kriteria 5</p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{{ url('/validasi-kriteria/6') }}"
-                            class="nav-link {{ request()->is('validasi-kriteria/6') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-book"></i>
-                            <p>Kriteria 6</p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{{ url('/validasi-kriteria/7') }}"
-                            class="nav-link {{ request()->is('validasi-kriteria/7') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-microscope"></i>
-                            <p>Kriteria 7</p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{{ url('/validasi-kriteria/8') }}"
-                            class="nav-link {{ request()->is('validasi-kriteria/8') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-hand-holding-heart"></i>
-                            <p>Kriteria 8</p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{{ url('/validasi-kriteria/9') }}"
-                            class="nav-link {{ request()->is('validasi-kriteria/9') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-trophy"></i>
-                            <p>Kriteria 9</p>
+                            <p>Validasi</p>
                         </a>
                     </li>
                 @endif
@@ -297,18 +240,6 @@
                         </a>
                     </li>
                 @endif
-
-                <div class="dropdown-divider"></div>
-
-                <li class="nav-item bg-danger rounded">
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button type="submit" class="nav-link btn btn-link text-left" style="color: inherit;">
-                            <i class="nav-icon fas fa-sign-out-alt"></i>
-                            <p>Logout</p>
-                        </button>
-                    </form>
-                </li>
             </ul>
         </nav>
     </div>
