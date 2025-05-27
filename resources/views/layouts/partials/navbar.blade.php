@@ -15,12 +15,22 @@
                     {{ Auth::user()->username }}
                 </a>
                 <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
+                    <div class="dropdown-item">
+                        <a href="{{route('user.pageProfile')}}" class="dropdown-item" >
+                            <i class="icon fas fa-user mr-1"></i> Profile
+                        </a>
+                    </div>
+
+                    <div class="dropdown-item">
+                        
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit" class="dropdown-item">
                             <i class="fas fa-sign-out-alt mr-1"></i> Logout
                         </button>
                     </form>
+                    </div>
+                    
                 </div>
             </li>
         @endauth
