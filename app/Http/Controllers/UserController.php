@@ -12,10 +12,9 @@ use Yajra\DataTables\DataTables;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use Illuminate\Validation\Rule;
-
+use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
@@ -141,16 +140,16 @@ class UserController extends Controller
             try {
                 // Ambil user profile sesuai $id
                 $user = ProfileUser::findOrFail($id);
-                \Log::info('User found', ['user' => $user]);
+                Log::info('User found', ['user' => $user]);
 
                 // Ambil user level terkait
                 $userLevel = UserModel::findOrFail($user->id_user);
-                \Log::info('UserLevel found', ['userLevel' => $userLevel]);
+                Log::info('UserLevel found', ['userLevel' => $userLevel]);
 
                 // Validasi input
                 $validator = Validator::make($request->all(), $rules);
                 if ($validator->fails()) {
-                    \Log::info('Validation failed', ['errors' => $validator->errors()]);
+                    Log::info('Validation failed', ['errors' => $validator->errors()]);
                     return response()->json([
                         'status' => false,
                         'alert' => 'error',
@@ -187,8 +186,8 @@ class UserController extends Controller
                     'message' => 'Data User berhasil diupdate'
                 ]);
             } catch (\Throwable $e) {
-                \Log::error('Error during update: ' . $e->getMessage());
-                \Log::error($e->getTraceAsString());
+                Log::error('Error during update: ' . $e->getMessage());
+                Log::error($e->getTraceAsString());
 
                 return response()->json([
                     'status' => false,

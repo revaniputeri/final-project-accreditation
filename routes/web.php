@@ -2,14 +2,14 @@
 
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LevelController;
 use App\Http\Controllers\PSertifikasiController;
 use App\Http\Controllers\PKegiatanController;
 use App\Http\Controllers\PPrestasiController;
 use App\Http\Controllers\POrganisasiController;
-
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ValidasiController;
 
 /*
 |--------------------------------------------------------------------------
@@ -74,7 +74,6 @@ Route::middleware('auth')->group(function () {
         
     });
 
-
     Route::prefix('p_sertifikasi')->name('p_sertifikasi.')->middleware('authorize:DOS,ANG,ADM')->group(function () {
         Route::get('/', [PSertifikasiController::class, 'index'])->name('index');
 
@@ -94,6 +93,14 @@ Route::middleware('auth')->group(function () {
         Route::post('/import_ajax', [PSertifikasiController::class, 'import_ajax'])->name('import_ajax');
         Route::get('/export_excel', [PSertifikasiController::class, 'export_excel'])->name('export_excel');
         Route::get('/export_pdf', [PSertifikasiController::class, 'export_pdf'])->name('export_pdf');
+
+    });
+
+    Route::prefix('validasi')->name('validasi.')->middleware('authorize:ADM,VAL')->group(function () {
+        Route::GET('/', [ValidasiController::class, 'index'])->name('index');
+        Route::POST('/showFile', [ValidasiController::class, 'showFile'])->name('showFile');
+        Route::PUT('/valid', [ValidasiController::class,'valid'])->name('valid');
+        Route::PUT('/store', [ValidasiController::class, 'store'])->name('store');
     });
 
     Route::prefix('p_kegiatan')->name('p_kegiatan.')->group(function () {
