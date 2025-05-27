@@ -101,7 +101,7 @@
         <thead>
             <tr>
                 <th>No</th>
-                <th>ID</th>
+                <th>ID Kegiatan</th>
                 <th>Nama Dosen</th>
                 <th>Jenis Kegiatan</th>
                 <th>Tempat</th>
