@@ -22,6 +22,10 @@ use App\Http\Controllers\ValidasiController;
 Route::middleware('guest')->group(function () {
     Route::get('login', [AuthController::class, 'login'])->name('login');
     Route::post('postlogin', [AuthController::class, 'postlogin'])->name('postlogin');
+    Route::get('lupaPassword',[AuthController::class,'lupaPassword'])->name('lupaPassword');
+    Route::POST('verifyDataGuest',[AuthController::class,'verifyDataGuest'])->name('verifyDataGuest');
+    Route::GET('/{id}/newPassword',[AuthController::class,'newPassword'])->name('newPassword');
+    Route::put('/{id}/updatePassword',[AuthController::class,'updatePassword'])->name('updatePassword');
 });
 
 Route::middleware('auth')->group(function () {
@@ -69,6 +73,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/export_excel', [UserController::class, 'export_excel'])->name('export_excel');
         Route::get('/export_pdf', [UserController::class, 'export_pdf'])->name('export_pdf');
         
+        Route::get('/pageProfile',[UserController::class,'pageProfile'])->name('pageProfile');
+        Route::get('/{id}/editProfile_ajax', [UserController::class,'editProfile_ajax'])->name('editProfile_ajax');
+        Route::PUT('/{id}/updateProfile_ajax', [UserController::class,'updateProfile_ajax'])->name('updateProfile_ajax');
     });
 
 
