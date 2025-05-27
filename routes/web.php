@@ -1,6 +1,7 @@
 <?php
 
-
+use App\Http\Controllers\UserController;
+>>>>>>> upstream/main
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HomeController;
@@ -43,7 +44,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/store_ajax', [LevelController::class, 'store_ajax'])->name('store_ajax');
         Route::get('/{id}/edit_ajax', [LevelController::class, 'edit_ajax'])->name('edit_ajax');
         Route::put('/{id}/update_ajax', [LevelController::class, 'update_ajax'])->name('update_ajax');
-        Route::get('/{id}/delete_ajax', [LevelController::class, 'confirm_ajax'])->name('confirm_ajax');
+        Route::get('/{id}/confirm_ajax', [LevelController::class, 'confirm_ajax'])->name('confirm_ajax');
         Route::delete('/{id}/delete_ajax', [LevelController::class, 'delete_ajax'])->name('delete_ajax');
         Route::get('/{id}/detail_ajax', [LevelController::class, 'detail_ajax'])->name('detail_ajax');
 
@@ -53,6 +54,27 @@ Route::middleware('auth')->group(function () {
         Route::get('/export_excel', [LevelController::class, 'export_excel'])->name('export_excel');
         Route::get('/export_pdf', [LevelController::class, 'export_pdf'])->name('export_pdf');
     });
+
+    Route::prefix('manage-user')->name('user.')->middleware('authorize:ADM')->group(function () {
+        Route::get('/', [UserController::class, 'index'])->name('user.index');
+
+        // CRUD routes
+        Route::get('/create_ajax', [UserController::class, 'create_ajax'])->name('create_ajax');
+        Route::post('/store_ajax', [UserController::class, 'store_ajax'])->name('store_ajax');
+        Route::get('/{id}/edit_ajax', [UserController::class, 'edit_ajax'])->name('edit_ajax');
+        Route::put('/{id}/update_ajax', [UserController::class, 'update_ajax'])->name('update_ajax');
+        Route::get('/{id}/confirm_ajax', [UserController::class, 'confirm_ajax'])->name('confirm_ajax');
+        Route::delete('/{id}/delete_ajax', [UserController::class, 'delete_ajax'])->name('delete_ajax');
+        Route::get('/{id}/detail_ajax', [UserController::class, 'detail_ajax'])->name('detail_ajax');
+
+        // Import and Export routes
+        Route::get('/import', [UserController::class, 'import'])->name('import');
+        Route::post('/import_ajax', [UserController::class, 'import_ajax'])->name('import_ajax');
+        Route::get('/export_excel', [UserController::class, 'export_excel'])->name('export_excel');
+        Route::get('/export_pdf', [UserController::class, 'export_pdf'])->name('export_pdf');
+        
+    });
+
 
     Route::prefix('p_sertifikasi')->name('p_sertifikasi.')->middleware('authorize:DOS,ANG,ADM')->group(function () {
         Route::get('/', [PSertifikasiController::class, 'index'])->name('index');
@@ -77,7 +99,6 @@ Route::middleware('auth')->group(function () {
 
     Route::prefix('p_kegiatan')->name('p_kegiatan.')->group(function () {
         Route::get('/', [PKegiatanController::class, 'index'])->name('index');
-        Route::get('/list', [PKegiatanController::class, 'list'])->name('list');
 
         // CRUD routes
         Route::get('/create_ajax', [PKegiatanController::class, 'create_ajax'])->name('create_ajax');
@@ -100,7 +121,6 @@ Route::middleware('auth')->group(function () {
 
     Route::prefix('p_prestasi')->name('p_prestasi.')->group(function () {
         Route::get('/', [PPrestasiController::class, 'index'])->name('index');
-        Route::get('/list', [PPrestasiController::class, 'list'])->name('list');
 
         // CRUD routes
         Route::get('/create_ajax', [PPrestasiController::class, 'create_ajax'])->name('create_ajax');
@@ -122,7 +142,6 @@ Route::middleware('auth')->group(function () {
 
     Route::prefix('p_organisasi')->name('p_organisasi.')->middleware('authorize:DOS,ANG,ADM')->group(function () {
         Route::get('/', [POrganisasiController::class, 'index'])->name('index');
-        Route::post('/list', [POrganisasiController::class, 'list'])->name('list');
 
         // CRUD routes
         Route::get('/create_ajax', [POrganisasiController::class, 'create_ajax'])->name('create_ajax');
