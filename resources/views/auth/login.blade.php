@@ -23,6 +23,7 @@
                         </div>
                         <button type="submit" class="btn btn-primary w-100">Login</button>
                     </form>
+                        <a href="{{route('lupaPassword')}}" class="mt-n1"><small>Lupa password ?</small></a>
                 </div>
             </div>
         </div>

@@ -431,4 +431,82 @@ class UserController extends Controller
 
         return $pdf->stream('Data User' . date('d-m-Y H:i:s') . '.pdf');
     }
+
+    public function pageProfile(){
+        $Auth = auth()->user();
+        $user = ProfileUser::with('user.level')->where('id_user', $Auth->id_user)->first();
+        $level = LevelModel::where('id_level',$user->user->id_level)->first();
+        return view('user.pageProfile',['user'=> $user,'level'=>$level]);
+    }
+    public function editProfile_ajax($id){
+        $user = ProfileUser::with('user')->find($id);
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Data Profile tidak ditemukan'
+            ]);
+        }
+        return view('user.editProfile_ajax',['user'=> $user]);
+    }
+    public function updateProfile_ajax(Request $request, $id){
+        if ($request->ajax() || $request->wantsJson()) {
+            // Aturan validasi
+            $rules = [
+                'nama_lengkap' => 'required|string|max:100',
+                'nidn' => 'required|string|max:20|unique:profile_user,nidn,' . $id . ',id_profile',
+                'nip' => 'required|string|max:20',
+                'tempat_tanggal_lahir' => 'required|string|max:100',
+                'pendidikan_terakhir' => 'nullable|string|max:50',
+                'no_telp' => 'nullable|string|max:20',
+                'alamat' => 'nullable|string|max:100',
+            ];
+
+            try {
+                // Ambil user profile sesuai $id
+                $user = ProfileUser::findOrFail($id);
+                Log::info('User found', ['user' => $user]);
+
+                // Validasi input
+                $validator = Validator::make($request->all(), $rules);
+                if ($validator->fails()) {
+                    Log::info('Validation failed', ['errors' => $validator->errors()]);
+                    return response()->json([
+                        'status' => false,
+                        'alert' => 'error',
+                        'message' => 'Validasi gagal.',
+                        'msgField' => $validator->errors()
+                    ]);
+                }
+
+                // Update profile user
+                $user->update([
+                    'nama_lengkap' => $request->nama_lengkap,
+                    'tempat_tanggal_lahir' => $request->tempat_tanggal_lahir,
+                    'nidn' => $request->nidn,
+                    'nip' => $request->nip,
+                    'alamat' => $request->alamat,
+                    'no_telp' => $request->no_telp,
+                    'updated_at' => now(),
+                ]);
+
+                return response()->json([
+                    'status' => true,
+                    'alert' => 'success',
+                    'message' => 'Data User berhasil diupdate'
+                ]);
+            } catch (\Throwable $e) {
+                Log::error('Error during update: ' . $e->getMessage());
+                Log::error($e->getTraceAsString());
+
+                return response()->json([
+                    'status' => false,
+                    'alert' => 'error',
+                    'message' => $e->getMessage()
+                ], 500);
+            }
+        }
+
+        // Jika bukan AJAX, redirect ke homepage
+        return redirect('/');
+    }
 }
