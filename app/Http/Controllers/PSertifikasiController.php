@@ -267,7 +267,6 @@ class PSertifikasiController extends Controller
                     ]);
                 }
 
-                // Custom duplicate check for id_user and nomor_sertifikat excluding current record
                 $exists = PSertifikasiModel::where('id_user', $id_user)
                     ->where('nomor_sertifikat', $request->input('nomor_sertifikat'))
                     ->where('id_sertifikasi', '!=', $id)
@@ -289,6 +288,10 @@ class PSertifikasiController extends Controller
                     'masa_berlaku',
                     'bukti',
                 ]);
+
+                if ($role === 'ADM') {
+                    $data['status'] = 'perlu validasi';
+                }
 
                 if ($request->hasFile('bukti')) {
                     if ($sertifikasi->bukti && Storage::exists('public/p_sertifikasi/' . $sertifikasi->bukti)) {
