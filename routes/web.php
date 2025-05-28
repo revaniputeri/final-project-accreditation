@@ -9,6 +9,7 @@ use App\Http\Controllers\PKegiatanController;
 use App\Http\Controllers\PPrestasiController;
 use App\Http\Controllers\POrganisasiController;
 use App\Http\Controllers\PPublikasiController;
+use App\Http\Controllers\PPenelitianController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ValidasiController;
 
@@ -194,5 +195,26 @@ Route::middleware('auth')->group(function () {
         Route::post('/import_ajax', [PPublikasiController::class, 'import_ajax'])->name('import_ajax');
         Route::get('/export_excel', [PPublikasiController::class, 'export_excel'])->name('export_excel');
         Route::get('/export_pdf', [PPublikasiController::class, 'export_pdf'])->name('export_pdf');
+    });
+
+    Route::prefix('p_penelitian')->name('p_penelitian.')->middleware('authorize:DOS,ANG,ADM')->group(function () {
+        Route::get('/', [PPenelitianController::class, 'index'])->name('index');
+
+        // CRUD dengan AJAX
+        Route::get('/create_ajax', [PPenelitianController::class, 'create_ajax'])->name('create_ajax');
+        Route::post('/store_ajax', [PPenelitianController::class, 'store_ajax'])->name('store_ajax');
+        Route::get('/{id}/edit_ajax', [PPenelitianController::class, 'edit_ajax'])->name('edit_ajax');
+        Route::put('/{id}/update_ajax', [PPenelitianController::class, 'update_ajax'])->name('update_ajax');
+        Route::get('/{id}/delete_ajax', [PPenelitianController::class, 'confirm_ajax'])->name('confirm_ajax');
+        Route::delete('/{id}/delete_ajax', [PPenelitianController::class, 'delete_ajax'])->name('delete_ajax');
+        Route::get('/{id}/detail_ajax', [PPenelitianController::class, 'detail_ajax'])->name('detail_ajax');
+        Route::get('/validasi_ajax/{id}', [PPenelitianController::class, 'validasi_ajax'])->name('validasi_ajax');
+        Route::post('/validasi_ajax/{id}', [PPenelitianController::class, 'validasi_ajax'])->name('validasi_update');
+
+        // Import & Export
+        Route::get('/import', [PPenelitianController::class, 'import'])->name('import');
+        Route::post('/import_ajax', [PPenelitianController::class, 'import_ajax'])->name('import_ajax');
+        Route::get('/export_excel', [PPenelitianController::class, 'export_excel'])->name('export_excel');
+        Route::get('/export_pdf', [PPenelitianController::class, 'export_pdf'])->name('export_pdf');
     });
 });
