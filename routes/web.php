@@ -8,6 +8,7 @@ use App\Http\Controllers\PSertifikasiController;
 use App\Http\Controllers\PKegiatanController;
 use App\Http\Controllers\PPrestasiController;
 use App\Http\Controllers\POrganisasiController;
+use App\Http\Controllers\PPublikasiController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ValidasiController;
 
@@ -172,5 +173,26 @@ Route::middleware('auth')->group(function () {
         Route::post('/import_ajax', [POrganisasiController::class, 'import_ajax'])->name('import_ajax');
         Route::get('/export_excel', [POrganisasiController::class, 'export_excel'])->name('export_excel');
         Route::get('/export_pdf', [POrganisasiController::class, 'export_pdf'])->name('export_pdf');
+    });
+
+    Route::prefix('p_publikasi')->name('p_publikasi.')->middleware('authorize:DOS,ANG,ADM')->group(function () {
+        Route::get('/', [PPublikasiController::class, 'index'])->name('index');
+
+        // CRUD routes
+        Route::get('/create_ajax', [PPublikasiController::class, 'create_ajax'])->name('create_ajax');
+        Route::post('/store_ajax', [PPublikasiController::class, 'store_ajax'])->name('store_ajax');
+        Route::get('/{id}/edit_ajax', [PPublikasiController::class, 'edit_ajax'])->name('edit_ajax');
+        Route::put('/{id}/update_ajax', [PPublikasiController::class, 'update_ajax'])->name('update_ajax');
+        Route::get('/{id}/delete_ajax', [PPublikasiController::class, 'confirm_ajax'])->name('confirm_ajax');
+        Route::delete('/{id}/delete_ajax', [PPublikasiController::class, 'delete_ajax'])->name('delete_ajax');
+        Route::get('/{id}/detail_ajax', [PPublikasiController::class, 'detail_ajax'])->name('detail_ajax');
+        Route::get('/validasi_ajax/{id}', [PPublikasiController::class, 'validasi_ajax'])->name('validasi_ajax');
+        Route::post('/validasi_ajax/{id}', [PPublikasiController::class, 'validasi_ajax'])->name('validasi_update');
+
+        // Import and Export routes
+        Route::get('/import', [PPublikasiController::class, 'import'])->name('import');
+        Route::post('/import_ajax', [PPublikasiController::class, 'import_ajax'])->name('import_ajax');
+        Route::get('/export_excel', [PPublikasiController::class, 'export_excel'])->name('export_excel');
+        Route::get('/export_pdf', [PPublikasiController::class, 'export_pdf'])->name('export_pdf');
     });
 });
