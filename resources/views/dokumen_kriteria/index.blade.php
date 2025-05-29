@@ -3,24 +3,28 @@
 @section('title', 'Input Dokumen Kriteria')
 
 @section('content_header')
-<div class="container-fluid">
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ url('/') }}">Beranda</a></li>
-            <li class="breadcrumb-item active">Dokumen Kriteria</li>
-        </ol>
-    </nav>
-</div>
+    <div class="container-fluid">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url('/') }}">Beranda</a></li>
+                <li class="breadcrumb-item active">Dokumen Kriteria</li>
+            </ol>
+        </nav>
+    </div>
 @endsection
 
 @section('content')
+    @php
+        $latestDokumen = $dokumen->first();
+    @endphp
+
     {{-- Display existing dokumen data in read-only table --}}
     <div class="card mb-4">
         <div class="card-header">
-            <h3>Daftar Dokumen Kriteria</h3>
+            <h3>Keterangan Dokumen Kriteria</h3>
         </div>
         <div class="card-body">
-            @if ($dokumen->isEmpty())
+            @if (!$latestDokumen)
                 <p>Tidak ada data dokumen kriteria.</p>
             @else
                 <table class="table table-bordered table-striped">
@@ -35,40 +39,41 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($dokumen as $index => $item)
-                            <tr data-id="{{ $item->id_dokumen_kriteria }}"
-                                data-content_html="{{ htmlspecialchars($item->content_html) }}">
-                                <td>{{ $index + 1 }}</td>
-                                <td>{{ $item->no_kriteria }}</td>
-                                <td>{{ $item->judul }}</td>
-                                <td>{{ $item->versi }}</td>
-                                <td>{{ $item->status }}</td>
-                                <td>{{ $item->created_at->format('d-m-Y H:i') }}</td>
-                            </tr>
-                        @endforeach
+                        <tr data-id="{{ $latestDokumen->id_dokumen_kriteria }}"
+                            data-content_html="{{ htmlspecialchars($latestDokumen->content_html) }}">
+                            <td>1</td>
+                            <td>{{ $latestDokumen->no_kriteria }}</td>
+                            <td>{{ $latestDokumen->judul }}</td>
+                            <td>{{ $latestDokumen->versi }}</td>
+                            <td>{{ $latestDokumen->status }}</td>
+                            <td>{{ $latestDokumen->created_at->format('d-m-Y H:i') }}</td>
+                        </tr>
                     </tbody>
                 </table>
             @endif
         </div>
     </div>
 
-    {{-- Form to input new dokumen kriteria --}}
-    <form id="dokumenForm" action="{{ route('dokumen_kriteria.store') }}" method="POST">
-        @csrf
-        @method('POST')
-        <input type="hidden" id="dokumen_id" name="dokumen_id" value="">
-        <div class="card">
-            <div class="card-body">
-                <div class="form-group">
-                    <label for="content_html">Isi Dokumen</label>
-                    <textarea id="open-source-plugins" name="content_html"></textarea>
-                </div>
+    {{-- Form to update content_html of latest dokumen --}}
+    @if ($latestDokumen)
+        <form id="dokumenForm" action="{{ route('dokumen_kriteria.update', ['id' => $latestDokumen->id_dokumen_kriteria]) }}" method="POST">
+            @csrf
+            @method('PUT')
+            <input type="hidden" id="dokumen_id" name="dokumen_id" value="{{ $latestDokumen->id_dokumen_kriteria }}">
+            <div class="card">
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="content_html">Isi Dokumen</label>
+                        <textarea id="open-source-plugins" name="content_html">{{ $latestDokumen->content_html }}</textarea>
+                    </div>
 
-                <button type="submit" class="btn btn-primary">Simpan</button>
-                <button type="button" id="cancelEdit" class="btn btn-secondary" style="display:none;">Batal Edit</button>
+                    <button type="submit" class="btn btn-primary">Simpan</button>
+                </div>
             </div>
-        </div>
-    </form>
+        </form>
+    @else
+        <p>Tidak ada dokumen untuk diedit.</p>
+    @endif
 @endsection
 
 @push('scripts')
@@ -182,70 +187,9 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const dokumenForm = document.getElementById('dokumenForm');
-            const dokumenIdInput = document.getElementById('dokumen_id');
-            const noKriteriaInput = document.getElementById('no_kriteria');
-            const judulInput = document.getElementById('judul');
             const cancelEditBtn = document.getElementById('cancelEdit');
 
-            // Add click event to table rows for inline editing
-            document.querySelectorAll('table tbody tr').forEach(row => {
-                row.addEventListener('click', () => {
-                    const cells = row.querySelectorAll('td');
-                    const id = row.getAttribute('data-id');
-                    const noKriteria = cells[1].innerText.trim();
-                    const judul = cells[2].innerText.trim();
-
-                    // Fetch content_html via data attribute
-                    const contentHtml = row.getAttribute('data-content_html');
-
-                    // Set form to update mode
-                    dokumenForm.action = "/dokumen_kriteria/update/" + id;
-                    dokumenForm.method = 'POST';
-
-                    // Add hidden _method input for PUT
-                    let methodInput = dokumenForm.querySelector('input[name="_method"]');
-                    if (!methodInput) {
-                        methodInput = document.createElement('input');
-                        methodInput.type = 'hidden';
-                        methodInput.name = '_method';
-                        dokumenForm.appendChild(methodInput);
-                    }
-                    methodInput.value = 'PUT';
-
-                    dokumenIdInput.value = id;
-                    noKriteriaInput.value = noKriteria;
-                    judulInput.value = judul;
-
-                    // Load content_html into TinyMCE
-                    if (tinymce.get('open-source-plugins')) {
-                        tinymce.get('open-source-plugins').setContent(contentHtml);
-                    }
-
-                    cancelEditBtn.style.display = 'inline-block';
-                });
-            });
-
-            cancelEditBtn.addEventListener('click', () => {
-                // Reset form to create mode
-                dokumenForm.action = "{{ route('dokumen_kriteria.store') }}";
-                dokumenForm.method = 'POST';
-
-                let methodInput = dokumenForm.querySelector('input[name="_method"]');
-                if (methodInput) {
-                    methodInput.remove();
-                }
-
-                dokumenIdInput.value = '';
-                noKriteriaInput.value = '';
-                judulInput.value = '';
-
-                if (tinymce.get('open-source-plugins')) {
-                    tinymce.get('open-source-plugins').setContent('');
-                }
-
-                cancelEditBtn.style.display = 'none';
-            });
+            cancelEditBtn.style.display = 'none';
         });
     </script>
 @endpush

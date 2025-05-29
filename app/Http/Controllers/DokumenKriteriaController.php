@@ -32,19 +32,8 @@ class DokumenKriteriaController extends Controller
             'content_html' => 'required|string',
         ]);
 
-        // Hitung versi terakhir untuk user + no_kriteria yang sama
-        $versiTerakhir = DokumenKriteriaModel::where('id_user', Auth::id())
-            ->where('no_kriteria', $request->no_kriteria)
-            ->max('versi');
-
-        $versiBaru = $versiTerakhir ? $versiTerakhir + 1 : 1;
-
-        DokumenKriteriaModel::create([
-            'id_user' => Auth::id(),
-            'content_html' => $request->content_html,
-            'versi' => $versiBaru,
-            'status' => 'perlu validasi',
-        ]);
+        // This method is not used in this page as per user instruction
+        // You can remove or keep it as is
 
         return redirect()->route('dokumen_kriteria.index')->with('success', 'Dokumen berhasil disimpan.');
     }
@@ -52,20 +41,28 @@ class DokumenKriteriaController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'judul' => 'required|string|max:255',
             'content_html' => 'required|string',
-            'no_kriteria' => 'required|integer',
         ]);
 
-        $dokumen = DokumenKriteriaModel::findOrFail($id);
+        $dokumenLama = DokumenKriteriaModel::findOrFail($id);
 
-        // Update fields
-        $dokumen->judul = $request->judul;
-        $dokumen->content_html = $request->content_html;
-        $dokumen->no_kriteria = $request->no_kriteria;
-        // Optionally update versi or status if needed
-        $dokumen->save();
+        // Hitung versi terakhir untuk user + no_kriteria yang sama
+        $versiTerakhir = DokumenKriteriaModel::where('id_user', Auth::id())
+            ->where('no_kriteria', $dokumenLama->no_kriteria)
+            ->max('versi');
 
-        return redirect()->route('dokumen_kriteria.index')->with('success', 'Dokumen berhasil diperbarui.');
+        $versiBaru = $versiTerakhir ? $versiTerakhir + 1 : 1;
+
+        // Buat versi baru dengan judul dan no_kriteria dari versi lama
+        DokumenKriteriaModel::create([
+            'id_user' => Auth::id(),
+            'judul' => $dokumenLama->judul,
+            'content_html' => $request->content_html,
+            'no_kriteria' => $dokumenLama->no_kriteria,
+            'versi' => $versiBaru,
+            'status' => 'perlu validasi',
+        ]);
+
+        return redirect()->route('dokumen_kriteria.index')->with('success', 'Dokumen berhasil diperbarui dan versi baru dibuat.');
     }
 }

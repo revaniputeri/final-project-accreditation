@@ -120,9 +120,7 @@ Route::middleware('auth')->group(function () {
 
     Route::prefix('dokumen_kriteria')->name('dokumen_kriteria.')->middleware('authorize:ADM,ANG')->group(function () {
         Route::get('/', [DokumenKriteriaController::class, 'index'])->name('index');
-        Route::post('/store', [DokumenKriteriaController::class, 'store'])->name('store');
         Route::put('/update/{id}', [DokumenKriteriaController::class, 'update'])->name('update');
-        Route::post('/store', [DokumenKriteriaController::class, 'store'])->name('store');
         Route::post('/upload-image', [ImageUploadController::class, 'upload'])->name('upload.image');
     });
 
