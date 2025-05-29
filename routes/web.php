@@ -13,6 +13,7 @@ use App\Http\Controllers\PPenelitianController;
 use App\Http\Controllers\PKaryaBukuController;
 use App\Http\Controllers\PHKIController;
 use App\Http\Controllers\PPengabdianController;
+use App\Http\Controllers\PProfesiController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ValidasiController;
 
@@ -293,6 +294,28 @@ Route::middleware('auth')->group(function () {
             Route::get('/validasi_ajax/{id}', [PPengabdianController::class, 'validasi_ajax'])->name('validasi_ajax');
             Route::post('/validasi_ajax/{id}', [PPengabdianController::class, 'validasi_ajax'])->name('validasi_update');
         });
+    });
+
+        // Route Portofolio Profesi
+    Route::prefix('p_profesi')->name('p_profesi.')->middleware('authorize:DOS,ANG,ADM')->group(function () {
+        Route::get('/', [PProfesiController::class, 'index'])->name('index');
+
+        // CRUD routes
+        Route::get('/create_ajax', [PProfesiController::class, 'create_ajax'])->name('create_ajax');
+        Route::post('/store_ajax', [PProfesiController::class, 'store_ajax'])->name('store_ajax');
+        Route::get('/{id}/edit_ajax', [PProfesiController::class, 'edit_ajax'])->name('edit_ajax');
+        Route::put('/{id}/update_ajax', [PProfesiController::class, 'update_ajax'])->name('update_ajax');
+        Route::get('/{id}/delete_ajax', [PProfesiController::class, 'confirm_ajax'])->name('confirm_ajax');
+        Route::delete('/{id}/delete_ajax', [PProfesiController::class, 'delete_ajax'])->name('delete_ajax');
+        Route::get('/{id}/detail_ajax', [PProfesiController::class, 'detail_ajax'])->name('detail_ajax');
+        Route::get('/validasi_ajax/{id}', [PProfesiController::class, 'validasi_ajax'])->name('validasi_ajax');
+        Route::post('/validasi_ajax/{id}', [PProfesiController::class, 'validasi_ajax'])->name('validasi_update');
+
+        // Import and Export routes
+        Route::get('/import', [PProfesiController::class, 'import'])->name('import');
+        Route::post('/import_ajax', [PProfesiController::class, 'import_ajax'])->name('import_ajax');
+        Route::get('/export_excel', [PProfesiController::class, 'export_excel'])->name('export_excel');
+        Route::get('/export_pdf', [PProfesiController::class, 'export_pdf'])->name('export_pdf');
     });
 
 });
