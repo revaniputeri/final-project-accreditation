@@ -126,8 +126,8 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="{{ url('/p_pengabdian-masyarakat') }}"
-                            class="nav-link {{ request()->is('p_pengabdian-masyarakat') ? 'active' : '' }}">
+                        <a href="{{ url('/p_pengabdian') }}"
+                            class="nav-link {{ request()->is('p_pengabdian') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-hand-holding-heart"></i>
                             <p>Pengabdian Masyarakat</p>
                         </a>
