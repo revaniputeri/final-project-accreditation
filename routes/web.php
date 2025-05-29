@@ -11,6 +11,7 @@ use App\Http\Controllers\POrganisasiController;
 use App\Http\Controllers\PPublikasiController;
 use App\Http\Controllers\PPenelitianController;
 use App\Http\Controllers\PKaryaBukuController;
+use App\Http\Controllers\PHKIController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ValidasiController;
 
@@ -238,5 +239,27 @@ Route::middleware('auth')->group(function () {
         Route::post('/import_ajax', [PKaryaBukuController::class, 'import_ajax'])->name('import_ajax');
         Route::get('/export_excel', [PKaryaBukuController::class, 'export_excel'])->name('export_excel');
         Route::get('/export_pdf', [PKaryaBukuController::class, 'export_pdf'])->name('export_pdf');
+    });
+
+    //Route Portofolio HKI
+    Route::prefix('p_hki')->name('p_hki.')->middleware('authorize:DOS,ANG,ADM')->group(function () {
+        Route::get('/', [PHKIController::class, 'index'])->name('index');
+
+        // CRUD routes
+        Route::get('/create_ajax', [PHKIController::class, 'create_ajax'])->name('create_ajax');
+        Route::post('/store_ajax', [PHKIController::class, 'store_ajax'])->name('store_ajax');
+        Route::get('/{id}/edit_ajax', [PHKIController::class, 'edit_ajax'])->name('edit_ajax');
+        Route::put('/{id}/update_ajax', [PHKIController::class, 'update_ajax'])->name('update_ajax');
+        Route::get('/{id}/delete_ajax', [PHKIController::class, 'confirm_ajax'])->name('confirm_ajax');
+        Route::delete('/{id}/delete_ajax', [PHKIController::class, 'delete_ajax'])->name('delete_ajax');
+        Route::get('/{id}/detail_ajax', [PHKIController::class, 'detail_ajax'])->name('detail_ajax');
+        Route::get('/validasi_ajax/{id}', [PHKIController::class, 'validasi_ajax'])->name('validasi_ajax');
+        Route::post('/validasi_ajax/{id}', [PHKIController::class, 'validasi_ajax'])->name('validasi_update');
+
+        // Import and Export routes
+        Route::get('/import', [PHKIController::class, 'import'])->name('import');
+        Route::post('/import_ajax', [PHKIController::class, 'import_ajax'])->name('import_ajax');
+        Route::get('/export_excel', [PHKIController::class, 'export_excel'])->name('export_excel');
+        Route::get('/export_pdf', [PHKIController::class, 'export_pdf'])->name('export_pdf');
     });
 });

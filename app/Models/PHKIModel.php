@@ -33,6 +33,10 @@ class PHKIModel extends Model
         return $this->belongsTo(UserModel::class, 'id_user');
     }
 
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
     // Scope for filtering by data source
     public function scopeP3m($query)
     {
