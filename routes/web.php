@@ -16,6 +16,7 @@ use App\Http\Controllers\PPengabdianController;
 use App\Http\Controllers\PProfesiController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ValidasiController;
+use App\Http\Controllers\DokumenKriteriaController;
 
 /*
 |--------------------------------------------------------------------------
@@ -81,7 +82,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/import_ajax', [UserController::class, 'import_ajax'])->name('import_ajax');
         Route::get('/export_excel', [UserController::class, 'export_excel'])->name('export_excel');
         Route::get('/export_pdf', [UserController::class, 'export_pdf'])->name('export_pdf');
-        
+
         Route::get('/pageProfile',[UserController::class,'pageProfile'])->name('pageProfile');
         Route::get('/{id}/editProfile_ajax', [UserController::class,'editProfile_ajax'])->name('editProfile_ajax');
         Route::PUT('/{id}/updateProfile_ajax', [UserController::class,'updateProfile_ajax'])->name('updateProfile_ajax');
@@ -115,6 +116,14 @@ Route::middleware('auth')->group(function () {
         Route::POST('/showFile', [ValidasiController::class, 'showFile'])->name('showFile');
         Route::PUT('/valid', [ValidasiController::class,'valid'])->name('valid');
         Route::PUT('/store', [ValidasiController::class, 'store'])->name('store');
+    });
+
+    Route::prefix('dokumen_kriteria')->name('dokumen_kriteria.')->middleware('authorize:ADM,ANG')->group(function () {
+        Route::get('/', [DokumenKriteriaController::class, 'index'])->name('index');
+        Route::post('/store', [DokumenKriteriaController::class, 'store'])->name('store');
+        Route::put('/update/{id}', [DokumenKriteriaController::class, 'update'])->name('update');
+        Route::post('/store', [DokumenKriteriaController::class, 'store'])->name('store');
+        Route::post('/upload-image', [ImageUploadController::class, 'upload'])->name('upload.image');
     });
 
     //Route Portofolio Kegiatan

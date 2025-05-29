@@ -148,66 +148,10 @@
                     <li class="nav-header">Kriteria</li>
 
                     <li class="nav-item">
-                        <a href="{{ url('/kriteria/1') }}"
-                            class="nav-link {{ request()->is('kriteria/1') ? 'active' : '' }}">
+                        <a href="{{ url('/dokumen_kriteria') }}"
+                            class="nav-link {{ request()->is('dokumen_kriteria') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-eye"></i>
-                            <p>Kriteria 1</p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{{ url('/kriteria/2') }}"
-                            class="nav-link {{ request()->is('kriteria/2') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-gavel"></i>
-                            <p>Kriteria 2</p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{{ url('/kriteria/3') }}"
-                            class="nav-link {{ request()->is('kriteria/3') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-user-graduate"></i>
-                            <p>Kriteria 3</p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{{ url('/kriteria/4') }}"
-                            class="nav-link {{ request()->is('kriteria/4') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-users"></i>
-                            <p>Kriteria 4</p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{{ url('/kriteria/5') }}"
-                            class="nav-link {{ request()->is('kriteria/5') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-coins"></i>
-                            <p>Kriteria 5</p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{{ url('/kriteria/6') }}"
-                            class="nav-link {{ request()->is('kriteria/6') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-book"></i>
-                            <p>Kriteria 6</p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{{ url('/kriteria/7') }}"
-                            class="nav-link {{ request()->is('kriteria/7') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-microscope"></i>
-                            <p>Kriteria 7</p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{{ url('/kriteria/8') }}"
-                            class="nav-link {{ request()->is('kriteria/8') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-hand-holding-heart"></i>
-                            <p>Kriteria 8</p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{{ url('/kriteria/9') }}"
-                            class="nav-link {{ request()->is('kriteria/9') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-trophy"></i>
-                            <p>Kriteria 9</p>
+                            <p>Dokumen Kriteria</p>
                         </a>
                     </li>
                 @endif
