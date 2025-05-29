@@ -21,8 +21,8 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             LevelSeeder::class,
-            DokumenKriteriaSeeder::class,
             UserSeeder::class,
+            DokumenKriteriaSeeder::class,
             ProfileUserSeeder::class,
             PSertifikasiSeeder::class,
             PKegiatanSeeder::class,

@@ -15,9 +15,11 @@ class DokumenKriteriaModel extends Model
         'id_user',
         'judul',
         'content_html',
+        'no_kriteria',
+        'versi',
         'status',
-        'komentar',
-        'id_validator'
+        'id_validator',
+        'komentar'
     ];
 
     protected $casts = [

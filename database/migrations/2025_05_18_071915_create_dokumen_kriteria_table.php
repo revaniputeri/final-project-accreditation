@@ -10,10 +10,12 @@ return new class extends Migration
     {
         Schema::create('dokumen_kriteria', function (Blueprint $table) {
             $table->id('id_dokumen_kriteria');
+            $table->integer('no_kriteria');
+            $table->integer('versi');
             $table->foreignId('id_user')->constrained('user', 'id_user');
             $table->string('judul', 255);
             $table->longText('content_html');
-            $table->enum('status', ['tervalidasi', 'revisi', 'kosong'])->default('kosong');
+            $table->enum('status', ['tervalidasi', 'revisi', 'kosong', 'perlu validasi'])->default('kosong');
             $table->foreignId('id_validator')->nullable()->constrained('user', 'id_user');
             $table->text('komentar')->nullable();
             $table->timestamps();
