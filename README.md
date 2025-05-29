@@ -1,6 +1,6 @@
-# Akredddddddd
+# AKRESA - Akreditasi Sistem Akademik
 
-Repositori ini menyimpan dokumen dan source code untuk aplikasi sistem akreditasi jurusan Teknologi Informasi. Proyek ini merupakan tugas akhir untuk semester 4.
+Repositori ini menyimpan dokumen dan source code untuk aplikasi AKRESA jurusan Teknologi Informasi. Proyek ini merupakan tugas akhir untuk semester 4.
 
 ## Ringkasan Proyek
 
