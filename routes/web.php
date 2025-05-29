@@ -8,6 +8,9 @@ use App\Http\Controllers\PSertifikasiController;
 use App\Http\Controllers\PKegiatanController;
 use App\Http\Controllers\PPrestasiController;
 use App\Http\Controllers\POrganisasiController;
+use App\Http\Controllers\PPublikasiController;
+use App\Http\Controllers\PPenelitianController;
+use App\Http\Controllers\PKaryaBukuController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ValidasiController;
 
@@ -172,5 +175,68 @@ Route::middleware('auth')->group(function () {
         Route::post('/import_ajax', [POrganisasiController::class, 'import_ajax'])->name('import_ajax');
         Route::get('/export_excel', [POrganisasiController::class, 'export_excel'])->name('export_excel');
         Route::get('/export_pdf', [POrganisasiController::class, 'export_pdf'])->name('export_pdf');
+    });
+
+    Route::prefix('p_publikasi')->name('p_publikasi.')->middleware('authorize:DOS,ANG,ADM')->group(function () {
+        Route::get('/', [PPublikasiController::class, 'index'])->name('index');
+
+        // CRUD routes
+        Route::get('/create_ajax', [PPublikasiController::class, 'create_ajax'])->name('create_ajax');
+        Route::post('/store_ajax', [PPublikasiController::class, 'store_ajax'])->name('store_ajax');
+        Route::get('/{id}/edit_ajax', [PPublikasiController::class, 'edit_ajax'])->name('edit_ajax');
+        Route::put('/{id}/update_ajax', [PPublikasiController::class, 'update_ajax'])->name('update_ajax');
+        Route::get('/{id}/delete_ajax', [PPublikasiController::class, 'confirm_ajax'])->name('confirm_ajax');
+        Route::delete('/{id}/delete_ajax', [PPublikasiController::class, 'delete_ajax'])->name('delete_ajax');
+        Route::get('/{id}/detail_ajax', [PPublikasiController::class, 'detail_ajax'])->name('detail_ajax');
+        Route::get('/validasi_ajax/{id}', [PPublikasiController::class, 'validasi_ajax'])->name('validasi_ajax');
+        Route::post('/validasi_ajax/{id}', [PPublikasiController::class, 'validasi_ajax'])->name('validasi_update');
+
+        // Import and Export routes
+        Route::get('/import', [PPublikasiController::class, 'import'])->name('import');
+        Route::post('/import_ajax', [PPublikasiController::class, 'import_ajax'])->name('import_ajax');
+        Route::get('/export_excel', [PPublikasiController::class, 'export_excel'])->name('export_excel');
+        Route::get('/export_pdf', [PPublikasiController::class, 'export_pdf'])->name('export_pdf');
+    });
+
+    Route::prefix('p_penelitian')->name('p_penelitian.')->middleware('authorize:DOS,ANG,ADM')->group(function () {
+        Route::get('/', [PPenelitianController::class, 'index'])->name('index');
+
+        // CRUD dengan AJAX
+        Route::get('/create_ajax', [PPenelitianController::class, 'create_ajax'])->name('create_ajax');
+        Route::post('/store_ajax', [PPenelitianController::class, 'store_ajax'])->name('store_ajax');
+        Route::get('/{id}/edit_ajax', [PPenelitianController::class, 'edit_ajax'])->name('edit_ajax');
+        Route::put('/{id}/update_ajax', [PPenelitianController::class, 'update_ajax'])->name('update_ajax');
+        Route::get('/{id}/delete_ajax', [PPenelitianController::class, 'confirm_ajax'])->name('confirm_ajax');
+        Route::delete('/{id}/delete_ajax', [PPenelitianController::class, 'delete_ajax'])->name('delete_ajax');
+        Route::get('/{id}/detail_ajax', [PPenelitianController::class, 'detail_ajax'])->name('detail_ajax');
+        Route::get('/validasi_ajax/{id}', [PPenelitianController::class, 'validasi_ajax'])->name('validasi_ajax');
+        Route::post('/validasi_ajax/{id}', [PPenelitianController::class, 'validasi_ajax'])->name('validasi_update');
+
+        // Import & Export
+        Route::get('/import', [PPenelitianController::class, 'import'])->name('import');
+        Route::post('/import_ajax', [PPenelitianController::class, 'import_ajax'])->name('import_ajax');
+        Route::get('/export_excel', [PPenelitianController::class, 'export_excel'])->name('export_excel');
+        Route::get('/export_pdf', [PPenelitianController::class, 'export_pdf'])->name('export_pdf');
+    });
+
+    Route::prefix('p_karya-buku')->name('p_karya_buku.')->middleware('authorize:DOS,ANG,ADM')->group(function () {
+        Route::get('/', [PKaryaBukuController::class, 'index'])->name('index');
+
+        // CRUD dengan AJAX
+        Route::get('/create_ajax', [PKaryaBukuController::class, 'create_ajax'])->name('create_ajax');
+        Route::post('/store_ajax', [PKaryaBukuController::class, 'store_ajax'])->name('store_ajax');
+        Route::get('/{id}/edit_ajax', [PKaryaBukuController::class, 'edit_ajax'])->name('edit_ajax');
+        Route::put('/{id}/update_ajax', [PKaryaBukuController::class, 'update_ajax'])->name('update_ajax');
+        Route::get('/{id}/delete_ajax', [PKaryaBukuController::class, 'confirm_ajax'])->name('confirm_ajax');
+        Route::delete('/{id}/delete_ajax', [PKaryaBukuController::class, 'delete_ajax'])->name('delete_ajax');
+        Route::get('/{id}/detail_ajax', [PKaryaBukuController::class, 'detail_ajax'])->name('detail_ajax');
+        Route::get('/validasi_ajax/{id}', [PKaryaBukuController::class, 'validasi_ajax'])->name('validasi_ajax');
+        Route::post('/validasi_ajax/{id}', [PKaryaBukuController::class, 'validasi_ajax'])->name('validasi_update');
+
+        // Import & Export
+        Route::get('/import', [PKaryaBukuController::class, 'import'])->name('import');
+        Route::post('/import_ajax', [PKaryaBukuController::class, 'import_ajax'])->name('import_ajax');
+        Route::get('/export_excel', [PKaryaBukuController::class, 'export_excel'])->name('export_excel');
+        Route::get('/export_pdf', [PKaryaBukuController::class, 'export_pdf'])->name('export_pdf');
     });
 });
