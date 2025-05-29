@@ -1,0 +1,668 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\Models\PHKIModel;
+use App\Models\UserModel;
+use Illuminate\Support\Facades\Validator;
+use Yajra\DataTables\DataTables;
+use App\DataTables\PHKIDataTable;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\DB;
+
+class PHKIController extends Controller
+{
+    public function index(PHKIDataTable $dataTable)
+    {
+        /** @var UserModel|null $user */
+        $user = Auth::user();
+        $role = $user->getRole();
+        $isAdm = $role === 'ADM';
+        $isDos = $role === 'DOS';
+        $isAng = $role === 'ANG';
+
+        return $dataTable->render('p_hki.index', compact('isAdm', 'isAng', 'isDos'));
+    }
+
+    private function generateUniqueFilename($directory, $filename)
+    {
+        $filePath = $directory . '/' . $filename;
+        $fileInfo = pathinfo($filename);
+        $name = $fileInfo['filename'];
+        $extension = isset($fileInfo['extension']) ? '.' . $fileInfo['extension'] : '';
+        $counter = 1;
+
+        while (Storage::exists($filePath)) {
+            $filePath = $directory . '/' . $name . '_' . $counter . $extension;
+            $counter++;
+        }
+
+        return basename($filePath);
+    }
+
+    public function create_ajax()
+    {
+        $dosens = UserModel::whereHas('level', function ($query) {
+            $query->where('kode_level', 'DOS');
+        })->get();
+
+        /** @var UserModel|null $user */
+        $user = Auth::user();
+        $role = $user ? $user->getRole() : null;
+
+        return view('p_hki.create_ajax', compact('dosens', 'role'));
+    }
+
+    public function store_ajax(Request $request)
+    {
+        if ($request->ajax() || $request->wantsJson()) {
+            /** @var UserModel|null $user */
+            $user = Auth::user();
+            $role = $user ? $user->getRole() : null;
+
+            $rules = [
+                'judul' => 'required|string|max:255',
+                'tahun' => 'required|integer',
+                'skema' => 'required|string|max:100', 
+                'nomor' => 'required|string|max:255',
+                'melibatkan_mahasiswa_s2' => 'nullable|boolean',
+                'bukti' => $role === 'DOS' ? 'required|file|mimes:pdf,jpg,jpeg,png|max:2048' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            ];
+
+            if ($role === 'ADM') {
+                $rules['nidn'] = 'required|string|exists:profile_user,nidn';
+            }
+
+            $validator = Validator::make($request->all(), $rules);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => false,
+                    'alert' => 'error',
+                    'message' => 'Validasi Gagal',
+                    'msgField' => $validator->errors(),
+                ]);
+            }
+
+            try {
+                if ($role === 'ADM') {
+                    $nidn = $request->input('nidn');
+                    $profileUser = DB::table('profile_user')->where('nidn', $nidn)->first();
+
+                    if (!$profileUser) {
+                        return response()->json([
+                            'status' => false,
+                            'alert' => 'error',
+                            'message' => 'NIDN tidak ditemukan di data profil user',
+                        ]);
+                    }
+
+                    $id_user = $profileUser->id_user;
+                } elseif ($role === 'DOS') {
+                    $id_user = $user->id_user;
+                } else {
+                    $id_user = $user->id_user;
+                }
+
+                if (!$id_user) {
+                    return response()->json([
+                        'status' => false,
+                        'alert' => 'error',
+                        'message' => 'ID user tidak ditemukan. Pastikan akun user terkait.',
+                    ]);
+                }
+
+                // Cek duplikat judul + nomor untuk user yang sama
+                $exists = PHKIModel::where('id_user', $id_user)
+                    ->where('nomor', $request->input('nomor'))
+                    ->where('id_hki', '!=', $request->input('id_hki'))
+                    ->exists();
+
+                if ($exists) {
+                    return response()->json([
+                        'status' => false,
+                        'alert' => 'error',
+                        'message' => 'Data dengan Nomor HKI dan user yang sama sudah ada.',
+                    ]);
+                }
+
+                $data = $request->only([
+                    'judul', 
+                    'tahun', 
+                    'skema', 
+                    'nomor', 
+                    'melibatkan_mahasiswa_s2', 
+                    'bukti'
+                ]);
+
+                if ($request->hasFile('bukti')) {
+                    $file = $request->file('bukti');
+                    $nidnPrefix = '';
+                    if ($user && $user->profile) {
+                        $nidnPrefix = $user->profile->nidn ? $user->profile->nidn . '_' : '';
+                    }
+                    $originalName = $file->getClientOriginalName();
+                    $filename = $nidnPrefix . $originalName;
+                    $filename = $this->generateUniqueFilename('public/p_hki', $filename);
+                    $file->storeAs('public/p_hki', $filename);
+                    $data['bukti'] = $filename;
+                }
+
+                PHKIModel::create($data);
+
+                return response()->json([
+                    'status' => true,
+                    'alert' => 'success',
+                    'message' => 'Data HKI berhasil disimpan'
+                ]);
+            } catch (\Exception $e) {
+                Log::error('Exception in store_ajax (HKI): ' . $e->getMessage());
+                return response()->json([
+                    'status' => false,
+                    'alert' => 'error',
+                    'message' => 'Gagal menyimpan data HKI',
+                ]);
+            }
+        }
+
+        return response()->json([
+            'status' => false,
+            'alert' => 'error',
+            'message' => 'Request tidak valid'
+        ], 400);
+    }
+
+    public function edit_ajax($id)
+    {
+        $dosens = UserModel::whereHas('level', function ($query) {
+            $query->where('kode_level', 'DOS');
+        })->get();
+
+        $user = Auth::user();
+        $role = $user && $user->level ? $user->level->kode_level : null;
+
+        $hki = PHKIModel::findOrFail($id);
+        return view('p_hki.edit_ajax', compact('hki', 'dosens', 'role'));
+    }
+
+    public function update_ajax(Request $request, $id)
+    {
+        $user = Auth::user();
+        $role = $user && $user->level ? $user->level->kode_level : null;
+
+        if ($request->ajax() || $request->wantsJson()) {
+            $rules = [
+                'judul' => 'required|string|max:255',
+                'tahun' => 'required|integer',
+                'skema' => 'required|string|max:100',
+                'nomor' => 'required|string|max:255',
+                'melibatkan_mahasiswa_s2' => 'nullable|boolean',
+                'bukti' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            ];
+
+            if ($role === 'ADM') {
+                $rules['nidn'] = 'required|string|exists:profile_user,nidn';
+            }
+
+            $validator = Validator::make($request->all(), $rules);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => false,
+                    'alert' => 'error',
+                    'message' => 'Validasi Gagal',
+                    'msgField' => $validator->errors(),
+                ]);
+            }
+
+            $hki = PHKIModel::findOrFail($id);
+
+            try {
+                if ($role === 'ADM') {
+                    $nidn = $request->input('nidn');
+                    $profileUser = DB::table('profile_user')->where('nidn', $nidn)->first();
+
+                    if (!$profileUser) {
+                        return response()->json([
+                            'status' => false,
+                            'alert' => 'error',
+                            'message' => 'NIDN tidak ditemukan di data profil user',
+                        ]);
+                    }
+
+                    $id_user = $profileUser->id_user;
+                } elseif ($role === 'DOS') {
+                    $id_user = $user->id_user;
+                } else {
+                    $id_user = $user->id_user;
+                }   
+
+                if (!$id_user) {
+                    return response()->json([
+                        'status' => false,
+                        'alert' => 'error',
+                        'message' => 'ID user tidak ditemukan. Pastikan akun user terkait.',
+                    ]);
+                }
+
+                // Cek duplikat nomor + user, kecuali record yang sedang diupdate
+                $exists = PHKIModel::where('id_user', $id_user)
+                    ->where('nomor', $request->input('nomor'))
+                    ->where('id_hki', '!=', $id)
+                    ->exists();
+
+                if ($exists) {
+                    return response()->json([
+                        'status' => false,
+                        'alert' => 'error',
+                        'message' => 'Data dengan Nomor dan user yang sama sudah ada.',
+                    ]);
+                }
+
+                $data = $request->only([
+                    'judul',
+                    'tahun',
+                    'skema',
+                    'nomor',
+                    'melibatkan_mahasiswa_s2',
+                    'bukti',
+                ]);
+
+                if ($request->hasFile('bukti')) {
+                    if ($hki->bukti && Storage::exists('public/p_hki/' . $hki->bukti)) {
+                        Storage::delete('public/p_hki/' . $hki->bukti);
+                    }
+
+                    $file = $request->file('bukti');
+                    $nidnPrefix = '';
+                    if ($hki->user && $hki->user->profile) {
+                        $nidnPrefix = $hki->user->profile->nidn ? $hki->user->profile->nidn . '_' : '';
+                    }
+
+                    $originalName = $file->getClientOriginalName();
+                    $filename = $nidnPrefix . $originalName;
+                    $filename = $this->generateUniqueFilename('public/p_hki', $filename);
+                    $file->storeAs('public/p_hki', $filename);
+                    $data['bukti'] = $filename;
+                }
+
+                $hki->update($data);
+
+                return response()->json([
+                    'status' => true,
+                    'alert' => 'success',
+                    'message' => 'Data HKI berhasil diupdate'
+                ]);
+            } catch (\Exception $e) {
+                Log::error('Exception in update_ajax PHKI: ' . $e->getMessage());
+                return response()->json([
+                    'status' => false,
+                    'alert' => 'error',
+                    'message' => 'Gagal mengupdate data HKI',
+                ]);
+            }
+        }
+
+        return response()->json([
+            'status' => false,
+            'alert' => 'error',
+            'message' => 'Request tidak valid'
+        ], 400);
+    }
+
+    public function confirm_ajax($id)
+    {
+        $hki = PHKIModel::findOrFail($id);
+        return view('p_hki.confirm_ajax', compact('hki'));
+    }
+
+    public function delete_ajax(Request $request, $id)
+    {
+        $hki = PHKIModel::findOrFail($id);
+
+        try {
+            if ($hki->bukti && Storage::exists('public/p_hki/' . $hki->bukti)) {
+                Storage::delete('public/p_hki/' . $hki->bukti);
+            }
+            $hki->delete();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Data HKI berhasil dihapus'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Exception in delete_ajax PHKI: ' . $e->getMessage());
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Gagal menghapus data HKI'
+            ]);
+        }
+    }
+
+    public function detail_ajax($id)
+    {
+        $hki = PHKIModel::with('user.profile')->findOrFail($id);
+        return view('p_hki.detail_ajax', compact('hki'));
+    }
+
+    public function validasi_ajax(Request $request, $id)
+    {
+        $hki = PHKIModel::findOrFail($id);
+
+        if ($request->isMethod('post')) {
+            $request->validate([
+                'status' => 'required|in:Tervalidasi,Tidak Valid',
+            ]);
+
+            $hki->status = $request->input('status');
+            $hki->save();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Status HKI berhasil diperbarui',
+            ]);
+        }
+
+        return view('p_hki.validasi_ajax', compact('hki'));
+    }
+
+    public function import()
+    {
+        return view('p_hki.import');
+    }
+
+    public function import_ajax(Request $request)
+    {
+        $request->validate([
+            'file_p_hki' => 'required|mimes:xlsx,xls|max:2048'
+        ]);
+
+        try {
+            $file = $request->file('file_p_hki');
+            $spreadsheet = IOFactory::load($file->getRealPath());
+            $sheet = $spreadsheet->getActiveSheet();
+            $data = $sheet->toArray(null, true, true, true);
+
+            $insertData = [];
+            $skippedData = [];
+            $errors = [];
+
+            /** @var UserModel|null $user */
+            $user = Auth::user();
+            $role = $user && $user->level ? $user->level->kode_level : null;
+            $userNidn = DB::table('profile_user')->where('id_user', $user->id_user)->value('nidn');
+
+            foreach ($data as $row => $values) {
+                if ($row == 1) continue; // Skip header
+
+                $nidn = trim($values['A'] ?? '');
+                $judul = trim($values['C'] ?? '');
+
+                if ($role === 'DOS' && $nidn !== $userNidn) {
+                    $errors[] = "Baris $row: Anda hanya dapat mengimpor data milik Anda (NIDN $userNidn).";
+                    continue;
+                }
+
+                $profile = DB::table('profile_user')->where('nidn', $nidn)->first();
+                if (!$profile) {
+                    $errors[] = "Baris $row: NIDN $nidn tidak ditemukan di data profil user.";
+                    continue;
+                }
+
+                // Cek duplikat berdasarkan id_user + judul
+                $isDuplicate = PHKIModel::where('id_user', $profile->id_user)
+                    ->where('judul', $judul)
+                    ->exists();
+
+                if ($isDuplicate) {
+                    $skippedData[] = "Baris $row: Kombinasi NIDN $nidn dan Judul HKI '$judul' sudah ada.";
+                    continue;
+                }
+                
+
+                // Data dari Excel disesuaikan dengan field model
+                $tahun = $values['E'] ?? null;
+                $skema = $values['B'] ?? null;
+                $nomor = $values['D'] ?? null;
+                $melibatkan_mahasiswa_s2 = isset($values['F']) ? (strtolower(trim($values['F'])) === 'ya' ? true : false) : false;
+                $status_hki = $values['G'] ?? null;
+
+                $validator = Validator::make([
+                    'id_user' => $profile->id_user,
+                    'judul' => $values,
+                    'tahun' => $tahun,
+                    'skema' => $skema,
+                    'nomor' => $nomor,
+                    'melibatkan_mahasiswa_s2' => $melibatkan_mahasiswa_s2,
+                    'status' => $status_hki,
+                ], [
+                    'id_user' => 'required|integer|exists:user,id_user',
+                    'judul' => 'required|string|max:255',
+                    'tahun' => 'required|integer|min:1900|max:' . (date('Y') + 5),
+                    'skema' => 'nullable|string|max:255',
+                    'nomor' => 'nullable|string|max:255',
+                    'melibatkan_mahasiswa_s2' => 'boolean',
+                    'status' => 'required|string|max:100',
+                ]);
+
+                if ($validator->fails()) {
+                    $errors[] = "Baris $row: " . implode(', ', $validator->errors()->all());
+                    continue;
+                }
+
+                $insertData[] = [
+                    'id_user' => $profile->id_user,
+                    'judul' => $judul,
+                    'tahun' => $tahun,
+                    'skema' => $skema,
+                    'nomor' => $nomor,
+                    'melibatkan_mahasiswa_s2' => $melibatkan_mahasiswa_s2,
+                    'status' => $role === 'DOS' ? 'Tervalidasi' : 'perlu validasi',
+                    'sumber_data' => $role === 'DOS' ? 'dosen' : 'p3m',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                    // 'bukti' => null, // Bisa ditambahkan jika ada data dari file
+                ];
+            }
+
+            $allMessages = array_merge($skippedData, $errors);
+
+            if (empty($insertData)) {
+                return response()->json([
+                    'status' => false,
+                    'alert' => 'error',
+                    'message' => 'Tidak ada data baru yang valid untuk diimpor:' .
+                        "\n" . implode("\n", array_slice($allMessages, 0, 1)) .
+                        (count($allMessages) > 3 ? "\n...dan " . (count($allMessages) - 3) . " lainnya." : ''),
+                    'showConfirmButton' => true
+                ], 422);
+            }
+
+            PHKIModel::insert($insertData);
+
+            return response()->json([
+                'status' => true,
+                'alert' => 'success',
+                'message' => 'Import data berhasil.',
+                'inserted_count' => count($insertData),
+                'skipped_count' => count($skippedData),
+                'info' => $allMessages,
+                'error_count' => count($errors)
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Import HKI error: ' . $e->getMessage());
+            return response()->json([
+                'status' => false,
+                'alert' => 'error',
+                'message' => 'Terjadi kesalahan saat memproses file.',
+                'error' => $e->getMessage(),
+                'showConfirmButton' => true
+            ], 500);
+        }
+    }
+    public function export_excel()
+    {
+        $query = PHKIModel::join('user', 'p_hki.id_user', '=', 'user.id_user')
+            ->join('profile_user', 'user.id_user', '=', 'profile_user.id_user')
+            ->select(
+                'p_hki.id_hki',
+                'profile_user.nama_lengkap as nama_user',
+                'p_hki.judul',
+                'p_hki.tahun',
+                'p_hki.skema',
+                'p_hki.nomor',
+                'p_hki.melibatkan_mahasiswa_s2',
+                'p_hki.status',
+                'p_hki.sumber_data',
+                'p_hki.bukti',
+                'p_hki.created_at',
+                'p_hki.updated_at'
+            );
+
+        /** @var UserModel|null $user */
+        $user = Auth::user();
+        $role = $user && $user->level ? $user->level->kode_level : null;
+        if ($role === 'DOS' && $user->id_user) {
+            $query->where('p_hki.id_user', $user->id_user);
+        }
+
+        if ($status = request('filter_status')) {
+            $query->where('p_hki.status_hki', $status);
+        }
+
+        if ($sumber = request('filter_sumber')) {
+            $query->where('p_hki.sumber_data', $sumber);
+        }
+
+        $hki = $query->orderBy('p_hki.id_hki')->get();
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Header kolom
+        $sheet->setCellValue('A1', 'No');
+        $sheet->setCellValue('B1', 'ID HKI');
+        $sheet->setCellValue('C1', 'Nama Dosen');
+        $sheet->setCellValue('D1', 'Judul');
+        $sheet->setCellValue('E1', 'Tahun');
+        $sheet->setCellValue('F1', 'Skema');
+        $sheet->setCellValue('G1', 'Nomor');
+        $sheet->setCellValue('H1', 'Melibatkan Mahasiswa S2');
+        $sheet->setCellValue('I1', 'Status');
+        $sheet->setCellValue('J1', 'Sumber Data');
+        $sheet->setCellValue('K1', 'Bukti');
+        $sheet->setCellValue('L1', 'Created At');
+        $sheet->setCellValue('M1', 'Updated At');
+
+        $sheet->getStyle('A1:L1')->getFont()->setBold(true);
+
+        $no = 1;
+        $row = 2;
+        foreach ($hki as $data) {
+            $sheet->setCellValue('A' . $row, $no);
+            $sheet->setCellValue('B' . $row, $data->id_hki);
+            $sheet->setCellValue('C' . $row, $data->nama_user);
+            $sheet->setCellValue('D' . $row, $data->judul);
+            $sheet->setCellValue('E' . $row, $data->tahun);
+            $sheet->setCellValue('F' . $row, $data->skema);
+            $sheet->setCellValue('G' . $row, $data->nomor);
+            $sheet->setCellValue('H' . $row, $data->melibatkan_mahasiswa_s2 ? 'Ya' : 'Tidak');
+            $sheet->setCellValue('I' . $row, $data->status);
+            $sheet->setCellValue('J' . $row, $data->sumber_data);
+
+            if ($data->bukti) {
+                $url = url('storage/p_hki/' . $data->bukti);
+                $sheet->setCellValue('K' . $row, 'Lihat File');
+                $sheet->getCell('K' . $row)->getHyperlink()->setUrl($url);
+                $sheet->getStyle('K' . $row)->getFont()->getColor()->setARGB(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_BLUE);
+                $sheet->getStyle('K' . $row)->getFont()->setUnderline(true);
+            } else {
+                $sheet->setCellValue('K' . $row, 'Tidak ada file');
+            }
+
+            $sheet->setCellValue('L' . $row, $data->created_at);
+            $sheet->setCellValue('M' . $row, $data->updated_at);
+
+            $row++;
+            $no++;
+        }
+
+        // Set auto size kolom
+        foreach (range('A', 'M') as $columnID) {
+            $sheet->getColumnDimension($columnID)->setAutoSize(true);
+        }
+
+        $sheet->setTitle("Data HKI");
+
+        $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
+        $filename = 'Data HKI ' . date("Y-m-d H-i-s") . '.xlsx';
+
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="' . $filename . '"');
+        header('Cache-Control: max-age=0');
+        header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
+        header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
+        header('Cache-Control: cache, must-revalidate');
+        header('Pragma: public');
+
+        $writer->save('php://output');
+        exit;
+    }
+
+    public function export_pdf()
+    {
+        $query = PHKIModel::with(['dosen.profile'])->orderBy('id_hki');
+
+        /** @var UserModel|null $user */
+        $user = Auth::user();
+        $role = $user->getRole();
+        if ($role === 'DOS' && $user->id_user) {
+            $query->where('id_user', $user->id_user);
+        }
+
+        if ($status = request('filter_status')) {
+            $query->where('status_hki', $status);
+        }
+
+        if ($sumber = request('filter_sumber')) {
+            $query->where('sumber_data', $sumber);
+        }
+
+        $hki = $query->get();
+
+        $data = $hki->map(function ($item) {
+            return [
+                'id_hki' => $item->id_hki,
+                'nama_dosen' => optional(optional($item->dosen)->profile)->nama_lengkap ?? '-',
+                'judul' => $item->judul,
+                'tahun' => $item->tahun,
+                'skema' => $item->skema,
+                'nomor' => $item->nomor,
+                'melibatkan_mahasiswa_s2' => $item->melibatkan_mahasiswa_s2,
+                'status' => $item->status,
+                'sumber_data' => $item->sumber_data,
+                'bukti' => $item->bukti,
+                'created_at' => $item->created_at,
+                'updated_at' => $item->updated_at
+            ];
+        });
+
+        $pdf = Pdf::loadView('p_hki.export_pdf', [
+            'hki' => $data
+        ]);
+
+        $pdf->setPaper('a4', 'landscape');
+        $pdf->setOption('isRemoteEnabled', true);
+        $pdf->setOption('isHtml5ParserEnabled', true);
+        $pdf->setOption('chroot', base_path('public'));
+
+        return $pdf->stream('Data_HKI_' . date('d-m-Y_H-i-s') . '.pdf');
+    }
+}
