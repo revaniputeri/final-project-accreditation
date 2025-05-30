@@ -17,6 +17,7 @@ use App\Http\Controllers\PProfesiController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ValidasiController;
 use App\Http\Controllers\DokumenKriteriaController;
+use App\Http\Controllers\ImageUploadController;
 
 /*
 |--------------------------------------------------------------------------
@@ -118,7 +119,7 @@ Route::middleware('auth')->group(function () {
         Route::PUT('/store', [ValidasiController::class, 'store'])->name('store');
     });
 
-    Route::prefix('dokumen_kriteria')->name('dokumen_kriteria.')->middleware('authorize:ADM,ANG')->group(function () {
+    Route::prefix('dokumen_kriteria')->name('dokumen_kriteria.')->middleware('authorize:ANG')->group(function () {
         Route::get('/', [DokumenKriteriaController::class, 'index'])->name('index');
         Route::put('/update/{id}', [DokumenKriteriaController::class, 'update'])->name('update');
         Route::post('/upload-image', [ImageUploadController::class, 'upload'])->name('upload.image');

@@ -141,7 +141,7 @@
                 @endif
 
                 <!-- ADM & ANG: Kriteria -->
-                @if ($isAdm || $isAng)
+                @if ($isAng)
                     <div class="dropdown-divider"></div>
 
                     <!-- Header Kriteria -->

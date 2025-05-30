@@ -161,26 +161,34 @@
             images_upload_url: '{{ route('dokumen_kriteria.upload.image') }}',
             paste_data_images: true,
 
-            images_upload_handler: function(blobInfo, success, failure) {
-                let xhr = new XMLHttpRequest();
-                xhr.open('POST', '{{ route('dokumen_kriteria.upload.image') }}');
-                xhr.setRequestHeader('X-CSRF-Token', '{{ csrf_token() }}');
+            images_upload_handler: function(blobInfo) {
+                return new Promise(function(resolve, reject) {
+                    let xhr = new XMLHttpRequest();
+                    xhr.open('POST', '{{ route('dokumen_kriteria.upload.image') }}');
+                    xhr.setRequestHeader('X-CSRF-Token', '{{ csrf_token() }}');
 
-                let formData = new FormData();
-                formData.append('file', blobInfo.blob(), blobInfo.filename());
+                    let formData = new FormData();
+                    formData.append('file', blobInfo.blob(), blobInfo.filename());
 
-                xhr.onload = function() {
-                    if (xhr.status !== 200) {
-                        return failure('Upload gagal: ' + xhr.status);
-                    }
-                    const json = JSON.parse(xhr.responseText);
-                    if (!json || typeof json.location !== 'string') {
-                        return failure('Upload gagal');
-                    }
-                    success(json.location); // url disimpan di content_html
-                };
+                    xhr.onload = function() {
+                        if (xhr.status !== 200) {
+                            reject('Upload gagal: ' + xhr.status);
+                            return;
+                        }
+                        const json = JSON.parse(xhr.responseText);
+                        if (!json || typeof json.location !== 'string') {
+                            reject('Upload gagal');
+                            return;
+                        }
+                        resolve(json.location); // url disimpan di content_html
+                    };
 
-                xhr.send(formData);
+                    xhr.onerror = function() {
+                        reject('Upload gagal: error jaringan.');
+                    };
+
+                    xhr.send(formData);
+                });
             }
         });
     </script>
