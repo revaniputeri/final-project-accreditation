@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
             LevelSeeder::class,
             UserSeeder::class,
             DokumenKriteriaSeeder::class,
+            DokumenPendukungSeeder::class,
             ProfileUserSeeder::class,
             PSertifikasiSeeder::class,
             PKegiatanSeeder::class,
