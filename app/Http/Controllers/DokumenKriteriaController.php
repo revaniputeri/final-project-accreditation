@@ -39,24 +39,37 @@ class DokumenKriteriaController extends Controller
 
         $dokumenLama = DokumenKriteriaModel::findOrFail($id);
 
-        // Hitung versi terakhir untuk user + no_kriteria yang sama
-        $versiTerakhir = DokumenKriteriaModel::where('id_user', Auth::id())
-            ->where('no_kriteria', $dokumenLama->no_kriteria)
-            ->max('versi');
+        if ($dokumenLama->status === 'tervalidasi') {
+            return redirect()->route('dokumen_kriteria.index')->with('swal_error', 'Dokumen yang sudah tervalidasi tidak dapat diedit.');
+        }
 
-        $versiBaru = $versiTerakhir ? $versiTerakhir + 1 : 1;
+        if ($request->input('action') === 'save') {
+            // Update content_html in the same version (simpan)
+            $dokumenLama->content_html = $request->content_html;
+            $dokumenLama->save();
 
-        // Buat versi baru dengan judul dan no_kriteria dari versi lama
-        DokumenKriteriaModel::create([
-            'id_user' => Auth::id(),
-            'judul' => $dokumenLama->judul,
-            'content_html' => $request->content_html,
-            'no_kriteria' => $dokumenLama->no_kriteria,
-            'versi' => $versiBaru,
-            'status' => 'perlu validasi',
-        ]);
+            return redirect()->route('dokumen_kriteria.index')->with('success', 'Dokumen berhasil disimpan.');
+        } elseif ($request->input('action') === 'submit') {
+            // Create new version for validation (submit)
+            $versiTerakhir = DokumenKriteriaModel::where('id_user', Auth::id())
+                ->where('no_kriteria', $dokumenLama->no_kriteria)
+                ->max('versi');
 
-        return redirect()->route('dokumen_kriteria.index')->with('success', 'Dokumen berhasil diperbarui dan versi baru dibuat.');
+            $versiBaru = $versiTerakhir ? $versiTerakhir + 1 : 1;
+
+            DokumenKriteriaModel::create([
+                'id_user' => Auth::id(),
+                'judul' => $dokumenLama->judul,
+                'content_html' => $request->content_html,
+                'no_kriteria' => $dokumenLama->no_kriteria,
+                'versi' => $versiBaru,
+                'status' => 'perlu validasi',
+            ]);
+
+            return redirect()->route('dokumen_kriteria.index')->with('success', 'Dokumen berhasil disubmit dan versi baru dibuat.');
+        }
+
+        return redirect()->route('dokumen_kriteria.index')->with('error', 'Aksi tidak dikenali.');
     }
 
     // CRUD Dokumen Pendukung

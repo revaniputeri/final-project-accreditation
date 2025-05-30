@@ -77,7 +77,19 @@
                             <td>{{ $latestDokumen->no_kriteria }}</td>
                             <td>{{ $latestDokumen->judul }}</td>
                             <td>{{ $latestDokumen->versi }}</td>
-                            <td>{{ $latestDokumen->status }}</td>
+                            <td>
+                                @php
+                                    $badgeClass = [
+                                        'tervalidasi' => 'badge-success',
+                                        'perlu validasi' => 'badge-warning',
+                                        'tidak valid' => 'badge-danger',
+                                        '' => 'badge-secondary',
+                                    ];
+                                @endphp
+                                <span class="badge p-2 {{ $badgeClass[$latestDokumen->status] ?? 'badge-secondary' }}">
+                                    {{ strtoupper($latestDokumen->status) }}
+                                </span>
+                            </td>
                             <td>{{ $latestDokumen->created_at->format('d-m-Y H:i') }}</td>
                         </tr>
                     </tbody>
@@ -100,7 +112,8 @@
                         <textarea id="open-source-plugins" name="content_html">{{ $latestDokumen->content_html }}</textarea>
                     </div>
 
-                    <button type="submit" class="btn btn-primary">Simpan</button>
+                    <button type="submit" name="action" value="save" class="btn btn-primary"><i class="fas fa-save me-2"></i> Simpan</button>
+                    <button type="submit" name="action" value="submit" class="btn btn-success ms-2"><i class="fas fa-paper-plane me-2"></i> Submit</button>
                 </div>
             </div>
         </form>
@@ -111,6 +124,44 @@
 
 @push('scripts')
     {!! $dataTable->scripts() !!}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        // Show SweetAlert2 for Laravel session flash messages
+        document.addEventListener('DOMContentLoaded', function() {
+            @if(session('swal_error'))
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: @json(session('swal_error')),
+                    timer: 3000,
+                    showConfirmButton: false
+                });
+            @endif
+
+            // Disable editor and buttons if status is 'tervalidasi'
+            @if($latestDokumen && $latestDokumen->status === 'tervalidasi')
+                // Disable TinyMCE editor
+                if (tinymce.get('open-source-plugins')) {
+                    tinymce.get('open-source-plugins').setMode('readonly');
+                }
+                // Disable buttons
+                document.querySelectorAll('#dokumenForm button[type="submit"]').forEach(function(btn) {
+                    btn.disabled = true;
+                });
+
+                // Show info alert about editing disabled
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Dokumen Tervalidasi',
+                    text: 'Dokumen yang sudah tervalidasi tidak dapat diedit.',
+                    timer: 4000,
+                    showConfirmButton: false
+                });
+            @endif
+        });
+    </script>
+
     <script>
         function modalAction(url) {
             $.get(url)
@@ -345,14 +396,6 @@
                     xhr.send(formData);
                 });
             }
-        });
-    </script>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const cancelEditBtn = document.getElementById('cancelEdit');
-
-            cancelEditBtn.style.display = 'none';
         });
     </script>
 @endpush
