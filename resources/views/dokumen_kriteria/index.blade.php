@@ -18,6 +18,40 @@
         $latestDokumen = $dokumen->first();
     @endphp
 
+    <div class="container-fluid">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary border-bottom">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h3 class="card-title mb-0 text-white">Daftar Dokumen Pendukung</h3>
+                    <div class="card-tools">
+                        <button
+                            onclick="modalAction('{{ route('dokumen_kriteria.create_ajax', [], false) }}?no_kriteria={{ $latestDokumen ? $latestDokumen->no_kriteria : '' }}')"
+                            class="btn btn-custom-blue" type="button">
+                            <i class="fas fa-plus me-2"></i> Tambah Data
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <div class="table-responsive">
+                    {{ $dataTable->table([
+                        'id' => 'dokumen-pendukung-table',
+                        'class' => 'table table-hover table-bordered table-striped',
+                        'style' => 'width:100%',
+                    ]) }}
+                </div>
+            </div>
+        </div>
+
+        <div id="myModal" class="modal fade" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <!-- Konten modal akan diisi secara dinamis -->
+                </div>
+            </div>
+        </div>
+    </div>
     {{-- Display existing dokumen data in read-only table --}}
     <div class="card mb-4">
         <div class="card-header">
@@ -30,7 +64,6 @@
                 <table class="table table-bordered table-striped">
                     <thead>
                         <tr>
-                            <th>No</th>
                             <th>No Kriteria</th>
                             <th>Judul</th>
                             <th>Versi</th>
@@ -41,7 +74,6 @@
                     <tbody>
                         <tr data-id="{{ $latestDokumen->id_dokumen_kriteria }}"
                             data-content_html="{{ htmlspecialchars($latestDokumen->content_html) }}">
-                            <td>1</td>
                             <td>{{ $latestDokumen->no_kriteria }}</td>
                             <td>{{ $latestDokumen->judul }}</td>
                             <td>{{ $latestDokumen->versi }}</td>
@@ -56,7 +88,8 @@
 
     {{-- Form to update content_html of latest dokumen --}}
     @if ($latestDokumen)
-        <form id="dokumenForm" action="{{ route('dokumen_kriteria.update', ['id' => $latestDokumen->id_dokumen_kriteria]) }}" method="POST">
+        <form id="dokumenForm"
+            action="{{ route('dokumen_kriteria.update', ['id' => $latestDokumen->id_dokumen_kriteria]) }}" method="POST">
             @csrf
             @method('PUT')
             <input type="hidden" id="dokumen_id" name="dokumen_id" value="{{ $latestDokumen->id_dokumen_kriteria }}">
@@ -77,6 +110,128 @@
 @endsection
 
 @push('scripts')
+    {!! $dataTable->scripts() !!}
+    <script>
+        function modalAction(url) {
+            $.get(url)
+                .done(function(response) {
+                    $('#myModal .modal-content').html(response);
+                    $('#myModal').modal('show');
+
+                    $(document).off('submit', '#formCreateDokumenPendukung, #formEditDokumenPendukung, #form-import');
+
+                    $(document).on('submit', '#formCreateDokumenPendukung, #formEditDokumenPendukung', function(e) {
+                        e.preventDefault();
+                        var form = $(this);
+                        var formData = new FormData(form[0]);
+
+                        $.ajax({
+                            url: form.attr('action'),
+                            method: 'POST',
+                            data: formData,
+                            processData: false,
+                            contentType: false,
+                            headers: {
+                                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                            },
+                            success: function(res) {
+                                $('#myModal').modal('hide');
+                                window.LaravelDataTables["dokumen-pendukung-table"].ajax.reload();
+                                if (res.alert && res.message) {
+                                    Swal.fire({
+                                        icon: res.alert,
+                                        title: res.alert === 'success' ? 'Sukses' : 'Error',
+                                        text: res.message,
+                                        timer: 2000,
+                                        showConfirmButton: false
+                                    });
+                                }
+                            },
+                            error: function(xhr) {
+                                $('#myModal').modal('hide');
+                                window.LaravelDataTables["dokumen-pendukung-table"].ajax.reload();
+                                if (xhr.responseJSON && xhr.responseJSON.alert && xhr.responseJSON
+                                    .message) {
+                                    Swal.fire({
+                                        icon: xhr.responseJSON.alert,
+                                        title: xhr.responseJSON.alert === 'success' ?
+                                            'Sukses' : 'Error',
+                                        text: xhr.responseJSON.message,
+                                        timer: 2000,
+                                        showConfirmButton: false
+                                    });
+                                } else {
+                                    Swal.fire('Error!',
+                                        'Gagal menyimpan data karena duplikat Kode DokumenPendukung.',
+                                        'error');
+                                }
+                            }
+                        });
+                    });
+                })
+                .fail(function(xhr) {
+                    Swal.fire('Error!', 'Gagal memuat form: ' + xhr.statusText, 'error');
+                });
+        }
+
+        $(document).on('submit', '#formDeleteDokumenPendukung', function(e) {
+            e.preventDefault();
+            var form = $(this);
+            $.ajax({
+                url: form.attr('action'),
+                method: 'POST',
+                data: form.serialize(),
+                success: function(response) {
+                    $('#myModal').modal('hide');
+                    window.LaravelDataTables["dokumen-pendukung-table"].ajax.reload();
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil',
+                        text: 'DokumenPendukung berhasil dihapus.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                },
+                error: function(xhr) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal',
+                        text: 'Tidak dapat menghapus dokumen pendukung.'
+                    });
+                }
+            });
+        });
+    </script>
+
+    <script>
+        function copyPath(path) {
+            if (!path) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Path file tidak tersedia.'
+                });
+                return;
+            }
+            const fullPath = window.location.origin + '/storage/dokumen_pendukung/' + path;
+            navigator.clipboard.writeText(fullPath).then(function() {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil',
+                    text: 'Path file berhasil disalin: ' + fullPath,
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            }, function(err) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal',
+                    text: 'Gagal menyalin path file: ' + err
+                });
+            });
+        }
+    </script>
+
     {{-- TinyMCE CDN with your API Key --}}
     <script src="https://cdn.tiny.cloud/1/cpg5v56ciwrj3mu95246ce8a9v1nbrxyk4aps3vblxe7pwkd/tinymce/6/tinymce.min.js"
         referrerpolicy="origin"></script>

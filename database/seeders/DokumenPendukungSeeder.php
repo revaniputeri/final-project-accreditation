@@ -18,7 +18,7 @@ class DokumenPendukungSeeder extends Seeder
 
         foreach ($kriterias as $kriteria) {
             DB::table('dokumen_pendukung')->insert([
-                'id_dokumen_kriteria' => $kriteria->id_dokumen_kriteria,
+                'no_kriteria' => $kriteria->no_kriteria,
                 'nama_file' => 'contoh.pdf',
                 'path_file' => 'contoh.pdf',
                 'keterangan' => 'Dokumen pendukung untuk kriteria ' . $kriteria->no_kriteria,

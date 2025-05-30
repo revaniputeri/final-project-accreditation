@@ -36,9 +36,6 @@ class DokumenKriteriaSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
-
-            // Reset nomor kriteria jika melebihi 5
-            if ($noKriteria > 5) $noKriteria = 1;
         }
 
         DB::table('dokumen_kriteria')->insert($dokumenKriteria);

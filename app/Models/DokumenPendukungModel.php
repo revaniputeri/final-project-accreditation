@@ -12,7 +12,7 @@ class DokumenPendukungModel extends Model
     protected $table = 'dokumen_pendukung';
     protected $primaryKey = 'id_dokumen_pendukung';
     protected $fillable = [
-        'id_dokumen_kriteria',
+        'no_kriteria',
         'nama_file',
         'path_file',
         'keterangan'
@@ -20,6 +20,6 @@ class DokumenPendukungModel extends Model
 
     public function dokumenKriteria()
     {
-        return $this->belongsTo(DokumenKriteriaModel::class, 'id_dokumen_kriteria');
+        return $this->belongsTo(DokumenKriteriaModel::class, 'no_kriteria', 'no_kriteria');
     }
 }
