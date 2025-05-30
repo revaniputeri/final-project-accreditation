@@ -28,7 +28,7 @@ class DokumenPendukungDataTable extends DataTable
 
                 return '
                     <div class="d-flex justify-content-center gap-2" style="white-space: nowrap;">
-                        <button onclick="copyPath(\'' . $row->path_file . '\')" class="btn btn-sm btn-secondary" style="margin-left: 5px;">
+                        <button onclick="copyPath(\'' . $row->path_file . '\')" class="btn btn-sm btn-warning" style="margin-left: 5px;">
                             <i class="fas fa-copy"></i> Copy Path
                         </button>
                         <button onclick="modalAction(\'' . $detailUrl . '\')" class="btn btn-sm btn-info" style="margin-left: 5px;">

@@ -43,14 +43,35 @@ class DokumenKriteriaController extends Controller
             return redirect()->route('dokumen_kriteria.index')->with('swal_error', 'Dokumen yang sudah tervalidasi tidak dapat diedit.');
         }
 
+        // Function to strip outer div with class "editor-a4-body"
+        $stripOuterDiv = function ($html) {
+            libxml_use_internal_errors(true);
+            $doc = new \DOMDocument();
+            $doc->loadHTML('<?xml encoding="utf-8" ?>' . $html, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+            $xpath = new \DOMXPath($doc);
+            $divs = $xpath->query('//div[contains(concat(" ", normalize-space(@class), " "), " editor-a4-body ")]');
+            if ($divs->length > 0) {
+                $div = $divs->item(0);
+                $innerHTML = '';
+                foreach ($div->childNodes as $child) {
+                    $innerHTML .= $doc->saveHTML($child);
+                }
+                return $innerHTML;
+            }
+            return $html;
+        };
+
         if ($request->input('action') === 'save') {
-            // Update content_html in the same version (simpan)
-            $dokumenLama->content_html = $request->content_html;
+            // Strip outer div before saving
+            $cleanContent = $stripOuterDiv($request->content_html);
+            $dokumenLama->content_html = $cleanContent;
             $dokumenLama->save();
 
             return redirect()->route('dokumen_kriteria.index')->with('success', 'Dokumen berhasil disimpan.');
         } elseif ($request->input('action') === 'submit') {
-            // Create new version for validation (submit)
+            // Strip outer div before creating new version
+            $cleanContent = $stripOuterDiv($request->content_html);
+
             $versiTerakhir = DokumenKriteriaModel::where('id_user', Auth::id())
                 ->where('no_kriteria', $dokumenLama->no_kriteria)
                 ->max('versi');
@@ -60,7 +81,7 @@ class DokumenKriteriaController extends Controller
             DokumenKriteriaModel::create([
                 'id_user' => Auth::id(),
                 'judul' => $dokumenLama->judul,
-                'content_html' => $request->content_html,
+                'content_html' => $cleanContent,
                 'no_kriteria' => $dokumenLama->no_kriteria,
                 'versi' => $versiBaru,
                 'status' => 'perlu validasi',

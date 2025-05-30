@@ -19,20 +19,64 @@
     @endphp
 
     <div class="container-fluid">
-        <div class="card shadow-sm">
+        {{-- CARD 1: Keterangan Dokumen Kriteria --}}
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-primary border-bottom">
+                <h3 class="card-title mb-0">Keterangan Dokumen Kriteria</h3>
+            </div>
+            <div class="card-body">
+                @if (!$latestDokumen)
+                    <p class="mb-0">Tidak ada data dokumen kriteria.</p>
+                @else
+                    <table class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>No Kriteria</th>
+                                <th>Judul</th>
+                                <th>Versi</th>
+                                <th>Status</th>
+                                <th>Waktu Dibuat</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr data-id="{{ $latestDokumen->id_dokumen_kriteria }}"
+                                data-content_html="{{ htmlspecialchars($latestDokumen->content_html) }}">
+                                <td>{{ $latestDokumen->no_kriteria }}</td>
+                                <td>{{ $latestDokumen->judul }}</td>
+                                <td>{{ $latestDokumen->versi }}</td>
+                                <td>
+                                    @php
+                                        $badgeClass = [
+                                            'tervalidasi' => 'badge-success',
+                                            'perlu validasi' => 'badge-warning',
+                                            'tidak valid' => 'badge-danger',
+                                            '' => 'badge-secondary',
+                                        ];
+                                    @endphp
+                                    <span class="badge p-2 {{ $badgeClass[$latestDokumen->status] ?? 'badge-secondary' }}">
+                                        {{ strtoupper($latestDokumen->status) }}
+                                    </span>
+                                </td>
+                                <td>{{ $latestDokumen->created_at->format('d-m-Y H:i') }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                @endif
+            </div>
+        </div>
+
+        {{-- CARD 2: Daftar Dokumen Pendukung --}}
+        <div class="card shadow-sm mb-4">
             <div class="card-header bg-primary border-bottom">
                 <div class="d-flex justify-content-between align-items-center">
                     <h3 class="card-title mb-0 text-white">Daftar Dokumen Pendukung</h3>
-                    <div class="card-tools">
-                        <button
-                            onclick="modalAction('{{ route('dokumen_kriteria.create_ajax', [], false) }}?no_kriteria={{ $latestDokumen ? $latestDokumen->no_kriteria : '' }}')"
-                            class="btn btn-custom-blue" type="button">
-                            <i class="fas fa-plus me-2"></i> Tambah Data
-                        </button>
-                    </div>
+                    <button
+                        onclick="modalAction('{{ route('dokumen_kriteria.create_ajax', [], false) }}?no_kriteria={{ $latestDokumen ? $latestDokumen->no_kriteria : '' }}')"
+                        class="btn btn-custom-blue">
+                        <i class="fas fa-plus me-2"></i> Tambah Data
+                    </button>
                 </div>
             </div>
-
             <div class="card-body">
                 <div class="table-responsive">
                     {{ $dataTable->table([
@@ -44,6 +88,7 @@
             </div>
         </div>
 
+        {{-- Modal --}}
         <div id="myModal" class="modal fade" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
@@ -51,76 +96,100 @@
                 </div>
             </div>
         </div>
-    </div>
-    {{-- Display existing dokumen data in read-only table --}}
-    <div class="card mb-4">
-        <div class="card-header">
-            <h3>Keterangan Dokumen Kriteria</h3>
-        </div>
-        <div class="card-body">
-            @if (!$latestDokumen)
-                <p>Tidak ada data dokumen kriteria.</p>
-            @else
-                <table class="table table-bordered table-striped">
-                    <thead>
-                        <tr>
-                            <th>No Kriteria</th>
-                            <th>Judul</th>
-                            <th>Versi</th>
-                            <th>Status</th>
-                            <th>Waktu Dibuat</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr data-id="{{ $latestDokumen->id_dokumen_kriteria }}"
-                            data-content_html="{{ htmlspecialchars($latestDokumen->content_html) }}">
-                            <td>{{ $latestDokumen->no_kriteria }}</td>
-                            <td>{{ $latestDokumen->judul }}</td>
-                            <td>{{ $latestDokumen->versi }}</td>
-                            <td>
-                                @php
-                                    $badgeClass = [
-                                        'tervalidasi' => 'badge-success',
-                                        'perlu validasi' => 'badge-warning',
-                                        'tidak valid' => 'badge-danger',
-                                        '' => 'badge-secondary',
-                                    ];
-                                @endphp
-                                <span class="badge p-2 {{ $badgeClass[$latestDokumen->status] ?? 'badge-secondary' }}">
-                                    {{ strtoupper($latestDokumen->status) }}
-                                </span>
-                            </td>
-                            <td>{{ $latestDokumen->created_at->format('d-m-Y H:i') }}</td>
-                        </tr>
-                    </tbody>
-                </table>
-            @endif
-        </div>
-    </div>
 
-    {{-- Form to update content_html of latest dokumen --}}
-    @if ($latestDokumen)
-        <form id="dokumenForm"
-            action="{{ route('dokumen_kriteria.update', ['id' => $latestDokumen->id_dokumen_kriteria]) }}" method="POST">
-            @csrf
-            @method('PUT')
-            <input type="hidden" id="dokumen_id" name="dokumen_id" value="{{ $latestDokumen->id_dokumen_kriteria }}">
-            <div class="card">
-                <div class="card-body">
-                    <div class="form-group">
-                        <label for="content_html">Isi Dokumen</label>
-                        <textarea id="open-source-plugins" name="content_html">{{ $latestDokumen->content_html }}</textarea>
+        {{-- CARD 3: Form Edit Isi Dokumen --}}
+        @if ($latestDokumen)
+            <form id="dokumenForm"
+                action="{{ route('dokumen_kriteria.update', ['id' => $latestDokumen->id_dokumen_kriteria]) }}"
+                method="POST">
+                @csrf
+                @method('PUT')
+                <input type="hidden" id="dokumen_id" name="dokumen_id" value="{{ $latestDokumen->id_dokumen_kriteria }}">
+
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary border-bottom">
+                        <h3 class="card-title mb-0">Edit Isi Dokumen</h3>
                     </div>
-
-                    <button type="submit" name="action" value="save" class="btn btn-primary"><i class="fas fa-save me-2"></i> Simpan</button>
-                    <button type="submit" name="action" value="submit" class="btn btn-success ms-2"><i class="fas fa-paper-plane me-2"></i> Submit</button>
+                    <div class="card-body">
+                        <div class="form-group mb-3">
+                            <div class="word-like-editor">
+                                <div class="editor-noneditable-area" style="background-color: transparent;">
+                                    <textarea id="open-source-plugins" name="content_html">{!! old('content_html', $latestDokumen->content_html) !!}</textarea>
+                                </div>
+                                <div class="editor-noneditable-background"></div>
+                            </div>
+                        </div>
+                        <div class="px-3 pb-3">
+                            <button type="submit" name="action" value="save" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i> Simpan
+                            </button>
+                            <button type="submit" name="action" value="submit" class="btn btn-success ms-2">
+                                <i class="fas fa-paper-plane me-2"></i> Submit
+                            </button>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </form>
-    @else
-        <p>Tidak ada dokumen untuk diedit.</p>
-    @endif
+            </form>
+        @else
+            <div class="alert alert-info">Tidak ada dokumen untuk diedit.</div>
+        @endif
+    </div>
 @endsection
+
+@push('css')
+    <style>
+        /* Container utama editor */
+        .word-like-editor {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            background-color: transparent;
+            position: relative;
+        }
+
+        /* Toolbar full width dan sticky */
+        .word-like-editor .tox-tinymce {
+            border-radius: 4px 4px 0 0 !important;
+            border-bottom: none !important;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background-color: white !important;
+        }
+
+        /* Target iframe khusus untuk menghilangkan background ganda */
+        .word-like-editor .tox-tinymce-aux {
+            background-color: transparent !important;
+        }
+
+        /* Target iframe utama */
+        .word-like-editor iframe {
+            background-color: transparent !important;
+            border: none !important;
+        }
+
+        /* Body editor disesuaikan dengan ukuran A4 */
+        .editor-a4-body {
+            width: 794px !important;
+            min-height: 1123px !important;
+            margin: 20px auto !important;
+            padding: 40px !important;
+            background: white !important;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Untuk print */
+        @media print {
+            .editor-a4-body {
+                box-shadow: none !important;
+                padding: 20px 40px 20px 40px !important;
+                /* Add some padding for print */
+                margin: 0 auto !important;
+                width: 794px !important;
+            }
+        }
+    </style>
+@endpush
 
 @push('scripts')
     {!! $dataTable->scripts() !!}
@@ -129,7 +198,7 @@
     <script>
         // Show SweetAlert2 for Laravel session flash messages
         document.addEventListener('DOMContentLoaded', function() {
-            @if(session('swal_error'))
+            @if (session('swal_error'))
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
@@ -140,7 +209,7 @@
             @endif
 
             // Disable editor and buttons if status is 'tervalidasi'
-            @if($latestDokumen && $latestDokumen->status === 'tervalidasi')
+            @if ($latestDokumen && $latestDokumen->status === 'tervalidasi')
                 // Disable TinyMCE editor
                 if (tinymce.get('open-source-plugins')) {
                     tinymce.get('open-source-plugins').setMode('readonly');
@@ -296,7 +365,75 @@
             plugins: 'preview importcss searchreplace autolink autosave save directionality code visualblocks visualchars fullscreen image link media codesample table charmap pagebreak nonbreaking anchor insertdatetime advlist lists wordcount help charmap quickbars emoticons accordion',
             editimage_cors_hosts: ['picsum.photos'],
             menubar: 'file edit view insert format tools table help',
+            menu: {
+                file: { title: 'File', items: 'restore save print preview | importcss' },
+                edit: { title: 'Edit', items: 'undo redo | cut copy paste pastetext | selectall' },
+                view: { title: 'View', items: 'code visualaid visualchars visualblocks | spellchecker | preview fullscreen' },
+                insert: { title: 'Insert', items: 'image link media template codesample inserttable | charmap emoticons hr' },
+                format: { title: 'Format', items: 'bold italic underline strikethrough superscript subscript codeformat | removeformat' },
+                tools: { title: 'Tools', items: 'spellchecker spellcheckerlanguage | a11ycheck code' },
+                table: { title: 'Table', items: 'inserttable | cell row column | tableprops deletetable' },
+                help: { title: 'Help', items: 'help' }
+            },
             toolbar: "undo redo | accordion accordionremove | blocks fontfamily fontsize | bold italic underline strikethrough | align numlist bullist | link image | table media | lineheight outdent indent| forecolor backcolor removeformat | charmap emoticons | code fullscreen preview | save print | pagebreak anchor codesample | ltr rtl",
+            width: '100%', // Toolbar full width
+            height: 1123, // Tinggi A4
+            autosave_ask_before_unload: true,
+            image_advtab: true,
+            content_css: useDarkMode ? 'dark' : 'default',
+            skin: useDarkMode ? 'oxide-dark' : 'oxide',
+            content_style: 'body { margin: 0; padding: 0; font-family: "Times New Roman", Times, serif; font-size: 12pt; line-height: 1.5; }',
+
+            setup: function(editor) {
+                editor.on('init', function() {
+                    // Dapatkan iframe editor
+                    const iframe = editor.getContainer().querySelector('iframe');
+
+                    // Set styling untuk iframe dan body-nya
+                    iframe.style.width = '100%';
+                    iframe.style.height = '1123px';
+                    iframe.style.background = 'transparent'; // Ubah background iframe jadi transparan
+                    iframe.style.border = 'none';
+
+                    // Set styling untuk konten editor
+                    const body = iframe.contentDocument.body;
+                    body.style.width = '100%';
+                    body.style.minHeight = '1123px';
+                    body.style.margin = '0';
+                    body.style.padding =
+                        '40px 0 100px 0'; // Tambah padding top untuk jarak dari toolbar agar teks tidak tertutup toolbar
+                    body.style.backgroundColor = '#e3e4e4'; // Ubah body background jadi gelap
+
+                    // Hapus elemen background gelap tambahan jika ada
+                    const existingDarkBackground = iframe.contentDocument.querySelector(
+                        '.dark-background');
+                    if (existingDarkBackground) {
+                        existingDarkBackground.remove();
+                    }
+
+                    // Set styling untuk kertas A4 di dalam body
+                    // Check if paper div already exists to avoid double paper
+                    let paper = iframe.contentDocument.querySelector('.editor-a4-body');
+                    if (!paper) {
+                        paper = iframe.contentDocument.createElement('div');
+                        paper.style.position = 'relative';
+                        paper.style.zIndex = '2';
+                        paper.style.width = '794px';
+                        paper.style.minHeight = '1123px';
+                        paper.style.margin = '0 auto';
+                        paper.style.padding = '20px'; /* Add padding inside paper for content spacing */
+                        paper.style.backgroundColor = 'white';
+                        paper.style.boxShadow = '0 0 5px rgba(0, 0, 0, 0.1)';
+                        paper.className = 'editor-a4-body';
+
+                        // Pindahkan semua child body ke dalam paper
+                        while (body.firstChild) {
+                            paper.appendChild(body.firstChild);
+                        }
+                        body.appendChild(paper);
+                    }
+                });
+            },
             autosave_ask_before_unload: true,
             autosave_interval: '30s',
             autosave_prefix: '{path}{query}-{id}-',
@@ -354,7 +491,7 @@
                     });
                 }
             },
-            height: 600,
+            height: 1123,
             image_caption: true,
             quickbars_selection_toolbar: 'bold italic | quicklink h2 h3 blockquote quickimage quicktable',
             noneditable_class: 'mceNonEditable',
