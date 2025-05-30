@@ -29,8 +29,13 @@
                         <td>{{ $hki->nomor }}</td>
                     </tr>
                     <tr>
-                        <th class="bg-light">Melibatkan Mahasiswa S2</th>
-                        <td>{{ $hki->melibatkan_mahasiswa_s2 ? 'Ya' : 'Tidak' }}</td>
+                        <th class="bg-light align-middle">Melibatkan Mahasiswa S2</th>
+                        <td class="align-middle">
+                            <span
+                                class="badge p-2 {{ $hki->melibatkan_mahasiswa_s2 ? 'badge-success' : 'badge-danger' }}">
+                                {{ $hki->melibatkan_mahasiswa_s2 ? 'YA' : 'TIDAK' }}
+                            </span>
+                        </td>
                     </tr>
                     @php
                         $badgeClass = [
@@ -60,7 +65,7 @@
                     <tr>
                         <th class="bg-light">Bukti</th>
                         <td>
-                            @if($hki->bukti)
+                            @if ($hki->bukti)
                                 <a href="{{ url('storage/p_hki/' . $hki->bukti) }}" target="_blank">Lihat File</a>
                             @else
                                 Tidak ada file
@@ -92,9 +97,6 @@
                 <div class="form-group">
                     <label for="status">Status Validasi</label>
                     <select name="status" id="status" class="form-control select2" style="width: 100%;" required>
-                        <option value="perlu validasi" {{ $hki->status == 'perlu validasi' ? 'selected' : '' }}>
-                            Perlu Validasi
-                        </option>
                         <option value="tervalidasi" {{ $hki->status == 'tervalidasi' ? 'selected' : '' }}>
                             Tervalidasi
                         </option>
@@ -103,16 +105,10 @@
                         </option>
                     </select>
                 </div>
-                
-                <div class="form-group">
-                    <label for="catatan">Catatan Validasi</label>
-                    <textarea name="catatan" id="catatan" class="form-control" rows="3" 
-                        placeholder="Masukkan catatan validasi (opsional)">{{ old('catatan') }}</textarea>
-                </div>
 
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary">Update Validasi</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fas fa-times me-1"></i> Batal</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i> Simpan Validasi</button>
                 </div>
             </form>
         </div>
@@ -129,9 +125,13 @@
                 method: 'POST',
                 data: form.serialize(),
                 success: function(response) {
-                    if (response.success) {
-                        $('#modalAction').modal('hide');
-                        $('#p_hki-table').DataTable().ajax.reload();
+                    if (response.status) {
+                        $('#myModal').modal('hide');
+                        if (typeof window.LaravelDataTables !== 'undefined') {
+                            window.LaravelDataTables["p_hki-table"].ajax.reload();
+                        } else {
+                            location.reload();
+                        }
                         Swal.fire({
                             icon: 'success',
                             title: 'Berhasil',
@@ -143,7 +143,7 @@
                         Swal.fire({
                             icon: 'error',
                             title: 'Gagal',
-                            text: response.message || 'Gagal memperbarui status validasi',
+                            text: 'Gagal memperbarui status',
                             timer: 2000,
                             showConfirmButton: false
                         });
@@ -153,7 +153,7 @@
                     Swal.fire({
                         icon: 'error',
                         title: 'Error',
-                        text: xhr.responseJSON.message || 'Terjadi kesalahan saat memperbarui status validasi',
+                        text: 'Terjadi kesalahan saat memperbarui status',
                         timer: 2000,
                         showConfirmButton: false
                     });

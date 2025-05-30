@@ -10,11 +10,11 @@
                 <tbody>
                     <tr>
                         <th class="w-25 bg-light">Nama Dosen</th>
-                        <td>{{ $prestasi->user->profile->nama_lengkap ?? '-' }}</td>
+                        <td>{{ optional($prestasi->user->profile)->nama_lengkap ?? '-' }}</td>
                     </tr>
                     <tr>
-                        <th class="bg-light">Prestasi Yang Dicapai</th>
-                        <td>{{ $prestasi->prestasi_yang_dicapai }}</td>
+                        <th class="bg-light align-middle">Prestasi Yang Dicapai</th>
+                        <td class="align-middle">{{ $prestasi->prestasi_yang_dicapai }}</td>
                     </tr>
                     <tr>
                         <th class="bg-light">Waktu Pencapaian</th>
@@ -75,18 +75,18 @@
                 <div class="form-group">
                     <label for="status">Status Validasi</label>
                     <select name="status" id="status" class="form-control select2" style="width: 100%;" required>
-                        <option value="Tervalidasi" {{ $prestasi->status == 'Tervalidasi' ? 'selected' : '' }}>
+                        <option value="tervalidasi" {{ $prestasi->status == 'tervalidasi' ? 'selected' : '' }}>
                             Tervalidasi
                         </option>
-                        <option value="Tidak Valid" {{ $prestasi->status == 'Tidak Valid' ? 'selected' : '' }}>
+                        <option value="tidak valid" {{ $prestasi->status == 'tidak valid' ? 'selected' : '' }}>
                             Tidak Valid
                         </option>
                     </select>
                 </div>
 
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary">Update</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fas fa-times me-1"></i> Batal</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i> Simpan Validasi</button>
                 </div>
             </form>
         </div>

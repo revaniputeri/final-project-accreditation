@@ -293,6 +293,10 @@ class PPenelitianController extends Controller
                     'melibatkan_mahasiswa_s2',
                 ]);
 
+                if ($role === 'ADM') {
+                    $data['status'] = 'perlu validasi';
+                }
+
                 if ($request->hasFile('bukti')) {
                     if ($penelitian->bukti && Storage::exists('public/p_penelitian/' . $penelitian->bukti)) {
                         Storage::delete('public/p_penelitian/' . $penelitian->bukti);
@@ -418,7 +422,7 @@ class PPenelitianController extends Controller
             foreach ($data as $row => $values) {
                 if ($row == 1) continue;
 
-                $nidn = trim($values['A']); 
+                $nidn = trim($values['A']);
                 $judulPenelitian = trim($values['B']);
                 $tahun = trim($values['D']);
 

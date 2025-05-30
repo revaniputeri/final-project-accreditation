@@ -17,12 +17,6 @@
             </div>
         @endif
         <div class="mb-3">
-            <label for="nama_kegiatan" class="form-label">Nama Kegiatan</label>
-            <input type="text" class="form-control" id="nama_kegiatan" name="nama_kegiatan"
-                value="{{ $kegiatan->nama_kegiatan }}" required>
-            <div class="invalid-feedback" id="error_nama_kegiatan"></div>
-        </div>
-        <div class="mb-3">
             <label for="jenis_kegiatan" class="form-label">Jenis Kegiatan</label>
             <input type="text" class="form-control" id="jenis_kegiatan" name="jenis_kegiatan"
                 value="{{ $kegiatan->jenis_kegiatan }}" required>
@@ -61,7 +55,7 @@
         </div>
     </div>
     <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
-        <button type="submit" class="btn btn-primary">Update</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fas fa-times me-1"></i> Batal</button>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i> Simpan</button>
     </div>
 </form>

@@ -69,7 +69,7 @@ class PHKIController extends Controller
             $rules = [
                 'judul' => 'required|string|max:255',
                 'tahun' => 'required|integer',
-                'skema' => 'required|string|max:100', 
+                'skema' => 'required|string|max:100',
                 'nomor' => 'required|string|max:255',
                 'melibatkan_mahasiswa_s2' => 'nullable|boolean',
                 'bukti' => $role === 'DOS' ? 'required|file|mimes:pdf,jpg,jpeg,png|max:2048' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
@@ -133,11 +133,11 @@ class PHKIController extends Controller
                 }
 
                 $data = $request->only([
-                    'judul', 
-                    'tahun', 
-                    'skema', 
-                    'nomor', 
-                    'melibatkan_mahasiswa_s2', 
+                    'judul',
+                    'tahun',
+                    'skema',
+                    'nomor',
+                    'melibatkan_mahasiswa_s2',
                     'bukti'
                 ]);
 
@@ -241,7 +241,7 @@ class PHKIController extends Controller
                     $id_user = $user->id_user;
                 } else {
                     $id_user = $user->id_user;
-                }   
+                }
 
                 if (!$id_user) {
                     return response()->json([
@@ -273,6 +273,10 @@ class PHKIController extends Controller
                     'melibatkan_mahasiswa_s2',
                     'bukti',
                 ]);
+
+                if ($role === 'ADM') {
+                    $data['status'] = 'perlu validasi';
+                }
 
                 if ($request->hasFile('bukti')) {
                     if ($hki->bukti && Storage::exists('public/p_hki/' . $hki->bukti)) {
@@ -358,7 +362,7 @@ class PHKIController extends Controller
 
         if ($request->isMethod('post')) {
             $request->validate([
-                'status' => 'required|in:Tervalidasi,Tidak Valid',
+                'status' => 'required|in:tervalidasi,tidak valid',
             ]);
 
             $hki->status = $request->input('status');
@@ -425,7 +429,7 @@ class PHKIController extends Controller
                     $skippedData[] = "Baris $row: Kombinasi NIDN $nidn dan Judul HKI '$judul' sudah ada.";
                     continue;
                 }
-                
+
 
                 // Data dari Excel disesuaikan dengan field model
                 $tahun = $values['E'] ?? null;

@@ -168,7 +168,7 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{id}/delete_ajax', [PPrestasiController::class, 'delete_ajax'])->name('delete_ajax');
         Route::get('/{id}/detail_ajax', [PPrestasiController::class, 'detail_ajax'])->name('detail_ajax');
         Route::get('/{id}/validasi_ajax', [PPrestasiController::class, 'validasi_ajax'])->name('validasi_ajax');
-        Route::post('/{id}/validasi_ajax', [PPrestasiController::class, 'validasi_ajax'])->name('validasi_ajax.post');
+        Route::post('/{id}/validasi_ajax', [PPrestasiController::class, 'validasi_ajax'])->name('validasi_update');
 
         // Import and Export routes
         Route::get('/import', [PPrestasiController::class, 'import'])->name('import');

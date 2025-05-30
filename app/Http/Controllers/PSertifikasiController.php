@@ -374,7 +374,7 @@ class PSertifikasiController extends Controller
 
         if ($request->isMethod('post')) {
             $request->validate([
-                'status' => 'required|in:Tervalidasi,Tidak Valid',
+                'status' => 'required|in:tervalidasi,tidak valid',
             ]);
 
             $sertifikasi->status = $request->input('status');

@@ -12,31 +12,31 @@
                 <div class="invalid-feedback" id="error_nidn"></div>
             </div>
         @endif
-        
+
         <div class="mb-3">
             <label for="judul" class="form-label">Judul HKI</label>
             <input type="text" class="form-control" id="judul" name="judul" required>
             <div class="invalid-feedback" id="error_judul"></div>
         </div>
-        
+
         <div class="mb-3">
             <label for="tahun" class="form-label">Tahun</label>
             <input type="number" class="form-control" id="tahun" name="tahun" required>
             <div class="invalid-feedback" id="error_tahun"></div>
         </div>
-        
+
         <div class="mb-3">
             <label for="skema" class="form-label">Skema HKI</label>
             <input type="text" class="form-control" id="skema" name="skema" required>
             <div class="invalid-feedback" id="error_skema"></div>
         </div>
-        
+
         <div class="mb-3">
             <label for="nomor" class="form-label">Nomor HKI</label>
             <input type="text" class="form-control" id="nomor" name="nomor" required>
             <div class="invalid-feedback" id="error_nomor"></div>
         </div>
-        
+
         <div class="mb-3">
             <label for="melibatkan_mahasiswa_s2" class="form-label">Melibatkan Mahasiswa S2</label>
             <select class="form-control" id="melibatkan_mahasiswa_s2" name="melibatkan_mahasiswa_s2" required>
@@ -45,7 +45,7 @@
             </select>
             <div class="invalid-feedback" id="error_melibatkan_mahasiswa_s2"></div>
         </div>
-        
+
         {{-- <div class="mb-3">
             <label for="sumber_data" class="form-label">Sumber Data</label>
             <select class="form-control" id="sumber_data" name="sumber_data" required>
@@ -54,7 +54,7 @@
             </select>
             <div class="invalid-feedback" id="error_sumber_data"></div>
         </div> --}}
-        
+
         {{-- <div class="mb-3">
             <label for="status" class="form-label">Status</label>
             <select class="form-control" id="status" name="status" required>
@@ -64,7 +64,7 @@
             </select>
             <div class="invalid-feedback" id="error_status"></div>
         </div> --}}
-        
+
         <div class="mb-3">
             <label for="bukti" class="form-label">Bukti (PDF, JPG, PNG)</label>
             <div class="input-group">
@@ -80,44 +80,7 @@
         </div>
     </div>
     <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
-        <button type="submit" class="btn btn-primary">Simpan</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fas fa-times me-1"></i> Batal</button>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i> Simpan</button>
     </div>
 </form>
-
-<script>
-// Script untuk menangani form submission
-$(document).ready(function() {
-    $('#formCreateHKI').submit(function(e) {
-        e.preventDefault();
-        let formData = new FormData(this);
-        
-        $.ajax({
-            url: $(this).attr('action'),
-            type: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            success: function(response) {
-                if(response.success) {
-                    $('#modalAction').modal('hide');
-                    $('#p_hki-table').DataTable().ajax.reload();
-                    Swal.fire('Sukses!', response.message, 'success');
-                }
-            },
-            error: function(xhr) {
-                if(xhr.status === 422) {
-                    let errors = xhr.responseJSON.errors;
-                    $('.invalid-feedback').text('');
-                    $('.is-invalid').removeClass('is-invalid');
-                    
-                    $.each(errors, function(key, value) {
-                        $('#error_' + key).text(value[0]);
-                        $('#' + key).addClass('is-invalid');
-                    });
-                }
-            }
-        });
-    });
-});
-</script>

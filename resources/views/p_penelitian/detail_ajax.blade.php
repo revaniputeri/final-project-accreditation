@@ -34,17 +34,22 @@
                 <td>{{ ucfirst($penelitian->peran) }}</td>
             </tr>
             <tr>
-                <th>Melibatkan Mahasiswa S2</th>
-                <td>{{ $penelitian->melibatkan_mahasiswa_s2 ? 'Ya' : 'Tidak' }}</td>
+                <th>Melibatkan Mahasiswa</th>
+                <td>
+                    <span
+                        class="badge p-2 {{ $penelitian->melibatkan_mahasiswa_s2 ? 'badge-success' : 'badge-danger' }}">
+                        {{ $penelitian->melibatkan_mahasiswa_s2 ? 'YA' : 'TIDAK' }}
+                    </span>
             </tr>
             <tr>
                 <th>Status</th>
                 <td>
-                    <span class="badge p-2 {{ [
-                        'tervalidasi' => 'badge-success',
-                        'perlu validasi' => 'badge-warning',
-                        'tidak valid' => 'badge-danger'
-                    ][$penelitian->status] ?? 'badge-secondary' }}">
+                    <span
+                        class="badge p-2 {{ [
+                            'tervalidasi' => 'badge-success',
+                            'perlu validasi' => 'badge-warning',
+                            'tidak valid' => 'badge-danger',
+                        ][$penelitian->status] ?? 'badge-secondary' }}">
                         {{ strtoupper($penelitian->status) }}
                     </span>
                 </td>
@@ -52,10 +57,11 @@
             <tr>
                 <th>Sumber Data</th>
                 <td>
-                    <span class="badge p-2 {{ [
-                        'p3m' => 'badge-primary',
-                        'dosen' => 'badge-secondary'
-                    ][$penelitian->sumber_data] ?? 'badge-dark' }}">
+                    <span
+                        class="badge p-2 {{ [
+                            'p3m' => 'badge-primary',
+                            'dosen' => 'badge-secondary',
+                        ][$penelitian->sumber_data] ?? 'badge-dark' }}">
                         {{ strtoupper($penelitian->sumber_data) }}
                     </span>
                 </td>
@@ -64,7 +70,8 @@
                 <th>Bukti</th>
                 <td>
                     @if ($penelitian->bukti)
-                        <a href="{{ asset('storage/p_penelitian/' . $penelitian->bukti) }}" target="_blank">Lihat File</a>
+                        <a href="{{ asset('storage/p_penelitian/' . $penelitian->bukti) }}" target="_blank">Lihat
+                            File</a>
                     @else
                         Tidak ada file
                     @endif
@@ -82,5 +89,6 @@
     </table>
 </div>
 <div class="modal-footer">
-    <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
+    <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fas fa-times me-1"></i>
+        Tutup</button>
 </div>

@@ -295,6 +295,10 @@ class PPublikasiController extends Controller
                     'bukti',
                 ]);
 
+                if ($role === 'ADM') {
+                    $data['status'] = 'perlu validasi';
+                }
+
                 if ($request->hasFile('bukti')) {
                     if ($publikasi->bukti && Storage::exists('public/p_publikasi/' . $publikasi->bukti)) {
                         Storage::delete('public/p_publikasi/' . $publikasi->bukti);

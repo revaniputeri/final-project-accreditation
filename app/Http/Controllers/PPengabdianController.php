@@ -87,7 +87,7 @@ class PPengabdianController extends Controller
                     'message' => 'Validasi Gagal',
                     'msgField' => $validator->errors(),
                 ]);
-            } 
+            }
 
             try {
                 if ($role === 'ADM') {
@@ -188,7 +188,7 @@ class PPengabdianController extends Controller
             'message' => 'Request tidak valid'
         ], 400);
     }
-    
+
     public function edit_ajax($id)
     {
         $dosens = UserModel::whereHas('level', function ($query) {
@@ -387,7 +387,7 @@ class PPengabdianController extends Controller
 
         if ($request->isMethod('post')) {
             $request->validate([
-                'status' => 'required|in:Tervalidasi,Tidak Valid',
+                'status' => 'required|in:tervalidasi,tidak valid',
             ]);
 
             $pengabdian->status = $request->input('status');

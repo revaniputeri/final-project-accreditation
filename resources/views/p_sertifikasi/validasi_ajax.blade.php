@@ -83,18 +83,18 @@
                 <div class="form-group">
                     <label for="status">Status Validasi</label>
                     <select name="status" id="status" class="form-control select2" style="width: 100%;" required>
-                        <option value="Tervalidasi" {{ $sertifikasi->status == 'Tervalidasi' ? 'selected' : '' }}>
+                        <option value="tervalidasi" {{ $sertifikasi->status == 'tervalidasi' ? 'selected' : '' }}>
                             Tervalidasi
                         </option>
-                        <option value="Tidak Valid" {{ $sertifikasi->status == 'Tidak Valid' ? 'selected' : '' }}>
+                        <option value="tidak valid" {{ $sertifikasi->status == 'tidak valid' ? 'selected' : '' }}>
                             Tidak Valid
                         </option>
                     </select>
                 </div>
 
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary">Update</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fas fa-times me-1"></i> Batal</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i> Simpan Validasi</button>
                 </div>
             </form>
         </div>

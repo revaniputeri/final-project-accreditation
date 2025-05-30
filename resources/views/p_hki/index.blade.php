@@ -30,8 +30,7 @@
                             <i class="fas fa-file-excel me-2"></i> Export Excel
                         </a>
                         @if ($isAdm || $isDos)
-                            <button class="btn btn-custom-blue me-2"
-                                onclick="modalAction('{{ route('p_hki.import') }}')">
+                            <button class="btn btn-custom-blue me-2" onclick="modalAction('{{ route('p_hki.import') }}')">
                                 <i class="fa-solid fa-file-arrow-up me-2"></i> Import Data
                             </button>
                             <button onclick="modalAction('{{ route('p_hki.create_ajax') }}')"
@@ -94,13 +93,15 @@
                     $('#myModal .modal-content').html(response);
                     $('#myModal').modal('show');
 
-                    $(document).off('submit', '#formCreateHki, #formEditHki');
+                    $(document).off('submit', '#formCreateHKI, #formEditHKI');
 
-                    $(document).on('submit', '#formCreateHki, #formEditHki', function(e) {
+                    $(document).on('submit', '#formCreateHKI, #formEditHKI', function(e) {
                         e.preventDefault();
                         var form = $(this);
                         var formData = new FormData(form[0]);
+                        // Always use POST method for AJAX to handle file uploads and method spoofing
                         var method = 'POST';
+                        // Append _method field if present in the form
                         var methodInput = form.find('input[name="_method"]');
                         if (methodInput.length) {
                             formData.append('_method', methodInput.val());
@@ -128,7 +129,9 @@
                                 }
                             },
                             error: function(xhr) {
-                                if (xhr.status === 422 && xhr.responseJSON && xhr.responseJSON.msgField) {
+                                if (xhr.status === 422 && xhr.responseJSON && xhr.responseJSON
+                                    .msgField) {
+                                    // Validation error
                                     var errors = xhr.responseJSON.msgField;
                                     $.each(errors, function(field, messages) {
                                         var input = form.find('[name="' + field + '"]');
@@ -138,10 +141,12 @@
                                 } else {
                                     $('#myModal').modal('hide');
                                     window.LaravelDataTables["p_hki-table"].ajax.reload();
-                                    if (xhr.responseJSON && xhr.responseJSON.alert && xhr.responseJSON.message) {
+                                    if (xhr.responseJSON && xhr.responseJSON.alert && xhr
+                                        .responseJSON.message) {
                                         Swal.fire({
                                             icon: xhr.responseJSON.alert,
-                                            title: xhr.responseJSON.alert === 'success' ? 'Sukses' : 'Error',
+                                            title: xhr.responseJSON.alert === 'success' ?
+                                                'Sukses' : 'Error',
                                             text: xhr.responseJSON.message,
                                             timer: 2000,
                                             showConfirmButton: false
@@ -156,6 +161,7 @@
 
                     $(document).off('submit', '#form-import');
 
+                    // Handle import form submit
                     $(document).on('submit', '#form-import', function(e) {
                         e.preventDefault();
                         var form = $(this);
@@ -176,21 +182,25 @@
                                 if (response.alert && response.message) {
                                     Swal.fire({
                                         icon: response.alert,
-                                        title: response.alert === 'success' ? 'Sukses' : 'Error',
+                                        title: response.alert === 'success' ?
+                                            'Sukses' : 'Error',
                                         text: response.message,
                                         timer: 2000,
                                         showConfirmButton: false
                                     }).then(() => {
-                                        window.LaravelDataTables["p_hki-table"].ajax.reload();
+                                        window.LaravelDataTables["p_hki-table"].ajax
+                                            .reload();
                                     });
                                 }
                             },
                             error: function(xhr) {
                                 $('#myModal').modal('hide');
-                                if (xhr.responseJSON && xhr.responseJSON.alert && xhr.responseJSON.message) {
+                                if (xhr.responseJSON && xhr.responseJSON.alert && xhr.responseJSON
+                                    .message) {
                                     Swal.fire({
                                         icon: xhr.responseJSON.alert,
-                                        title: xhr.responseJSON.alert === 'success' ? 'Sukses' : 'Error',
+                                        title: xhr.responseJSON.alert === 'success' ?
+                                            'Sukses' : 'Error',
                                         text: xhr.responseJSON.message,
                                         showConfirmButton: true
                                     });
@@ -214,7 +224,7 @@
                 });
         }
 
-        $(document).on('submit', '#formDeleteHki', function(e) {
+        $(document).on('submit', '#formDeleteSertifikasi', function(e) {
             e.preventDefault();
             var form = $(this);
             $.ajax({
@@ -227,7 +237,7 @@
                     Swal.fire({
                         icon: 'success',
                         title: 'Berhasil',
-                        text: 'Data HKI berhasil dihapus.',
+                        text: 'Data sertifikasi berhasil dihapus.',
                         timer: 2000,
                         showConfirmButton: false
                     });
@@ -236,13 +246,13 @@
                     Swal.fire({
                         icon: 'error',
                         title: 'Gagal',
-                        text: 'Tidak dapat menghapus data HKI.'
+                        text: 'Tidak dapat menghapus data sertifikasi.'
                     });
                 }
             });
         });
 
-$(document).ready(function() {
+        $(document).ready(function() {
             $('#filterStatus, #filterSumberData').change(function() {
                 window.LaravelDataTables["p_hki-table"].draw();
             });

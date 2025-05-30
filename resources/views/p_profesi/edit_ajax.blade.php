@@ -19,35 +19,25 @@
         @endif
 
         <div class="mb-3">
-            <label for="nama_kegiatan" class="form-label">Nama Kegiatan</label>
-            <input type="text" class="form-control" id="nama_kegiatan" name="nama_kegiatan"
-                value="{{ $profesi->nama_kegiatan }}" required>
-            <div class="invalid-feedback" id="error_nama_kegiatan"></div>
+            <label for="perguruan_tinggi" class="form-label">Perguruan Tinggi</label>
+            <input type="text" class="form-control" id="perguruan_tinggi" name="perguruan_tinggi"
+                value="{{ $profesi->perguruan_tinggi ?? '' }}" required>
+            <div class="invalid-feedback" id="error_perguruan_tinggi"></div>
         </div>
 
         <div class="mb-3">
-            <label for="tahun" class="form-label">Tahun</label>
-            <input type="number" class="form-control" id="tahun" name="tahun"
-                value="{{ $profesi->tahun }}" required>
-            <div class="invalid-feedback" id="error_tahun"></div>
+            <label for="kurun_waktu" class="form-label">Kurun Waktu</label>
+            <input type="text" class="form-control" id="kurun_waktu" name="kurun_waktu"
+                value="{{ $profesi->kurun_waktu ?? '' }}" required>
+            <div class="invalid-feedback" id="error_kurun_waktu"></div>
         </div>
 
         <div class="mb-3">
-            <label for="peran" class="form-label">Peran</label>
-            <input type="text" class="form-control" id="peran" name="peran"
-                value="{{ $profesi->peran }}" required>
-            <div class="invalid-feedback" id="error_peran"></div>
+            <label for="gelar" class="form-label">Gelar</label>
+            <input type="text" class="form-control" id="gelar" name="gelar"
+                value="{{ $profesi->gelar ?? '' }}" required>
+            <div class="invalid-feedback" id="error_gelar"></div>
         </div>
-
-        {{-- <div class="mb-3">
-            <label for="status" class="form-label">Status</label>
-            <select class="form-control" id="status" name="status" required>
-                <option value="">-- Pilih Status --</option>
-                <option value="VERIFIED" {{ $profesi->status == 'VERIFIED' ? 'selected' : '' }}>VERIFIED</option>
-                <option value="UNVERIFIED" {{ $profesi->status == 'UNVERIFIED' ? 'selected' : '' }}>UNVERIFIED</option>
-            </select>
-            <div class="invalid-feedback" id="error_status"></div>
-        </div> --}}
 
         <div class="mb-3">
             <label for="sumber_data" class="form-label">Sumber Data</label>
@@ -73,7 +63,7 @@
     </div>
 
     <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
-        <button type="submit" class="btn btn-primary">Update</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fas fa-times me-1"></i> Batal</button>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i> Simpan</button>
     </div>
 </form>

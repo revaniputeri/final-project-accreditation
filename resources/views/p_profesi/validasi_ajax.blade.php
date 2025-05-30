@@ -84,9 +84,6 @@
                 <div class="form-group">
                     <label for="status">Status Validasi</label>
                     <select name="status" id="status" class="form-control select2" style="width: 100%;" required>
-                        <option value="perlu validasi" {{ $profesi->status == 'perlu validasi' ? 'selected' : '' }}>
-                            Perlu Validasi
-                        </option>
                         <option value="tervalidasi" {{ $profesi->status == 'tervalidasi' ? 'selected' : '' }}>
                             Tervalidasi
                         </option>
@@ -95,16 +92,10 @@
                         </option>
                     </select>
                 </div>
-                
-                <div class="form-group">
-                    <label for="catatan">Catatan Validasi</label>
-                    <textarea name="catatan" id="catatan" class="form-control" rows="3" 
-                        placeholder="Masukkan catatan validasi (opsional)">{{ old('catatan', $profesi->catatan_validasi ?? '') }}</textarea>
-                </div>
 
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary">Update Validasi</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fas fa-times me-1"></i> Batal</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i> Simpan Validasi</button>
                 </div>
             </form>
         </div>
@@ -121,9 +112,13 @@
                 method: 'POST',
                 data: form.serialize(),
                 success: function(response) {
-                    if (response.success) {
-                        $('#modalAction').modal('hide');
-                        $('#p_profesi-table').DataTable().ajax.reload();
+                    if (response.status) {
+                        $('#myModal').modal('hide');
+                        if (typeof window.LaravelDataTables !== 'undefined') {
+                            window.LaravelDataTables["p_profesi-table"].ajax.reload();
+                        } else {
+                            location.reload();
+                        }
                         Swal.fire({
                             icon: 'success',
                             title: 'Berhasil',
@@ -135,7 +130,7 @@
                         Swal.fire({
                             icon: 'error',
                             title: 'Gagal',
-                            text: response.message || 'Gagal memperbarui status validasi',
+                            text: 'Gagal memperbarui status',
                             timer: 2000,
                             showConfirmButton: false
                         });
@@ -145,7 +140,7 @@
                     Swal.fire({
                         icon: 'error',
                         title: 'Error',
-                        text: xhr.responseJSON.message || 'Terjadi kesalahan saat memperbarui status validasi',
+                        text: 'Terjadi kesalahan saat memperbarui status',
                         timer: 2000,
                         showConfirmButton: false
                     });

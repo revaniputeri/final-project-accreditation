@@ -30,17 +30,22 @@
                 <td>{{ $hki->nomor }}</td>
             </tr>
             <tr>
-                <th>Melibatkan Mahasiswa S2</th>
-                <td>{{ $hki->melibatkan_mahasiswa_s2 ? 'Ya' : 'Tidak' }}</td>
+                <th>Melibatkan Mahasiswa</th>
+                <td>
+                    <span
+                        class="badge p-2 {{ $hki->melibatkan_mahasiswa_s2 ? 'badge-success' : 'badge-danger' }}">
+                        {{ $hki->melibatkan_mahasiswa_s2 ? 'YA' : 'TIDAK' }}
+                    </span>
             </tr>
             <tr>
                 <th>Status</th>
                 <td>
-                    <span class="badge p-2 {{ [
-                        'tervalidasi' => 'badge-success',
-                        'tidak valid' => 'badge-danger',
-                        'perlu validasi' => 'badge-warning',
-                    ][$hki->status] ?? 'badge-secondary' }}">
+                    <span
+                        class="badge p-2 {{ [
+                            'tervalidasi' => 'badge-success',
+                            'tidak valid' => 'badge-danger',
+                            'perlu validasi' => 'badge-warning',
+                        ][$hki->status] ?? 'badge-secondary' }}">
                         {{ strtoupper($hki->status) }}
                     </span>
                 </td>
@@ -48,10 +53,11 @@
             <tr>
                 <th>Sumber Data</th>
                 <td>
-                    <span class="badge p-2 {{ [
-                        'p3m' => 'badge-primary',
-                        'dosen' => 'badge-secondary',
-                    ][$hki->sumber_data] ?? 'badge-dark' }}">
+                    <span
+                        class="badge p-2 {{ [
+                            'p3m' => 'badge-primary',
+                            'dosen' => 'badge-secondary',
+                        ][$hki->sumber_data] ?? 'badge-dark' }}">
                         {{ strtoupper($hki->sumber_data) }}
                     </span>
                 </td>
@@ -78,5 +84,6 @@
     </table>
 </div>
 <div class="modal-footer">
-    <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
+    <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fas fa-times me-1"></i>
+        Tutup</button>
 </div>

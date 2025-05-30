@@ -46,14 +46,14 @@
                 <input type="file" class="form-control d-none" id="bukti" name="bukti"
                     accept=".pdf,.jpg,.jpeg,.png"
                     onchange="document.getElementById('bukti_text').value = this.files[0]?.name || 'No file chosen'">
-                <input type="text" class="form-control" id="bukti_text" 
+                <input type="text" class="form-control" id="bukti_text"
                     value="{{ $organisasi->bukti ? $organisasi->bukti : 'No file chosen' }}" readonly>
                 <div id="error_bukti" class="invalid-feedback"></div>
             </div>
         </div>
     </div>
     <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
-        <button type="submit" class="btn btn-primary">Update</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fas fa-times me-1"></i> Batal</button>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i> Simpan</button>
     </div>
 </form>

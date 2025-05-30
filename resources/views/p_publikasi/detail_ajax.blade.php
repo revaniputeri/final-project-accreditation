@@ -29,19 +29,27 @@
                 <th>Jenis Publikasi</th>
                 <td>{{ ucfirst($publikasi->jenis_publikasi) }}</td>
             </tr>
-                <tr>
+            <tr>
                 <th>Dana</th>
                 <td>Rp {{ number_format($publikasi->dana, 0, ',', '.') }}</td>
             </tr>
             </tr>
             <tr>
+                <th>Melibatkan Mahasiswa</th>
+                <td>
+                    <span class="badge p-2 {{ $publikasi->melibatkan_mahasiswa_s2 ? 'badge-success' : 'badge-danger' }}">
+                        {{ $publikasi->melibatkan_mahasiswa_s2 ? 'YA' : 'TIDAK' }}
+                    </span>
+            </tr>
+            <tr>
                 <th>Status</th>
                 <td>
-                    <span class="badge p-2 {{ [
-                        'tervalidasi' => 'badge-success',
-                        'perlu validasi' => 'badge-warning',
-                        'tidak valid' => 'badge-danger',
-                    ][$publikasi->status] ?? 'badge-secondary' }}">
+                    <span
+                        class="badge p-2 {{ [
+                            'tervalidasi' => 'badge-success',
+                            'perlu validasi' => 'badge-warning',
+                            'tidak valid' => 'badge-danger',
+                        ][$publikasi->status] ?? 'badge-secondary' }}">
                         {{ strtoupper($publikasi->status) }}
                     </span>
                 </td>
@@ -49,10 +57,11 @@
             <tr>
                 <th>Sumber Data</th>
                 <td>
-                    <span class="badge p-2 {{ [
-                        'p3m' => 'badge-primary',
-                        'dosen' => 'badge-secondary',
-                    ][$publikasi->sumber_data] ?? 'badge-dark' }}">
+                    <span
+                        class="badge p-2 {{ [
+                            'p3m' => 'badge-primary',
+                            'dosen' => 'badge-secondary',
+                        ][$publikasi->sumber_data] ?? 'badge-dark' }}">
                         {{ strtoupper($publikasi->sumber_data) }}
                     </span>
                 </td>
@@ -61,7 +70,8 @@
                 <th>Bukti</th>
                 <td>
                     @if ($publikasi->bukti)
-                        <a href="{{ asset('storage/p_publikasi/' . $publikasi->bukti) }}" target="_blank">Lihat File</a>
+                        <a href="{{ asset('storage/p_publikasi/' . $publikasi->bukti) }}" target="_blank">Lihat
+                            File</a>
                     @else
                         Tidak ada file
                     @endif
@@ -79,5 +89,6 @@
     </table>
 </div>
 <div class="modal-footer">
-    <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
+    <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fas fa-times me-1"></i>
+        Tutup</button>
 </div>

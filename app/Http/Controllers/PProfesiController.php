@@ -202,7 +202,7 @@ class PProfesiController extends Controller
                 'perguruan_tinggi' => 'required|string|max:255',
                 'kurun_waktu' => 'required|string|max:100',
                 'gelar' => 'required|string|max:100',
-                'bukti' => $role === 'DOS' ? 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+                'bukti' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             ];
 
             if ($role === 'ADM') {
@@ -350,7 +350,7 @@ class PProfesiController extends Controller
 
         if ($request->isMethod('post')) {
             $request->validate([
-                'status' => 'required|in:Tervalidasi,Tidak Valid',
+                'status' => 'required|in:tervalidasi,tidak valid',
             ]);
 
             $profesi->status = $request->input('status');
@@ -436,7 +436,7 @@ class PProfesiController extends Controller
                 'p_profesi.created_at',
                 'p_profesi.updated_at'
             );
-        
+
         /** @var UserModel|null $user */
         $user = Auth::user();
         $role = $user->role;
@@ -462,7 +462,7 @@ class PProfesiController extends Controller
         $sheet->setCellValue('C1', 'Nama Dosen');
         $sheet->setCellValue('D1', 'Perguruan Tinggi');
         $sheet->setCellValue('E1', 'Kurun Waktu');
-        $sheet->setCellValue('F1', 'Gelar');      
+        $sheet->setCellValue('F1', 'Gelar');
         $sheet->setCellValue('G1', 'Status');
         $sheet->setCellValue('H1', 'Sumber Data');
         $sheet->setCellValue('I1', 'Bukti');

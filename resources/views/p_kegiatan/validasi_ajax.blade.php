@@ -13,32 +13,20 @@
                         <td>{{ $kegiatan->user->profile->nama_lengkap ?? '-' }}</td>
                     </tr>
                     <tr>
-                        <th class="bg-light">Nama Kegiatan</th>
-                        <td>{{ $kegiatan->nama_kegiatan }}</td>
-                    </tr>
-                    <tr>
                         <th class="bg-light">Jenis Kegiatan</th>
                         <td>{{ $kegiatan->jenis_kegiatan }}</td>
-                    </tr>
-                    <tr>
-                        <th class="bg-light">Tanggal Mulai</th>
-                        <td>{{ $kegiatan->tanggal_mulai }}</td>
-                    </tr>
-                    <tr>
-                        <th class="bg-light">Tanggal Selesai</th>
-                        <td>{{ $kegiatan->tanggal_selesai }}</td>
                     </tr>
                     <tr>
                         <th class="bg-light">Tempat</th>
                         <td>{{ $kegiatan->tempat }}</td>
                     </tr>
                     <tr>
-                        <th class="bg-light">Peran</th>
-                        <td>{{ $kegiatan->peran }}</td>
+                        <th class="bg-light">Waktu</th>
+                        <td>{{ $kegiatan->waktu }}</td>
                     </tr>
                     <tr>
-                        <th class="bg-light">Deskripsi</th>
-                        <td>{{ $kegiatan->deskripsi }}</td>
+                        <th class="bg-light">Peran</th>
+                        <td>{{ $kegiatan->peran }}</td>
                     </tr>
                     @php
                         $badgeClass = [
@@ -101,8 +89,8 @@
                 </div>
 
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary">Update</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fas fa-times me-1"></i> Batal</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i> Simpan Validasi</button>
                 </div>
             </form>
         </div>

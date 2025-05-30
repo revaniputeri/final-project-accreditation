@@ -1,4 +1,4 @@
-<form id="formEditPengabdian" method="POST" 
+<form id="formEditPengabdian" method="POST"
     action="{{ route('p_pengabdian.update_ajax', ['id' => $pengabdian->id_pengabdian]) }}"
     enctype="multipart/form-data">
     @csrf
@@ -71,7 +71,7 @@
         </div>
     </div>
     <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
-        <button type="submit" class="btn btn-primary">Update</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fas fa-times me-1"></i> Batal</button>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i> Simpan</button>
     </div>
 </form>

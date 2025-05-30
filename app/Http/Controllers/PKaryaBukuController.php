@@ -288,6 +288,10 @@ class PKaryaBukuController extends Controller
                     'jumlah_halaman',
                 ]);
 
+                if ($role === 'ADM') {
+                    $data['status'] = 'perlu validasi';
+                }
+
                 if ($request->hasFile('bukti')) {
                     if ($karyaBuku->bukti && Storage::exists('public/p_karya_buku/' . $karyaBuku->bukti)) {
                         Storage::delete('public/p_karya_buku/' . $karyaBuku->bukti);
@@ -413,7 +417,7 @@ class PKaryaBukuController extends Controller
             foreach ($data as $row => $values) {
                 if ($row == 1) continue;
 
-                $nidn = trim($values['A']); 
+                $nidn = trim($values['A']);
                 $isbn = trim($values['D']);
 
                 if ($role === 'DOS' && $nidn !== $userNidn) {

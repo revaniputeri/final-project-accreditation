@@ -30,7 +30,16 @@
                     </tr>
                     <tr>
                         <th class="bg-light">Dana</th>
-                        <td>{{ $publikasi->dana }}</td>
+                        <td>Rp {{ number_format($publikasi->dana, 0, ',', '.') }}</td>
+                    </tr>
+                    <tr>
+                        <th class="bg-light align-middle">Melibatkan Mahasiswa S2</th>
+                        <td class="align-middle">
+                            <span
+                                class="badge p-2 {{ $publikasi->melibatkan_mahasiswa_s2 ? 'badge-success' : 'badge-danger' }}">
+                                {{ $publikasi->melibatkan_mahasiswa_s2 ? 'YA' : 'TIDAK' }}
+                            </span>
+                        </td>
                     </tr>
                     @php
                         $badgeClass = [
@@ -92,8 +101,8 @@
                 </div>
 
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary">Update</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fas fa-times me-1"></i> Batal</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i> Simpan Validasi</button>
                 </div>
             </form>
         </div>

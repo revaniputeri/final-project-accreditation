@@ -5,7 +5,6 @@
         <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
     </div>
     <div class="modal-body">
-        <div class="modal-body">
         @if ($role === 'ADM')
             <div class="mb-3">
                 <label for="nidn" class="form-label">NIDN</label>
@@ -57,7 +56,8 @@
                 <div class="input-group-prepend">
                     <label for="bukti" class="btn btn-info mb-0">Choose File</label>
                 </div>
-                <input type="file" class="form-control d-none" id="bukti" name="bukti" accept=".pdf,.jpg,.jpeg,.png"
+                <input type="file" class="form-control d-none" id="bukti" name="bukti"
+                    accept=".pdf,.jpg,.jpeg,.png"
                     onchange="document.getElementById('bukti_text').value = this.files[0]?.name || 'No file chosen'">
                 <input type="text" class="form-control" id="bukti_text" placeholder="No file chosen" readonly>
                 <div class="invalid-feedback" id="error_bukti"></div>
@@ -65,7 +65,8 @@
         </div>
     </div>
     <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
-        <button type="submit" class="btn btn-primary">Simpan</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fas fa-times me-1"></i>
+            Batal</button>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i> Simpan</button>
     </div>
 </form>

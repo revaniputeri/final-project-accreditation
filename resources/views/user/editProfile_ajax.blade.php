@@ -27,7 +27,7 @@
             <input type="text" class="form-control" id="tempat_tanggal_lahir" name="tempat_tanggal_lahir"
                 value="{{old('tempat_tanggal_lahir', $user->tempat_tanggal_lahir)}}" required>
         </div>
-        
+
         <div class="form-group mb-3">
             <label for="alamat">Alamat</label>
             <input type="text" class="form-control" id="alamat" name="alamat"
@@ -38,10 +38,10 @@
             <input type="text" class="form-control" id="no_telp" name="no_telp"
                 value="{{old('no_telp', $user->no_telp)}}" required>
         </div>
-        
+
     </div>
     <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
-        <button type="submit" class="btn btn-primary">Simpan</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fas fa-times me-1"></i> Batal</button>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i> Simpan</button>
     </div>
 </form>

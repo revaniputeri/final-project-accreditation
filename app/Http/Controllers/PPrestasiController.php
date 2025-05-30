@@ -281,6 +281,10 @@ class PPrestasiController extends Controller
                     'tingkat',
                 ]);
 
+                if ($role === 'ADM') {
+                    $data['status'] = 'perlu validasi';
+                }
+
                 if ($request->hasFile('bukti')) {
                     if ($prestasi->bukti && Storage::exists('public/p_prestasi/' . $prestasi->bukti)) {
                         Storage::delete('public/p_prestasi/' . $prestasi->bukti);
@@ -362,7 +366,7 @@ class PPrestasiController extends Controller
 
         if ($request->isMethod('post')) {
             $request->validate([
-                'status' => 'required|in:Tervalidasi,Tidak Valid',
+                'status' => 'required|in:tervalidasi,tidak valid',
             ]);
 
             $prestasi->status = $request->input('status');

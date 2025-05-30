@@ -6,10 +6,15 @@
         <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
     </div>
     <div class="modal-body">
-        <p>Apakah Anda yakin ingin menghapus data profesi <strong>{{ $profesi->jenis_profesi }}</strong> di <strong>{{ $profesi->nama_lembaga }}</strong> tahun <strong>{{ $profesi->tahun }}</strong>?</p>
+        <p>Apakah Anda yakin ingin menghapus data program profesi pada <strong>{{ $profesi->perguruan_tinggi }}</strong> dengan gelar <strong>{{ $profesi->gelar }}</strong> pada kurun waktu <strong>{{ $profesi->kurun_waktu }}</strong>?</p>
     </div>
     <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
-        <button type="submit" class="btn btn-danger">Hapus</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">
+            <i class="fas fa-times me-1"></i> Batal
+        </button>
+        <button type="submit" class="btn btn-danger">
+            <i class="fas fa-trash me-1"></i> Hapus
+        </button>
     </div>
 </form>
+

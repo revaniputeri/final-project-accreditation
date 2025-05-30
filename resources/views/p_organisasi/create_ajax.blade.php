@@ -20,7 +20,7 @@
         </div>
         <div class="mb-3">
             <label for="kurun_waktu" class="form-label">Kurun Waktu</label>
-            <input type="text" class="form-control" id="kurun_waktu" name="kurun_waktu" 
+            <input type="text" class="form-control" id="kurun_waktu" name="kurun_waktu"
                 placeholder="Contoh: 2015-Sekarang" required>
             <div class="invalid-feedback" id="error_kurun_waktu"></div>
         </div>
@@ -48,7 +48,7 @@
         </div>
     </div>
     <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
-        <button type="submit" class="btn btn-primary">Simpan</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fas fa-times me-1"></i> Batal</button>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i> Simpan</button>
     </div>
 </form>

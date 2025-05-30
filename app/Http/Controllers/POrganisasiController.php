@@ -281,6 +281,10 @@ class POrganisasiController extends Controller
                     'tingkat',
                 ]);
 
+                if ($role === 'ADM') {
+                    $data['status'] = 'perlu validasi';
+                }
+
                 if ($request->hasFile('bukti')) {
                     if ($organisasi->bukti && Storage::exists('public/p_organisasi/' . $organisasi->bukti)) {
                         Storage::delete('public/p_organisasi/' . $organisasi->bukti);
@@ -402,7 +406,7 @@ class POrganisasiController extends Controller
             $user = Auth::user();
             $role = $user ? $user->getRole() : null;
             $userNidn = null;
-            
+
             if ($role === 'DOS') {
                 $userNidn = DB::table('profile_user')->where('id_user', $user->id_user)->value('nidn');
             }

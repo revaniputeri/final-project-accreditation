@@ -67,7 +67,6 @@ class PKegiatanController extends Controller
             $role = $user ? $user->getRole() : null;
 
             $rules = [
-                'nama_kegiatan' => 'required|string|max:255',
                 'jenis_kegiatan' => 'required|string|max:100',
                 'tanggal_mulai' => 'required|date',
                 'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
@@ -121,7 +120,6 @@ class PKegiatanController extends Controller
                 }
 
                 $data = $request->only([
-                    'nama_kegiatan',
                     'jenis_kegiatan',
                     'tanggal_mulai',
                     'tanggal_selesai',
@@ -205,7 +203,6 @@ class PKegiatanController extends Controller
 
         if ($request->ajax() || $request->wantsJson()) {
             $rules = [
-                'nama_kegiatan' => 'required|string|max:255',
                 'jenis_kegiatan' => 'required|string|max:100',
                 'tanggal_mulai' => 'required|date',
                 'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
@@ -261,7 +258,6 @@ class PKegiatanController extends Controller
                 }
 
                 $data = $request->only([
-                    'nama_kegiatan',
                     'jenis_kegiatan',
                     'tanggal_mulai',
                     'tanggal_selesai',
@@ -269,6 +265,10 @@ class PKegiatanController extends Controller
                     'peran',
                     'deskripsi',
                 ]);
+
+                if ($role === 'ADM') {
+                    $data['status'] = 'perlu validasi';
+                }
 
                 if ($request->hasFile('bukti')) {
                     if ($kegiatan->bukti && Storage::exists('public/p_kegiatan/' . $kegiatan->bukti)) {
@@ -410,16 +410,14 @@ class PKegiatanController extends Controller
 
                 $validator = Validator::make([
                     'id_user' => $user->id_user,
-                    'nama_kegiatan' => $values['B'],
-                    'jenis_kegiatan' => $values['C'],
-                    'tanggal_mulai' => $values['D'],
-                    'tanggal_selesai' => $values['E'],
-                    'tempat' => $values['F'],
-                    'peran' => $values['G'],
-                    'deskripsi' => $values['H'],
+                    'jenis_kegiatan' => $values['B'],
+                    'tanggal_mulai' => $values['C'],
+                    'tanggal_selesai' => $values['D'],
+                    'tempat' => $values['E'],
+                    'peran' => $values['F'],
+                    'deskripsi' => $values['G'],
                 ], [
                     'id_user' => 'required|integer|exists:user,id_user',
-                    'nama_kegiatan' => 'required|string|max:255',
                     'jenis_kegiatan' => 'required|string|max:100',
                     'tanggal_mulai' => 'required|date',
                     'tanggal_selesai' => 'required|date',
@@ -435,13 +433,12 @@ class PKegiatanController extends Controller
 
                 $insertData[] = [
                     'id_user' => $user->id_user,
-                    'nama_kegiatan' => $values['B'],
-                    'jenis_kegiatan' => $values['C'],
-                    'tanggal_mulai' => $values['D'],
-                    'tanggal_selesai' => $values['E'],
-                    'tempat' => $values['F'],
-                    'peran' => $values['G'],
-                    'deskripsi' => $values['H'] ?? null,
+                    'jenis_kegiatan' => $values['B'],
+                    'tanggal_mulai' => $values['C'],
+                    'tanggal_selesai' => $values['D'],
+                    'tempat' => $values['E'],
+                    'peran' => $values['F'],
+                    'deskripsi' => $values['G'] ?? null,
                     'status' => $role === 'DOS' ? 'Tervalidasi' : 'perlu validasi',
                     'sumber_data' => $role === 'DOS' ? 'dosen' : 'p3m',
                     'created_at' => now(),

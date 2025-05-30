@@ -6,10 +6,14 @@
         <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
     </div>
     <div class="modal-body">
-        <p>Apakah Anda yakin ingin menghapus kegiatan dengan nama <strong>{{ $kegiatan->nama_kegiatan }}</strong> yang dilaksanakan di <strong>{{ $kegiatan->tempat }}</strong>?</p>
+        <p>Apakah Anda yakin ingin menghapus kegiatan dengan jenis kegiatan <strong>{{ $kegiatan->jenis_kegiatan }}</strong> yang dilaksanakan di <strong>{{ $kegiatan->tempat }}</strong>?</p>
     </div>
     <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
-        <button type="submit" class="btn btn-danger">Hapus</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">
+            <i class="fas fa-times me-1"></i> Batal
+        </button>
+        <button type="submit" class="btn btn-danger">
+            <i class="fas fa-trash me-1"></i> Hapus
+        </button>
     </div>
 </form>

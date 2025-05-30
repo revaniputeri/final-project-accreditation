@@ -27,18 +27,20 @@
             <tr>
             <tr>
                 <th>Peran</th>
-                <td>{{ $pengabdian->peran }}</td>   
+                <td>{{ $pengabdian->peran }}</td>
             <tr>
             <tr>
                 <th>Dana</th>
-                <td>{{ $pengabdian->dana }}</td>   
-            <tr>
+                <td>Rp {{ number_format($pengabdian->dana, 0, ',', '.') }}</td>
+            </tr>
             <tr>
                 <th>Melibatkan Mahasiswa</th>
                 <td>
-                    <span class="badge p-2 {{ $pengabdian->melibatkan_mahasiswa_s2 ? 'badge-success' : 'badge-danger' }}">
-                        {{ $pengabdian->melibatkan_mahasiswa_s2 ? 'Ya' : 'Tidak' }}
+                    <span
+                        class="badge p-2 {{ $pengabdian->melibatkan_mahasiswa_s2 ? 'badge-success' : 'badge-danger' }}">
+                        {{ $pengabdian->melibatkan_mahasiswa_s2 ? 'YA' : 'TIDAK' }}
                     </span>
+            </tr>
             <tr>
                 <th>Status</th>
                 <td>
@@ -68,7 +70,8 @@
                 <th>Bukti</th>
                 <td>
                     @if ($pengabdian->bukti)
-                        <a href="{{ asset('storage/p_pengabdian/' . $pengabdian->bukti) }}" target="_blank">Lihat File</a>
+                        <a href="{{ asset('storage/p_pengabdian/' . $pengabdian->bukti) }}" target="_blank">Lihat
+                            File</a>
                     @else
                         Tidak ada file
                     @endif
@@ -86,5 +89,6 @@
     </table>
 </div>
 <div class="modal-footer">
-    <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
+    <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fas fa-times me-1"></i>
+        Tutup</button>
 </div>

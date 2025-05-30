@@ -1,12 +1,10 @@
-<form id="formCreateKaryaBuku" method="POST" action="{{ route('p_karya_buku.store_ajax') }}"
-    enctype="multipart/form-data">
+<form id="formCreateKaryaBuku" method="POST" action="{{ route('p_karya_buku.store_ajax') }}" enctype="multipart/form-data">
     @csrf
     <div class="modal-header bg-primary text-white">
         <h5 class="modal-title">Tambah Karya Buku</h5>
         <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
     </div>
     <div class="modal-body">
-        <div class="modal-body">
         @if ($role === 'ADM')
             <div class="mb-3">
                 <label for="nidn" class="form-label">NIDN</label>
@@ -54,7 +52,8 @@
         </div>
     </div>
     <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
-        <button type="submit" class="btn btn-primary">Simpan</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fas fa-times me-1"></i>
+            Batal</button>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i> Simpan</button>
     </div>
 </form>

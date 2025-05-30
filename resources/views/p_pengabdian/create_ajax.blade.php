@@ -46,7 +46,7 @@
                 <option value="0">Tidak</option>
             </select>
             <div class="invalid-feedback" id="error_melibatkan_mahasiswa_s2"></div>
-        </div>   
+        </div>
         <div class="mb-3">
             <label for="bukti" class="form-label">Bukti (PDF, JPG, PNG)</label>
             <div class="input-group">
@@ -62,7 +62,7 @@
         </div>
     </div>
     <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
-        <button type="submit" class="btn btn-primary">Simpan</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fas fa-times me-1"></i> Batal</button>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i> Simpan</button>
     </div>
 </form>
