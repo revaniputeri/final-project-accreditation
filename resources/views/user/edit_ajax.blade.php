@@ -42,14 +42,14 @@
         <div class="mb-3">
             <label for="gelar_depan" class=" form-label">Gelar Depan</label>
             <input type="text" class="form-control" id="gelar_depan" name="gelar_depan"
-                value="{{ old('gelar_depan', $user->gelar_depan)}}" required>
+                value="{{ old('gelar_depan', $user->gelar_depan)}}">
             <div class="invalid-feedback" id="error_gelar_depan"></div>
         </div>
 
         <div class="mb-3">
             <label for="gelar_belakang" class="form-label">Gelar Belakang</label>
             <input type="text" class="form-control" id="gelar_belakang" name="gelar_belakang"
-                value="{{old('gelar_belakang', $user->gelar_belakang)}}" required>
+                value="{{old('gelar_belakang', $user->gelar_belakang)}}">
             <div class="invalid-feedback" id="error_gelar_belakang"></div>
         </div>
 
@@ -62,13 +62,13 @@
         <div class="mb-3">
             <label for="pangkat" class="form-label">Pangkat</label>
             <input type="text" class="form-control" id="pangkat" name="pangkat"
-                value="{{old('pangkat', $user->pangkat)}}" required>
+                value="{{old('pangkat', $user->pangkat)}}">
             <div class="invalid-feedback" id="error_pangkat"></div>
         </div>
         <div class="mb-3">
             <label for="jabatan_fungsional" class="form-label">Jabatan Fungsional</label>
             <input type="text" class="form-control" id="jabatan_fungsional" name="jabatan_fungsional"
-                value="{{old('jabatan_fungsional', $user->jabatan_fungsional)}}" required>
+                value="{{old('jabatan_fungsional', $user->jabatan_fungsional)}}">
             <div class="invalid-feedback" id="error_jabatan_fungsional"></div>
         </div>
         <div class="mb-3">
@@ -85,8 +85,7 @@
         </div>
     </div>
     <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
-        <button type="submit" class="btn btn-primary">Simpan</button>
-        
+        <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fas fa-times me-1"></i> Batal</button>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i> Simpan</button>
     </div>
 </form>

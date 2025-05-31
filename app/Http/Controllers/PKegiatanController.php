@@ -27,7 +27,7 @@ class PKegiatanController extends Controller
         $isDos = $user->hasRole('DOS');
         $isAng = $user->hasRole('ANG');
 
-        return $dataTable->render('p_kegiatan.index', compact('isAdm', 'isAng', 'isDos'));
+        return $dataTable->render('portofolio.kegiatan.index', compact('isAdm', 'isAng', 'isDos'));
     }
 
     private function generateUniqueFilename($directory, $filename)
@@ -56,7 +56,7 @@ class PKegiatanController extends Controller
         $user = Auth::user();
         $role = $user ? $user->getRole() : null;
 
-        return view('p_kegiatan.create_ajax', compact('dosens', 'role'));
+        return view('portofolio.kegiatan.create_ajax', compact('dosens', 'role'));
     }
 
     public function store_ajax(Request $request)
@@ -67,11 +67,9 @@ class PKegiatanController extends Controller
             $role = $user ? $user->getRole() : null;
 
             $rules = [
-                'nama_kegiatan' => 'required|string|max:255',
                 'jenis_kegiatan' => 'required|string|max:100',
-                'tanggal_mulai' => 'required|date',
-                'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
                 'tempat' => 'required|string|max:255',
+                'waktu' => 'required|date',
                 'peran' => 'required|string|max:100',
                 'deskripsi' => 'nullable|string',
                 'bukti' => $role === 'DOS' ? 'required|file|mimes:pdf,jpg,jpeg,png|max:2048' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
@@ -121,11 +119,9 @@ class PKegiatanController extends Controller
                 }
 
                 $data = $request->only([
-                    'nama_kegiatan',
                     'jenis_kegiatan',
-                    'tanggal_mulai',
-                    'tanggal_selesai',
                     'tempat',
+                    'waktu',
                     'peran',
                     'deskripsi',
                 ]);
@@ -154,8 +150,8 @@ class PKegiatanController extends Controller
                     }
                     $originalName = $file->getClientOriginalName();
                     $filename = $nidnPrefix . $originalName;
-                    $filename = $this->generateUniqueFilename('public/p_kegiatan', $filename);
-                    $path = $file->storeAs('public/p_kegiatan', $filename);
+                    $filename = $this->generateUniqueFilename('public/portofolio/kegiatan', $filename);
+                    $path = $file->storeAs('public/portofolio/kegiatan', $filename);
                     $data['bukti'] = $filename;
                 }
 
@@ -194,7 +190,7 @@ class PKegiatanController extends Controller
         $role = $user ? $user->getRole() : null;
 
         $kegiatan = PKegiatanModel::findOrFail($id);
-        return view('p_kegiatan.edit_ajax', compact('kegiatan', 'dosens', 'role'));
+        return view('portofolio.kegiatan.edit_ajax', compact('kegiatan', 'dosens', 'role'));
     }
 
     public function update_ajax(Request $request, $id)
@@ -205,11 +201,9 @@ class PKegiatanController extends Controller
 
         if ($request->ajax() || $request->wantsJson()) {
             $rules = [
-                'nama_kegiatan' => 'required|string|max:255',
                 'jenis_kegiatan' => 'required|string|max:100',
-                'tanggal_mulai' => 'required|date',
-                'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
                 'tempat' => 'required|string|max:255',
+                'waktu' => 'required|date',
                 'peran' => 'required|string|max:100',
                 'deskripsi' => 'nullable|string',
                 'bukti' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
@@ -261,18 +255,20 @@ class PKegiatanController extends Controller
                 }
 
                 $data = $request->only([
-                    'nama_kegiatan',
                     'jenis_kegiatan',
-                    'tanggal_mulai',
-                    'tanggal_selesai',
                     'tempat',
+                    'waktu',
                     'peran',
                     'deskripsi',
                 ]);
 
+                if ($role === 'ADM') {
+                    $data['status'] = 'perlu validasi';
+                }
+
                 if ($request->hasFile('bukti')) {
-                    if ($kegiatan->bukti && Storage::exists('public/p_kegiatan/' . $kegiatan->bukti)) {
-                        Storage::delete('public/p_kegiatan/' . $kegiatan->bukti);
+                    if ($kegiatan->bukti && Storage::exists('public/portofolio/kegiatan/' . $kegiatan->bukti)) {
+                        Storage::delete('public/portofolio/kegiatan/' . $kegiatan->bukti);
                     }
                     $file = $request->file('bukti');
                     $nidnPrefix = '';
@@ -281,8 +277,8 @@ class PKegiatanController extends Controller
                     }
                     $originalName = $file->getClientOriginalName();
                     $filename = $nidnPrefix . $originalName;
-                    $filename = $this->generateUniqueFilename('public/p_kegiatan', $filename);
-                    $path = $file->storeAs('public/p_kegiatan', $filename);
+                    $filename = $this->generateUniqueFilename('public/portofolio/kegiatan', $filename);
+                    $path = $file->storeAs('public/portofolio/kegiatan', $filename);
                     $data['bukti'] = $filename;
                 }
 
@@ -313,7 +309,7 @@ class PKegiatanController extends Controller
     public function confirm_ajax($id)
     {
         $kegiatan = PKegiatanModel::findOrFail($id);
-        return view('p_kegiatan.confirm_ajax', compact('kegiatan'));
+        return view('portofolio.kegiatan.confirm_ajax', compact('kegiatan'));
     }
 
     public function delete_ajax(Request $request, $id)
@@ -321,8 +317,8 @@ class PKegiatanController extends Controller
         $kegiatan = PKegiatanModel::findOrFail($id);
 
         try {
-            if ($kegiatan->bukti && Storage::exists('public/p_kegiatan/' . $kegiatan->bukti)) {
-                Storage::delete('public/p_kegiatan/' . $kegiatan->bukti);
+            if ($kegiatan->bukti && Storage::exists('public/portofolio/kegiatan/' . $kegiatan->bukti)) {
+                Storage::delete('public/portofolio/kegiatan/' . $kegiatan->bukti);
             }
             $kegiatan->delete();
 
@@ -342,7 +338,7 @@ class PKegiatanController extends Controller
     public function detail_ajax($id)
     {
         $kegiatan = PKegiatanModel::with('user.profile')->findOrFail($id);
-        return view('p_kegiatan.detail_ajax', compact('kegiatan'));
+        return view('portofolio.kegiatan.detail_ajax', compact('kegiatan'));
     }
 
     public function validasi_ajax(Request $request, $id)
@@ -363,12 +359,12 @@ class PKegiatanController extends Controller
             ]);
         }
 
-        return view('p_kegiatan.validasi_ajax', compact('kegiatan'));
+        return view('portofolio.kegiatan.validasi_ajax', compact('kegiatan'));
     }
 
     public function import()
     {
-        return view('p_kegiatan.import');
+        return view('portofolio.kegiatan.import');
     }
 
     public function import_ajax(Request $request)
@@ -410,20 +406,16 @@ class PKegiatanController extends Controller
 
                 $validator = Validator::make([
                     'id_user' => $user->id_user,
-                    'nama_kegiatan' => $values['B'],
-                    'jenis_kegiatan' => $values['C'],
-                    'tanggal_mulai' => $values['D'],
-                    'tanggal_selesai' => $values['E'],
-                    'tempat' => $values['F'],
-                    'peran' => $values['G'],
-                    'deskripsi' => $values['H'],
+                    'jenis_kegiatan' => $values['B'],
+                    'tempat' => $values['C'],
+                    'waktu' => $values['D'],
+                    'peran' => $values['E'],
+                    'deskripsi' => $values['F'],
                 ], [
                     'id_user' => 'required|integer|exists:user,id_user',
-                    'nama_kegiatan' => 'required|string|max:255',
                     'jenis_kegiatan' => 'required|string|max:100',
-                    'tanggal_mulai' => 'required|date',
-                    'tanggal_selesai' => 'required|date',
                     'tempat' => 'required|string|max:255',
+                    'waktu' => 'required|date',
                     'peran' => 'required|string|max:100',
                     'deskripsi' => 'nullable|string',
                 ]);
@@ -435,13 +427,11 @@ class PKegiatanController extends Controller
 
                 $insertData[] = [
                     'id_user' => $user->id_user,
-                    'nama_kegiatan' => $values['B'],
-                    'jenis_kegiatan' => $values['C'],
-                    'tanggal_mulai' => $values['D'],
-                    'tanggal_selesai' => $values['E'],
-                    'tempat' => $values['F'],
-                    'peran' => $values['G'],
-                    'deskripsi' => $values['H'] ?? null,
+                    'jenis_kegiatan' => $values['B'],
+                    'tempat' => $values['C'],
+                    'waktu' => $values['D'],
+                    'peran' => $values['E'],
+                    'deskripsi' => $values['F'] ?? null,
                     'status' => $role === 'DOS' ? 'Tervalidasi' : 'perlu validasi',
                     'sumber_data' => $role === 'DOS' ? 'dosen' : 'p3m',
                     'created_at' => now(),
@@ -551,7 +541,7 @@ class PKegiatanController extends Controller
             $sheet->setCellValue('H' . $row, $data->status);
             $sheet->setCellValue('I' . $row, $data->sumber_data);
             if ($data->bukti) {
-                $url = url('storage/p_kegiatan/' . $data->bukti);
+                $url = url('storage/portofolio/kegiatan/' . $data->bukti);
                 $sheet->setCellValue('J' . $row, 'Lihat File');
                 $sheet->getCell('J' . $row)->getHyperlink()->setUrl($url);
             } else {
@@ -622,7 +612,7 @@ class PKegiatanController extends Controller
             ];
         });
 
-        $pdf = Pdf::loadView('p_kegiatan.export_pdf', [
+        $pdf = Pdf::loadView('portofolio.kegiatan.export_pdf', [
             'kegiatan' => $data
         ]);
 

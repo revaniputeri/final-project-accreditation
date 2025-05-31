@@ -31,22 +31,22 @@ class PPengabdianDataTable extends DataTable
         return (new EloquentDataTable($query))
             ->addColumn('aksi', function ($row) use ($user, $isDos, $isAdm) {
                 $buttons = [];
-                $detailUrl = route('p_pengabdian.detail_ajax', $row->id_pengabdian);
+                $detailUrl = route('portofolio.pengabdian.detail_ajax', $row->id_pengabdian);
 
                 $buttons[] = '<button onclick="modalAction(\'' . $detailUrl . '\')" class="btn btn-sm btn-info" style="margin-left: 5px;">
                     <i class="fas fa-info-circle"></i> Detail
                 </button>';
 
                 if ($isDos) {
-                    $validasiUrl = route('p_pengabdian.validasi_ajax', $row->id_pengabdian);
+                    $validasiUrl = route('portofolio.pengabdian.validasi_ajax', $row->id_pengabdian);
                     $buttons[] = '<button onclick="modalAction(\'' . $validasiUrl . '\')" class="btn btn-sm btn-warning" style="margin-left: 5px;">
                         <i class="fas fa-check-circle"></i> Validasi
                     </button>';
                 }
 
                 if ($isDos || $isAdm) {
-                    $editUrl = route('p_pengabdian.edit_ajax', $row->id_pengabdian);
-                    $deleteUrl = route('p_pengabdian.confirm_ajax', $row->id_pengabdian);
+                    $editUrl = route('portofolio.pengabdian.edit_ajax', $row->id_pengabdian);
+                    $deleteUrl = route('portofolio.pengabdian.confirm_ajax', $row->id_pengabdian);
 
                     $buttons[] = '<button onclick="modalAction(\'' . $editUrl . '\')" class="btn btn-sm btn-primary" style="margin-left: 5px;">
                         <i class="fas fa-edit"></i> Ubah
@@ -103,7 +103,7 @@ class PPengabdianDataTable extends DataTable
     {
         /** @var UserModel|null $user */
         $user = Auth::user();
-        
+
         // Join ke relasi user dan profile jika perlu menampilkan nama_lengkap
         $query = $model->newQuery()->with('user.profile');
 

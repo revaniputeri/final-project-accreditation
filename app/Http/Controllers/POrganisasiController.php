@@ -27,7 +27,7 @@ class POrganisasiController extends Controller
         $isDos = $user->hasRole('DOS');
         $isAng = $user->hasRole('ANG');
 
-        return $dataTable->render('p_organisasi.index', compact('isAdm', 'isAng', 'isDos'));
+        return $dataTable->render('portofolio.organisasi.index', compact('isAdm', 'isAng', 'isDos'));
     }
 
     private function generateUniqueFilename($directory, $filename)
@@ -56,7 +56,7 @@ class POrganisasiController extends Controller
         $user = Auth::user();
         $role = $user ? $user->getRole() : null;
 
-        return view('p_organisasi.create_ajax', compact('dosens', 'role'));
+        return view('portofolio.organisasi.create_ajax', compact('dosens', 'role'));
     }
 
     public function store_ajax(Request $request)
@@ -159,8 +159,8 @@ class POrganisasiController extends Controller
                     }
                     $originalName = $file->getClientOriginalName();
                     $filename = $nidnPrefix . $originalName;
-                    $filename = $this->generateUniqueFilename('public/p_organisasi', $filename);
-                    $path = $file->storeAs('public/p_organisasi', $filename);
+                    $filename = $this->generateUniqueFilename('public/portofolio/organisasi', $filename);
+                    $path = $file->storeAs('public/portofolio/organisasi', $filename);
                     $data['bukti'] = $filename;
                 }
 
@@ -199,7 +199,7 @@ class POrganisasiController extends Controller
         $role = $user ? $user->getRole() : null;
 
         $organisasi = POrganisasiModel::findOrFail($id);
-        return view('p_organisasi.edit_ajax', compact('organisasi', 'dosens', 'role'));
+        return view('portofolio.organisasi.edit_ajax', compact('organisasi', 'dosens', 'role'));
     }
 
     public function update_ajax(Request $request, $id)
@@ -281,9 +281,13 @@ class POrganisasiController extends Controller
                     'tingkat',
                 ]);
 
+                if ($role === 'ADM') {
+                    $data['status'] = 'perlu validasi';
+                }
+
                 if ($request->hasFile('bukti')) {
-                    if ($organisasi->bukti && Storage::exists('public/p_organisasi/' . $organisasi->bukti)) {
-                        Storage::delete('public/p_organisasi/' . $organisasi->bukti);
+                    if ($organisasi->bukti && Storage::exists('public/portofolio/organisasi/' . $organisasi->bukti)) {
+                        Storage::delete('public/portofolio/organisasi/' . $organisasi->bukti);
                     }
                     $file = $request->file('bukti');
                     $nidnPrefix = '';
@@ -292,8 +296,8 @@ class POrganisasiController extends Controller
                     }
                     $originalName = $file->getClientOriginalName();
                     $filename = $nidnPrefix . $originalName;
-                    $filename = $this->generateUniqueFilename('public/p_organisasi', $filename);
-                    $path = $file->storeAs('public/p_organisasi', $filename);
+                    $filename = $this->generateUniqueFilename('public/portofolio/organisasi', $filename);
+                    $path = $file->storeAs('public/portofolio/organisasi', $filename);
                     $data['bukti'] = $filename;
                 }
 
@@ -324,7 +328,7 @@ class POrganisasiController extends Controller
     public function confirm_ajax($id)
     {
         $organisasi = POrganisasiModel::findOrFail($id);
-        return view('p_organisasi.confirm_ajax', compact('organisasi'));
+        return view('portofolio.organisasi.confirm_ajax', compact('organisasi'));
     }
 
     public function delete_ajax(Request $request, $id)
@@ -332,8 +336,8 @@ class POrganisasiController extends Controller
         $organisasi = POrganisasiModel::findOrFail($id);
 
         try {
-            if ($organisasi->bukti && Storage::exists('public/p_organisasi/' . $organisasi->bukti)) {
-                Storage::delete('public/p_organisasi/' . $organisasi->bukti);
+            if ($organisasi->bukti && Storage::exists('public/portofolio/organisasi/' . $organisasi->bukti)) {
+                Storage::delete('public/portofolio/organisasi/' . $organisasi->bukti);
             }
             $organisasi->delete();
 
@@ -353,7 +357,7 @@ class POrganisasiController extends Controller
     public function detail_ajax($id)
     {
         $organisasi = POrganisasiModel::with('user.profile')->findOrFail($id);
-        return view('p_organisasi.detail_ajax', compact('organisasi'));
+        return view('portofolio.organisasi.detail_ajax', compact('organisasi'));
     }
 
     public function validasi_ajax(Request $request, $id)
@@ -374,12 +378,12 @@ class POrganisasiController extends Controller
             ]);
         }
 
-        return view('p_organisasi.validasi_ajax', compact('organisasi'));
+        return view('portofolio.organisasi.validasi_ajax', compact('organisasi'));
     }
 
     public function import()
     {
-        return view('p_organisasi.import');
+        return view('portofolio.organisasi.import');
     }
 
     public function import_ajax(Request $request)
@@ -402,7 +406,7 @@ class POrganisasiController extends Controller
             $user = Auth::user();
             $role = $user ? $user->getRole() : null;
             $userNidn = null;
-            
+
             if ($role === 'DOS') {
                 $userNidn = DB::table('profile_user')->where('id_user', $user->id_user)->value('nidn');
             }
@@ -583,7 +587,7 @@ class POrganisasiController extends Controller
             $sheet->setCellValue('H' . $row, $data->sumber_data);
             // Tambahkan link ke file bukti
             if ($data->bukti) {
-                $url = url('storage/p_organisasi/' . $data->bukti);
+                $url = url('storage/portofolio/organisasi/' . $data->bukti);
                 $sheet->setCellValue('I' . $row, 'Lihat File');
                 $sheet->getCell('I' . $row)->getHyperlink()->setUrl($url);
             } else {
@@ -653,7 +657,7 @@ class POrganisasiController extends Controller
             ];
         });
 
-        $pdf = Pdf::loadView('p_organisasi.export_pdf', [
+        $pdf = Pdf::loadView('portofolio.organisasi.export_pdf', [
             'organisasi' => $data
         ]);
 

@@ -27,7 +27,7 @@ class PHKIController extends Controller
         $isDos = $role === 'DOS';
         $isAng = $role === 'ANG';
 
-        return $dataTable->render('p_hki.index', compact('isAdm', 'isAng', 'isDos'));
+        return $dataTable->render('portofolio.hki.index', compact('isAdm', 'isAng', 'isDos'));
     }
 
     private function generateUniqueFilename($directory, $filename)
@@ -56,7 +56,7 @@ class PHKIController extends Controller
         $user = Auth::user();
         $role = $user ? $user->getRole() : null;
 
-        return view('p_hki.create_ajax', compact('dosens', 'role'));
+        return view('portofolio.hki.create_ajax', compact('dosens', 'role'));
     }
 
     public function store_ajax(Request $request)
@@ -69,7 +69,7 @@ class PHKIController extends Controller
             $rules = [
                 'judul' => 'required|string|max:255',
                 'tahun' => 'required|integer',
-                'skema' => 'required|string|max:100', 
+                'skema' => 'required|string|max:100',
                 'nomor' => 'required|string|max:255',
                 'melibatkan_mahasiswa_s2' => 'nullable|boolean',
                 'bukti' => $role === 'DOS' ? 'required|file|mimes:pdf,jpg,jpeg,png|max:2048' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
@@ -133,11 +133,11 @@ class PHKIController extends Controller
                 }
 
                 $data = $request->only([
-                    'judul', 
-                    'tahun', 
-                    'skema', 
-                    'nomor', 
-                    'melibatkan_mahasiswa_s2', 
+                    'judul',
+                    'tahun',
+                    'skema',
+                    'nomor',
+                    'melibatkan_mahasiswa_s2',
                     'bukti'
                 ]);
 
@@ -149,8 +149,8 @@ class PHKIController extends Controller
                     }
                     $originalName = $file->getClientOriginalName();
                     $filename = $nidnPrefix . $originalName;
-                    $filename = $this->generateUniqueFilename('public/p_hki', $filename);
-                    $file->storeAs('public/p_hki', $filename);
+                    $filename = $this->generateUniqueFilename('public/portofolio/hki', $filename);
+                    $file->storeAs('public/portofolio/hki', $filename);
                     $data['bukti'] = $filename;
                 }
 
@@ -188,7 +188,7 @@ class PHKIController extends Controller
         $role = $user && $user->level ? $user->level->kode_level : null;
 
         $hki = PHKIModel::findOrFail($id);
-        return view('p_hki.edit_ajax', compact('hki', 'dosens', 'role'));
+        return view('portofolio.hki.edit_ajax', compact('hki', 'dosens', 'role'));
     }
 
     public function update_ajax(Request $request, $id)
@@ -241,7 +241,7 @@ class PHKIController extends Controller
                     $id_user = $user->id_user;
                 } else {
                     $id_user = $user->id_user;
-                }   
+                }
 
                 if (!$id_user) {
                     return response()->json([
@@ -274,9 +274,13 @@ class PHKIController extends Controller
                     'bukti',
                 ]);
 
+                if ($role === 'ADM') {
+                    $data['status'] = 'perlu validasi';
+                }
+
                 if ($request->hasFile('bukti')) {
-                    if ($hki->bukti && Storage::exists('public/p_hki/' . $hki->bukti)) {
-                        Storage::delete('public/p_hki/' . $hki->bukti);
+                    if ($hki->bukti && Storage::exists('public/portofolio/hki/' . $hki->bukti)) {
+                        Storage::delete('public/portofolio/hki/' . $hki->bukti);
                     }
 
                     $file = $request->file('bukti');
@@ -287,8 +291,8 @@ class PHKIController extends Controller
 
                     $originalName = $file->getClientOriginalName();
                     $filename = $nidnPrefix . $originalName;
-                    $filename = $this->generateUniqueFilename('public/p_hki', $filename);
-                    $file->storeAs('public/p_hki', $filename);
+                    $filename = $this->generateUniqueFilename('public/portofolio/hki', $filename);
+                    $file->storeAs('public/portofolio/hki', $filename);
                     $data['bukti'] = $filename;
                 }
 
@@ -319,7 +323,7 @@ class PHKIController extends Controller
     public function confirm_ajax($id)
     {
         $hki = PHKIModel::findOrFail($id);
-        return view('p_hki.confirm_ajax', compact('hki'));
+        return view('portofolio.hki.confirm_ajax', compact('hki'));
     }
 
     public function delete_ajax(Request $request, $id)
@@ -327,8 +331,8 @@ class PHKIController extends Controller
         $hki = PHKIModel::findOrFail($id);
 
         try {
-            if ($hki->bukti && Storage::exists('public/p_hki/' . $hki->bukti)) {
-                Storage::delete('public/p_hki/' . $hki->bukti);
+            if ($hki->bukti && Storage::exists('public/portofolio/hki/' . $hki->bukti)) {
+                Storage::delete('public/portofolio/hki/' . $hki->bukti);
             }
             $hki->delete();
 
@@ -349,7 +353,7 @@ class PHKIController extends Controller
     public function detail_ajax($id)
     {
         $hki = PHKIModel::with('user.profile')->findOrFail($id);
-        return view('p_hki.detail_ajax', compact('hki'));
+        return view('portofolio.hki.detail_ajax', compact('hki'));
     }
 
     public function validasi_ajax(Request $request, $id)
@@ -358,7 +362,7 @@ class PHKIController extends Controller
 
         if ($request->isMethod('post')) {
             $request->validate([
-                'status' => 'required|in:Tervalidasi,Tidak Valid',
+                'status' => 'required|in:tervalidasi,tidak valid',
             ]);
 
             $hki->status = $request->input('status');
@@ -370,12 +374,12 @@ class PHKIController extends Controller
             ]);
         }
 
-        return view('p_hki.validasi_ajax', compact('hki'));
+        return view('portofolio.hki.validasi_ajax', compact('hki'));
     }
 
     public function import()
     {
-        return view('p_hki.import');
+        return view('portofolio.hki.import');
     }
 
     public function import_ajax(Request $request)
@@ -425,7 +429,7 @@ class PHKIController extends Controller
                     $skippedData[] = "Baris $row: Kombinasi NIDN $nidn dan Judul HKI '$judul' sudah ada.";
                     continue;
                 }
-                
+
 
                 // Data dari Excel disesuaikan dengan field model
                 $tahun = $values['E'] ?? null;
@@ -578,7 +582,7 @@ class PHKIController extends Controller
             $sheet->setCellValue('J' . $row, $data->sumber_data);
 
             if ($data->bukti) {
-                $url = url('storage/p_hki/' . $data->bukti);
+                $url = url('storage/portofolio/hki/' . $data->bukti);
                 $sheet->setCellValue('K' . $row, 'Lihat File');
                 $sheet->getCell('K' . $row)->getHyperlink()->setUrl($url);
                 $sheet->getStyle('K' . $row)->getFont()->getColor()->setARGB(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_BLUE);
@@ -654,7 +658,7 @@ class PHKIController extends Controller
             ];
         });
 
-        $pdf = Pdf::loadView('p_hki.export_pdf', [
+        $pdf = Pdf::loadView('portofolio.hki.export_pdf', [
             'hki' => $data
         ]);
 

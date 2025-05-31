@@ -27,7 +27,7 @@ class PPublikasiController extends Controller
         $isDos = $user->hasRole('DOS');
         $isAng = $user->hasRole('ANG');
 
-        return $dataTable->render('p_publikasi.index', compact('isAdm', 'isAng', 'isDos'));
+        return $dataTable->render('portofolio.publikasi.index', compact('isAdm', 'isAng', 'isDos'));
     }
 
     private function generateUniqueFilename($directory, $filename)
@@ -56,7 +56,7 @@ class PPublikasiController extends Controller
         $user = Auth::user();
         $role = $user ? $user->getRole() : null;
 
-        return view('p_publikasi.create_ajax', compact('dosens', 'role'));
+        return view('portofolio.publikasi.create_ajax', compact('dosens', 'role'));
     }
 
     public function store_ajax(Request $request)
@@ -165,8 +165,8 @@ class PPublikasiController extends Controller
                     }
                     $originalName = $file->getClientOriginalName();
                     $filename = $nidnPrefix . $originalName;
-                    $filename = $this->generateUniqueFilename('public/p_publikasi', $filename);
-                    $path = $file->storeAs('public/p_publikasi', $filename);
+                    $filename = $this->generateUniqueFilename('public/portofolio/publikasi', $filename);
+                    $path = $file->storeAs('public/portofolio/publikasi', $filename);
                     $data['bukti'] = $filename;
                 }
 
@@ -205,7 +205,7 @@ class PPublikasiController extends Controller
         $role = $user ? $user->getRole() : null;
 
         $publikasi = PPublikasiModel::findOrFail($id);
-        return view('p_publikasi.edit_ajax', compact('publikasi', 'dosens', 'role'));
+        return view('portofolio.publikasi.edit_ajax', compact('publikasi', 'dosens', 'role'));
     }
 
     public function update_ajax(Request $request, $id)
@@ -295,9 +295,13 @@ class PPublikasiController extends Controller
                     'bukti',
                 ]);
 
+                if ($role === 'ADM') {
+                    $data['status'] = 'perlu validasi';
+                }
+
                 if ($request->hasFile('bukti')) {
-                    if ($publikasi->bukti && Storage::exists('public/p_publikasi/' . $publikasi->bukti)) {
-                        Storage::delete('public/p_publikasi/' . $publikasi->bukti);
+                    if ($publikasi->bukti && Storage::exists('public/portofolio/publikasi/' . $publikasi->bukti)) {
+                        Storage::delete('public/portofolio/publikasi/' . $publikasi->bukti);
                     }
                     $file = $request->file('bukti');
                     $nidnPrefix = '';
@@ -306,8 +310,8 @@ class PPublikasiController extends Controller
                     }
                     $originalName = $file->getClientOriginalName();
                     $filename = $nidnPrefix . $originalName;
-                    $filename = $this->generateUniqueFilename('public/p_publikasi', $filename);
-                    $path = $file->storeAs('public/p_publikasi', $filename);
+                    $filename = $this->generateUniqueFilename('public/portofolio/publikasi', $filename);
+                    $path = $file->storeAs('public/portofolio/publikasi', $filename);
                     $data['bukti'] = $filename;
                 }
 
@@ -338,7 +342,7 @@ class PPublikasiController extends Controller
     public function confirm_ajax($id)
     {
         $publikasi = PPublikasiModel::findOrFail($id);
-        return view('p_publikasi.confirm_ajax', compact('publikasi'));
+        return view('portofolio.publikasi.confirm_ajax', compact('publikasi'));
     }
 
     public function delete_ajax(Request $request, $id)
@@ -346,8 +350,8 @@ class PPublikasiController extends Controller
         $publikasi = PPublikasiModel::findOrFail($id);
 
         try {
-            if ($publikasi->bukti && Storage::exists('public/p_publikasi/' . $publikasi->bukti)) {
-                Storage::delete('public/p_publikasi/' . $publikasi->bukti);
+            if ($publikasi->bukti && Storage::exists('public/portofolio/publikasi/' . $publikasi->bukti)) {
+                Storage::delete('public/portofolio/publikasi/' . $publikasi->bukti);
             }
             $publikasi->delete();
 
@@ -367,7 +371,7 @@ class PPublikasiController extends Controller
     public function detail_ajax($id)
     {
         $publikasi = PPublikasiModel::with('user.profile')->findOrFail($id);
-        return view('p_publikasi.detail_ajax', compact('publikasi'));
+        return view('portofolio.publikasi.detail_ajax', compact('publikasi'));
     }
 
     public function validasi_ajax(Request $request, $id)
@@ -388,12 +392,12 @@ class PPublikasiController extends Controller
             ]);
         }
 
-        return view('p_publikasi.validasi_ajax', compact('publikasi'));
+        return view('portofolio.publikasi.validasi_ajax', compact('publikasi'));
     }
 
     public function import()
     {
-        return view('p_publikasi.import');
+        return view('portofolio.publikasi.import');
     }
 
     public function import_ajax(Request $request)
@@ -592,7 +596,7 @@ class PPublikasiController extends Controller
             $sheet->setCellValue('I' . $row, $data->status);
             $sheet->setCellValue('J' . $row, $data->sumber_data);
             if ($data->bukti) {
-                $url = url('storage/p_publikasi/' . $data->bukti);
+                $url = url('storage/portofolio/publikasi/' . $data->bukti);
                 $sheet->setCellValue('K' . $row, 'Lihat File');
                 $sheet->getCell('K' . $row)->getHyperlink()->setUrl($url);
             } else {
@@ -664,7 +668,7 @@ class PPublikasiController extends Controller
             ];
         });
 
-        $pdf = Pdf::loadView('p_publikasi.export_pdf', [
+        $pdf = Pdf::loadView('portofolio.publikasi.export_pdf', [
             'publikasi' => $data
         ]);
 

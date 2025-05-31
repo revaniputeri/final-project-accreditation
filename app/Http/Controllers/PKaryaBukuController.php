@@ -27,7 +27,7 @@ class PKaryaBukuController extends Controller
         $isDos = $user->hasRole('DOS');
         $isAng = $user->hasRole('ANG');
 
-        return $dataTable->render('p_karya_buku.index', compact('isAdm', 'isAng', 'isDos'));
+        return $dataTable->render('portofolio.karya_buku.index', compact('isAdm', 'isAng', 'isDos'));
     }
 
     private function generateUniqueFilename($directory, $filename)
@@ -56,7 +56,7 @@ class PKaryaBukuController extends Controller
         $user = Auth::user();
         $role = $user ? $user->getRole() : null;
 
-        return view('p_karya_buku.create_ajax', compact('dosens', 'role'));
+        return view('portofolio.karya_buku.create_ajax', compact('dosens', 'role'));
     }
 
     public function store_ajax(Request $request)
@@ -163,8 +163,8 @@ class PKaryaBukuController extends Controller
                     }
                     $originalName = $file->getClientOriginalName();
                     $filename = $nidnPrefix . $originalName;
-                    $filename = $this->generateUniqueFilename('public/p_karya_buku', $filename);
-                    $path = $file->storeAs('public/p_karya_buku', $filename);
+                    $filename = $this->generateUniqueFilename('public/portofolio/karya_buku', $filename);
+                    $path = $file->storeAs('public/portofolio/karya_buku', $filename);
                     $data['bukti'] = $filename;
                 }
 
@@ -203,7 +203,7 @@ class PKaryaBukuController extends Controller
         $role = $user ? $user->getRole() : null;
 
         $karyaBuku = PKaryaBukuModel::findOrFail($id);
-        return view('p_karya_buku.edit_ajax', compact('karyaBuku', 'dosens', 'role'));
+        return view('portofolio.karya_buku.edit_ajax', compact('karyaBuku', 'dosens', 'role'));
     }
 
     public function update_ajax(Request $request, $id)
@@ -288,9 +288,13 @@ class PKaryaBukuController extends Controller
                     'jumlah_halaman',
                 ]);
 
+                if ($role === 'ADM') {
+                    $data['status'] = 'perlu validasi';
+                }
+
                 if ($request->hasFile('bukti')) {
-                    if ($karyaBuku->bukti && Storage::exists('public/p_karya_buku/' . $karyaBuku->bukti)) {
-                        Storage::delete('public/p_karya_buku/' . $karyaBuku->bukti);
+                    if ($karyaBuku->bukti && Storage::exists('public/portofolio/karya_buku/' . $karyaBuku->bukti)) {
+                        Storage::delete('public/portofolio/karya_buku/' . $karyaBuku->bukti);
                     }
                     $file = $request->file('bukti');
                     $nidnPrefix = '';
@@ -299,8 +303,8 @@ class PKaryaBukuController extends Controller
                     }
                     $originalName = $file->getClientOriginalName();
                     $filename = $nidnPrefix . $originalName;
-                    $filename = $this->generateUniqueFilename('public/p_karya_buku', $filename);
-                    $path = $file->storeAs('public/p_karya_buku', $filename);
+                    $filename = $this->generateUniqueFilename('public/portofolio/karya_buku', $filename);
+                    $path = $file->storeAs('public/portofolio/karya_buku', $filename);
                     $data['bukti'] = $filename;
                 }
 
@@ -331,7 +335,7 @@ class PKaryaBukuController extends Controller
     public function confirm_ajax($id)
     {
         $karyaBuku = PKaryaBukuModel::findOrFail($id);
-        return view('p_karya_buku.confirm_ajax', compact('karyaBuku'));
+        return view('portofolio.karya_buku.confirm_ajax', compact('karyaBuku'));
     }
 
     public function delete_ajax(Request $request, $id)
@@ -339,8 +343,8 @@ class PKaryaBukuController extends Controller
         $karyaBuku = PKaryaBukuModel::findOrFail($id);
 
         try {
-            if ($karyaBuku->bukti && Storage::exists('public/p_karya_buku/' . $karyaBuku->bukti)) {
-                Storage::delete('public/p_karya_buku/' . $karyaBuku->bukti);
+            if ($karyaBuku->bukti && Storage::exists('public/portofolio/karya_buku/' . $karyaBuku->bukti)) {
+                Storage::delete('public/portofolio/karya_buku/' . $karyaBuku->bukti);
             }
             $karyaBuku->delete();
 
@@ -360,7 +364,7 @@ class PKaryaBukuController extends Controller
     public function detail_ajax($id)
     {
         $karyaBuku = PKaryaBukuModel::with('user.profile')->findOrFail($id);
-        return view('p_karya_buku.detail_ajax', compact('karyaBuku'));
+        return view('portofolio.karya_buku.detail_ajax', compact('karyaBuku'));
     }
 
     public function validasi_ajax(Request $request, $id)
@@ -381,12 +385,12 @@ class PKaryaBukuController extends Controller
             ]);
         }
 
-        return view('p_karya_buku.validasi_ajax', compact('karyaBuku'));
+        return view('portofolio.karya_buku.validasi_ajax', compact('karyaBuku'));
     }
 
     public function import()
     {
-        return view('p_karya_buku.import');
+        return view('portofolio.karya_buku.import');
     }
 
     public function import_ajax(Request $request)
@@ -413,7 +417,7 @@ class PKaryaBukuController extends Controller
             foreach ($data as $row => $values) {
                 if ($row == 1) continue;
 
-                $nidn = trim($values['A']); 
+                $nidn = trim($values['A']);
                 $isbn = trim($values['D']);
 
                 if ($role === 'DOS' && $nidn !== $userNidn) {
@@ -576,7 +580,7 @@ class PKaryaBukuController extends Controller
             $sheet->setCellValue('I' . $row, $data->status);
             $sheet->setCellValue('J' . $row, $data->sumber_data);
             if ($data->bukti) {
-                $url = url('storage/p_karya_buku/' . $data->bukti);
+                $url = url('storage/portofolio/karya_buku/' . $data->bukti);
                 $sheet->setCellValue('K' . $row, 'Lihat File');
                 $sheet->getCell('K' . $row)->getHyperlink()->setUrl($url);
             } else {
@@ -648,7 +652,7 @@ class PKaryaBukuController extends Controller
             ];
         });
 
-        $pdf = Pdf::loadView('p_karya_buku.export_pdf', [
+        $pdf = Pdf::loadView('portofolio.karya_buku.export_pdf', [
             'karyaBuku' => $data
         ]);
 

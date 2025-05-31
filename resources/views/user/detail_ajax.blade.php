@@ -9,7 +9,7 @@
         <table class="table table-bordered">
             <tr>
                 <th>ID Profile</th>
-                <td>{{ $user->id_profile}}</td>
+                <td>{{ $user->id_profile }}</td>
             </tr>
             <tr>
                 <th>ID user</th>
@@ -25,7 +25,7 @@
             </tr>
             <tr>
                 <th>Level</th>
-                <td><Strong>{{ $user->user->level->nama_level}}</Strong></td>
+                <td><Strong>{{ $user->user->level->nama_level }}</Strong></td>
             </tr>
             <tr>
                 <th>Nama User</th>
@@ -67,7 +67,7 @@
                 <th>username</th>
                 <td>{{ $user->user->username }}</td>
             </tr>
-            
+
             <tr>
                 <th>Created At</th>
                 <td>{{ $user->created_at ? $user->created_at->format('d M Y H:i:s') : '-' }}</td>
@@ -79,6 +79,7 @@
         </table>
     </div>
     <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fas fa-times me-1"></i>
+            Tutup</button>
     </div>
 </form>

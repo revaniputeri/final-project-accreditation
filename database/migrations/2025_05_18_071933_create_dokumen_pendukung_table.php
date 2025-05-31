@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('dokumen_pendukung', function (Blueprint $table) {
             $table->id('id_dokumen_pendukung');
-            $table->foreignId('id_dokumen_kriteria')->constrained('dokumen_kriteria', 'id_dokumen_kriteria');
+            $table->string('no_kriteria', 50);
             $table->string('nama_file', 255);
             $table->string('path_file', 255);
             $table->text('keterangan');

@@ -6,13 +6,13 @@
         <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
     </div>
     <div class="modal-body">
-        <div class="mb-3">
-            <label for="id_level" class="form-label">Level</label>
-            <select name="id_level" id="id_level">
+        <div class="mb-3 form-group">
+            <label for="id_level">Level</label>
+            <select id="id_level" class="form-control select2" style="width: 100%;" name="id_level" required>
                 <option value=""> >-Pilih Level-< </option>
-                        @foreach ($level as $i)
-                            <option value="{{$i->id_level}}">{{$i->nama_level}}</option>
-                        @endforeach
+                @foreach ($level as $i)
+                    <option value="{{$i->id_level}}">{{$i->nama_level}}</option>
+                @endforeach
             </select>
         </div>
         <div class="mb-3">
@@ -42,13 +42,13 @@
 
         <div class="mb-3">
             <label for="gelar_depan" class=" form-label">Gelar Depan</label>
-            <input type="text" class="form-control" id="gelar_depan" name="gelar_depan" required>
+            <input type="text" class="form-control" id="gelar_depan" name="gelar_depan">
             <div class="invalid-feedback" id="error_gelar_depan"></div>
         </div>
 
         <div class="mb-3">
             <label for="gelar_belakang" class="form-label">Gelar Belakang</label>
-            <input type="text" class="form-control" id="gelar_belakang" name="gelar_belakang" required>
+            <input type="text" class="form-control" id="gelar_belakang" name="gelar_belakang">
             <div class="invalid-feedback" id="error_gelar_belakang"></div>
         </div>
 
@@ -59,12 +59,12 @@
         </div>
         <div class="mb-3">
             <label for="pangkat" class="form-label">Pangkat</label>
-            <input type="text" class="form-control" id="pangkat" name="pangkat" required>
+            <input type="text" class="form-control" id="pangkat" name="pangkat">
             <div class="invalid-feedback" id="error_pangkat"></div>
         </div>
         <div class="mb-3">
             <label for="jabatan_fungsional" class="form-label">Jabatan Fungsional</label>
-            <input type="text" class="form-control" id="jabatan_fungsional" name="jabatan_fungsional" required>
+            <input type="text" class="form-control" id="jabatan_fungsional" name="jabatan_fungsional">
             <div class="invalid-feedback" id="error_jabatan_fungsional"></div>
         </div>
         <div class="mb-3">
@@ -79,7 +79,7 @@
         </div>
     </div>
     <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
-        <button type="submit" class="btn btn-primary">Simpan</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fas fa-times me-1"></i> Batal</button>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i> Simpan</button>
     </div>
 </form>
