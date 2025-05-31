@@ -26,7 +26,7 @@ class PPengabdianController extends Controller
         $isDos = $user->hasRole('DOS');
         $isAng = $user->hasRole('ANG');
 
-        return $dataTable->render('p_pengabdian.index', compact('isAdm', 'isAng', 'isDos'));
+        return $dataTable->render('portofolio.pengabdian.index', compact('isAdm', 'isAng', 'isDos'));
     }
 
     private function generateUniqueFilename($directory, $filename)
@@ -55,7 +55,7 @@ class PPengabdianController extends Controller
         $user = Auth::user();
         $role = $user ? $user->role : null;
 
-        return view('p_pengabdian.create_ajax', compact('dosens', 'role'));
+        return view('portofolio.pengabdian.create_ajax', compact('dosens', 'role'));
     }
 
     public function store_ajax(Request $request)
@@ -160,8 +160,8 @@ class PPengabdianController extends Controller
                     }
                     $originalName = $file->getClientOriginalName();
                     $filename = $nidnPrefix . $originalName;
-                    $filename = $this->generateUniqueFilename('public/p_pengabdian', $filename);
-                    $path = $file->storeAs('public/p_pengabdian', $filename);
+                    $filename = $this->generateUniqueFilename('public/portofolio/pengabdian', $filename);
+                    $path = $file->storeAs('public/portofolio/pengabdian', $filename);
                     $data['bukti'] = $filename;
                 }
 
@@ -200,7 +200,7 @@ class PPengabdianController extends Controller
         $role = $user ? $user->role : null;
 
         $pengabdian = PPengabdianModel::findOrFail($id);
-        return view('p_pengabdian.edit_ajax', compact('pengabdian', 'dosens', 'role'));
+        return view('portofolio.pengabdian.edit_ajax', compact('pengabdian', 'dosens', 'role'));
     }
 
     public function update_ajax(Request $request, $id)
@@ -300,8 +300,8 @@ class PPengabdianController extends Controller
 
                 if ($request->hasFile('bukti')) {
                     // Hapus file lama jika ada
-                    if ($pengabdian->bukti && Storage::exists('public/p_pengabdian/' . $pengabdian->bukti)) {
-                        Storage::delete('public/p_pengabdian/' . $pengabdian->bukti);
+                    if ($pengabdian->bukti && Storage::exists('public/portofolio/pengabdian/' . $pengabdian->bukti)) {
+                        Storage::delete('public/portofolio/pengabdian/' . $pengabdian->bukti);
                     }
 
                     $file = $request->file('bukti');
@@ -316,8 +316,8 @@ class PPengabdianController extends Controller
 
                     $originalName = $file->getClientOriginalName();
                     $filename = $nidnPrefix . $originalName;
-                    $filename = $this->generateUniqueFilename('public/p_pengabdian', $filename);
-                    $path = $file->storeAs('public/p_pengabdian', $filename);
+                    $filename = $this->generateUniqueFilename('public/portofolio/pengabdian', $filename);
+                    $path = $file->storeAs('public/portofolio/pengabdian', $filename);
                     $data['bukti'] = $filename;
                 }
 
@@ -348,7 +348,7 @@ class PPengabdianController extends Controller
     public function confirm_ajax($id)
     {
         $pengabdian = PPengabdianModel::findOrFail($id);
-        return view('p_pengabdian.confirm_ajax', compact('pengabdian'));
+        return view('portofolio.pengabdian.confirm_ajax', compact('pengabdian'));
     }
 
     public function delete_ajax(Request $request, $id)
@@ -356,8 +356,8 @@ class PPengabdianController extends Controller
         $pengabdian = PPengabdianModel::findOrFail($id);
 
         try {
-            if ($pengabdian->bukti && Storage::exists('public/p_pengabdian/' . $pengabdian->bukti)) {
-                Storage::delete('public/p_pengabdian/' . $pengabdian->bukti);
+            if ($pengabdian->bukti && Storage::exists('public/portofolio/pengabdian/' . $pengabdian->bukti)) {
+                Storage::delete('public/portofolio/pengabdian/' . $pengabdian->bukti);
             }
 
             $pengabdian->delete();
@@ -378,7 +378,7 @@ class PPengabdianController extends Controller
     public function detail_ajax($id)
     {
         $pengabdian = PPengabdianModel::with('user.profile')->findOrFail($id);
-        return view('p_pengabdian.detail_ajax', compact('pengabdian'));
+        return view('portofolio.pengabdian.detail_ajax', compact('pengabdian'));
     }
 
     public function validasi_ajax(Request $request, $id)
@@ -399,12 +399,12 @@ class PPengabdianController extends Controller
             ]);
         }
 
-        return view('p_pengabdian.validasi_ajax', compact('pengabdian'));
+        return view('portofolio.pengabdian.validasi_ajax', compact('pengabdian'));
     }
 
     public function import()
     {
-        return view('p_pengabdian.import');
+        return view('portofolio.pengabdian.import');
     }
 
     public function import_ajax(Request $request)
@@ -615,7 +615,7 @@ class PPengabdianController extends Controller
             $sheet->setCellValue('J' . $row, $data->sumber_data);
 
             if ($data->bukti) {
-                $url = url('storage/p_pengabdian/' . $data->bukti);
+                $url = url('storage/portofolio/pengabdian/' . $data->bukti);
                 $sheet->setCellValue('K' . $row, 'Lihat File');
                 $sheet->getCell('K' . $row)->getHyperlink()->setUrl($url);
             } else {
@@ -688,7 +688,7 @@ class PPengabdianController extends Controller
             ];
         });
 
-        $pdf = Pdf::loadView('p_pengabdian.export_pdf', [
+        $pdf = Pdf::loadView('portofolio.pengabdian.export_pdf', [
             'pengabdian' => $data
         ]);
 

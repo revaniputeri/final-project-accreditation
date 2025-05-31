@@ -26,7 +26,7 @@ class PPenelitianController extends Controller
         $isDos = $user->hasRole('DOS');
         $isAng = $user->hasRole('ANG');
 
-        return $dataTable->render('p_penelitian.index', compact('isAdm', 'isAng', 'isDos'));
+        return $dataTable->render('portofolio.penelitian.index', compact('isAdm', 'isAng', 'isDos'));
     }
 
     private function generateUniqueFilename($directory, $filename)
@@ -55,7 +55,7 @@ class PPenelitianController extends Controller
         $user = Auth::user();
         $role = $user ? $user->getRole() : null;
 
-        return view('p_penelitian.create_ajax', compact('dosens', 'role'));
+        return view('portofolio.penelitian.create_ajax', compact('dosens', 'role'));
     }
 
     public function store_ajax(Request $request)
@@ -164,8 +164,8 @@ class PPenelitianController extends Controller
                     }
                     $originalName = $file->getClientOriginalName();
                     $filename = $nidnPrefix . $originalName;
-                    $filename = $this->generateUniqueFilename('public/p_penelitian', $filename);
-                    $path = $file->storeAs('public/p_penelitian', $filename);
+                    $filename = $this->generateUniqueFilename('public/portofolio/penelitian', $filename);
+                    $path = $file->storeAs('public/portofolio/penelitian', $filename);
                     $data['bukti'] = $filename;
                 }
 
@@ -204,7 +204,7 @@ class PPenelitianController extends Controller
         $role = $user ? $user->getRole() : null;
 
         $penelitian = PPenelitianModel::findOrFail($id);
-        return view('p_penelitian.edit_ajax', compact('penelitian', 'dosens', 'role'));
+        return view('portofolio.penelitian.edit_ajax', compact('penelitian', 'dosens', 'role'));
     }
 
     public function update_ajax(Request $request, $id)
@@ -298,8 +298,8 @@ class PPenelitianController extends Controller
                 }
 
                 if ($request->hasFile('bukti')) {
-                    if ($penelitian->bukti && Storage::exists('public/p_penelitian/' . $penelitian->bukti)) {
-                        Storage::delete('public/p_penelitian/' . $penelitian->bukti);
+                    if ($penelitian->bukti && Storage::exists('public/portofolio/penelitian/' . $penelitian->bukti)) {
+                        Storage::delete('public/portofolio/penelitian/' . $penelitian->bukti);
                     }
                     $file = $request->file('bukti');
                     $nidnPrefix = '';
@@ -308,8 +308,8 @@ class PPenelitianController extends Controller
                     }
                     $originalName = $file->getClientOriginalName();
                     $filename = $nidnPrefix . $originalName;
-                    $filename = $this->generateUniqueFilename('public/p_penelitian', $filename);
-                    $path = $file->storeAs('public/p_penelitian', $filename);
+                    $filename = $this->generateUniqueFilename('public/portofolio/penelitian', $filename);
+                    $path = $file->storeAs('public/portofolio/penelitian', $filename);
                     $data['bukti'] = $filename;
                 }
 
@@ -340,7 +340,7 @@ class PPenelitianController extends Controller
     public function confirm_ajax($id)
     {
         $penelitian = PPenelitianModel::findOrFail($id);
-        return view('p_penelitian.confirm_ajax', compact('penelitian'));
+        return view('portofolio.penelitian.confirm_ajax', compact('penelitian'));
     }
 
     public function delete_ajax(Request $request, $id)
@@ -348,8 +348,8 @@ class PPenelitianController extends Controller
         $penelitian = PPenelitianModel::findOrFail($id);
 
         try {
-            if ($penelitian->bukti && Storage::exists('public/p_penelitian/' . $penelitian->bukti)) {
-                Storage::delete('public/p_penelitian/' . $penelitian->bukti);
+            if ($penelitian->bukti && Storage::exists('public/portofolio/penelitian/' . $penelitian->bukti)) {
+                Storage::delete('public/portofolio/penelitian/' . $penelitian->bukti);
             }
             $penelitian->delete();
 
@@ -369,7 +369,7 @@ class PPenelitianController extends Controller
     public function detail_ajax($id)
     {
         $penelitian = PPenelitianModel::with('user.profile')->findOrFail($id);
-        return view('p_penelitian.detail_ajax', compact('penelitian'));
+        return view('portofolio.penelitian.detail_ajax', compact('penelitian'));
     }
 
     public function validasi_ajax(Request $request, $id)
@@ -390,12 +390,12 @@ class PPenelitianController extends Controller
             ]);
         }
 
-        return view('p_penelitian.validasi_ajax', compact('penelitian'));
+        return view('portofolio.penelitian.validasi_ajax', compact('penelitian'));
     }
 
     public function import()
     {
-        return view('p_penelitian.import');
+        return view('portofolio.penelitian.import');
     }
 
     public function import_ajax(Request $request)
@@ -598,7 +598,7 @@ class PPenelitianController extends Controller
             $sheet->setCellValue('K' . $row, $data->sumber_data);
             // Tambahkan link ke file bukti
             if ($data->bukti) {
-                $url = url('storage/p_penelitian/' . $data->bukti);
+                $url = url('storage/portofolio/penelitian/' . $data->bukti);
                 $sheet->setCellValue('L' . $row, 'Lihat File');
                 $sheet->getCell('L' . $row)->getHyperlink()->setUrl($url);
             } else {
@@ -675,7 +675,7 @@ class PPenelitianController extends Controller
             ];
         });
 
-        $pdf = Pdf::loadView('p_penelitian.export_pdf', [
+        $pdf = Pdf::loadView('portofolio.penelitian.export_pdf', [
             'penelitian' => $data
         ]);
 

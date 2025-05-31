@@ -27,7 +27,7 @@ class PSertifikasiController extends Controller
         $isDos = $user->hasRole('DOS');
         $isAng = $user->hasRole('ANG');
 
-        return $dataTable->render('p_sertifikasi.index', compact('isAdm', 'isAng', 'isDos'));
+        return $dataTable->render('portofolio.sertifikasi.index', compact('isAdm', 'isAng', 'isDos'));
     }
 
     private function generateUniqueFilename($directory, $filename)
@@ -56,7 +56,7 @@ class PSertifikasiController extends Controller
         $user = Auth::user();
         $role = $user ? $user->getRole() : null;
 
-        return view('p_sertifikasi.create_ajax', compact('dosens', 'role'));
+        return view('portofolio.sertifikasi.create_ajax', compact('dosens', 'role'));
     }
 
     public function store_ajax(Request $request)
@@ -163,8 +163,8 @@ class PSertifikasiController extends Controller
                     }
                     $originalName = $file->getClientOriginalName();
                     $filename = $nidnPrefix . $originalName;
-                    $filename = $this->generateUniqueFilename('public/p_sertifikasi', $filename);
-                    $path = $file->storeAs('public/p_sertifikasi', $filename);
+                    $filename = $this->generateUniqueFilename('public/portofolio/sertifikasi', $filename);
+                    $path = $file->storeAs('public/portofolio/sertifikasi', $filename);
                     $data['bukti'] = $filename;
                 }
 
@@ -203,7 +203,7 @@ class PSertifikasiController extends Controller
         $role = $user ? $user->getRole() : null;
 
         $sertifikasi = PSertifikasiModel::findOrFail($id);
-        return view('p_sertifikasi.edit_ajax', compact('sertifikasi', 'dosens', 'role'));
+        return view('portofolio.sertifikasi.edit_ajax', compact('sertifikasi', 'dosens', 'role'));
     }
 
     public function update_ajax(Request $request, $id)
@@ -294,8 +294,8 @@ class PSertifikasiController extends Controller
                 }
 
                 if ($request->hasFile('bukti')) {
-                    if ($sertifikasi->bukti && Storage::exists('public/p_sertifikasi/' . $sertifikasi->bukti)) {
-                        Storage::delete('public/p_sertifikasi/' . $sertifikasi->bukti);
+                    if ($sertifikasi->bukti && Storage::exists('public/portofolio/sertifikasi/' . $sertifikasi->bukti)) {
+                        Storage::delete('public/portofolio/sertifikasi/' . $sertifikasi->bukti);
                     }
                     $file = $request->file('bukti');
                     $nidnPrefix = '';
@@ -304,8 +304,8 @@ class PSertifikasiController extends Controller
                     }
                     $originalName = $file->getClientOriginalName();
                     $filename = $nidnPrefix . $originalName;
-                    $filename = $this->generateUniqueFilename('public/p_sertifikasi', $filename);
-                    $path = $file->storeAs('public/p_sertifikasi', $filename);
+                    $filename = $this->generateUniqueFilename('public/portofolio/sertifikasi', $filename);
+                    $path = $file->storeAs('public/portofolio/sertifikasi', $filename);
                     $data['bukti'] = $filename;
                 }
 
@@ -336,7 +336,7 @@ class PSertifikasiController extends Controller
     public function confirm_ajax($id)
     {
         $sertifikasi = PSertifikasiModel::findOrFail($id);
-        return view('p_sertifikasi.confirm_ajax', compact('sertifikasi'));
+        return view('portofolio.sertifikasi.confirm_ajax', compact('sertifikasi'));
     }
 
     public function delete_ajax(Request $request, $id)
@@ -344,8 +344,8 @@ class PSertifikasiController extends Controller
         $sertifikasi = PSertifikasiModel::findOrFail($id);
 
         try {
-            if ($sertifikasi->bukti && Storage::exists('public/p_sertifikasi/' . $sertifikasi->bukti)) {
-                Storage::delete('public/p_sertifikasi/' . $sertifikasi->bukti);
+            if ($sertifikasi->bukti && Storage::exists('public/portofolio/sertifikasi/' . $sertifikasi->bukti)) {
+                Storage::delete('public/portofolio/sertifikasi/' . $sertifikasi->bukti);
             }
             $sertifikasi->delete();
 
@@ -365,7 +365,7 @@ class PSertifikasiController extends Controller
     public function detail_ajax($id)
     {
         $sertifikasi = PSertifikasiModel::with('user.profile')->findOrFail($id);
-        return view('p_sertifikasi.detail_ajax', compact('sertifikasi'));
+        return view('portofolio.sertifikasi.detail_ajax', compact('sertifikasi'));
     }
 
     public function validasi_ajax(Request $request, $id)
@@ -386,12 +386,12 @@ class PSertifikasiController extends Controller
             ]);
         }
 
-        return view('p_sertifikasi.validasi_ajax', compact('sertifikasi'));
+        return view('portofolio.sertifikasi.validasi_ajax', compact('sertifikasi'));
     }
 
     public function import()
     {
-        return view('p_sertifikasi.import');
+        return view('portofolio.sertifikasi.import');
     }
 
     public function import_ajax(Request $request)
@@ -583,7 +583,7 @@ class PSertifikasiController extends Controller
             $sheet->setCellValue('J' . $row, $data->sumber_data);
             // Tambahkan link ke file bukti
             if ($data->bukti) {
-                $url = url('storage/p_sertifikasi/' . $data->bukti);
+                $url = url('storage/portofolio/sertifikasi/' . $data->bukti);
                 $sheet->setCellValue('K' . $row, 'Lihat File');
                 $sheet->getCell('K' . $row)->getHyperlink()->setUrl($url);
             } else {
@@ -655,7 +655,7 @@ class PSertifikasiController extends Controller
             ];
         });
 
-        $pdf = Pdf::loadView('p_sertifikasi.export_pdf', [
+        $pdf = Pdf::loadView('portofolio.sertifikasi.export_pdf', [
             'sertifikasi' => $data
         ]);
 

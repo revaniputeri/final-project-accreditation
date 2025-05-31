@@ -32,22 +32,22 @@ class PHKIDataTable extends DataTable
             return (new EloquentDataTable($query))
                 ->addColumn('aksi', function ($row) use ($user, $isDos, $isAdm) {
                     $buttons = [];
-                    $detailUrl = route('p_hki.detail_ajax', $row->id_hki);
+                    $detailUrl = route('portofolio.hki.detail_ajax', $row->id_hki);
 
                     $buttons[] = '<button onclick="modalAction(\'' . $detailUrl . '\')" class="btn btn-sm btn-info" style="margin-left: 5px;">
                         <i class="fas fa-info-circle"></i> Detail
                     </button>';
 
                     if ($isDos) {
-                        $validasiUrl = route('p_hki.validasi_ajax', $row->id_hki);
+                        $validasiUrl = route('portofolio.hki.validasi_ajax', $row->id_hki);
                         $buttons[] = '<button onclick="modalAction(\'' . $validasiUrl . '\')" class="btn btn-sm btn-warning" style="margin-left: 5px;">
                             <i class="fas fa-check-circle"></i> Validasi
                         </button>';
                     }
 
                     if ($isDos || $isAdm) {
-                        $editUrl = route('p_hki.edit_ajax', $row->id_hki);
-                        $deleteUrl = route('p_hki.confirm_ajax', $row->id_hki);
+                        $editUrl = route('portofolio.hki.edit_ajax', $row->id_hki);
+                        $deleteUrl = route('portofolio.hki.confirm_ajax', $row->id_hki);
 
                         $buttons[] = '<button onclick="modalAction(\'' . $editUrl . '\')" class="btn btn-sm btn-primary" style="margin-left: 5px;">
                             <i class="fas fa-edit"></i> Ubah

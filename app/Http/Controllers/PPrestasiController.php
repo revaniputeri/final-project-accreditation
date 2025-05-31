@@ -27,7 +27,7 @@ class PPrestasiController extends Controller
         $isDos = $user->hasRole('DOS');
         $isAng = $user->hasRole('ANG');
 
-        return $dataTable->render('p_prestasi.index', compact('isAdm', 'isAng', 'isDos'));
+        return $dataTable->render('portofolio.prestasi.index', compact('isAdm', 'isAng', 'isDos'));
     }
 
     private function generateUniqueFilename($directory, $filename)
@@ -56,7 +56,7 @@ class PPrestasiController extends Controller
         $user = Auth::user();
         $role = $user ? $user->getRole() : null;
 
-        return view('p_prestasi.create_ajax', compact('dosens', 'role'));
+        return view('portofolio.prestasi.create_ajax', compact('dosens', 'role'));
     }
 
     public function store_ajax(Request $request)
@@ -159,8 +159,8 @@ class PPrestasiController extends Controller
                     }
                     $originalName = $file->getClientOriginalName();
                     $filename = $nidnPrefix . $originalName;
-                    $filename = $this->generateUniqueFilename('public/p_prestasi', $filename);
-                    $path = $file->storeAs('public/p_prestasi', $filename);
+                    $filename = $this->generateUniqueFilename('public/portofolio/prestasi', $filename);
+                    $path = $file->storeAs('public/portofolio/prestasi', $filename);
                     $data['bukti'] = $filename;
                 }
 
@@ -199,7 +199,7 @@ class PPrestasiController extends Controller
         $role = $user ? $user->getRole() : null;
 
         $prestasi = PPrestasiModel::findOrFail($id);
-        return view('p_prestasi.edit_ajax', compact('prestasi', 'dosens', 'role'));
+        return view('portofolio.prestasi.edit_ajax', compact('prestasi', 'dosens', 'role'));
     }
 
     public function update_ajax(Request $request, $id)
@@ -286,8 +286,8 @@ class PPrestasiController extends Controller
                 }
 
                 if ($request->hasFile('bukti')) {
-                    if ($prestasi->bukti && Storage::exists('public/p_prestasi/' . $prestasi->bukti)) {
-                        Storage::delete('public/p_prestasi/' . $prestasi->bukti);
+                    if ($prestasi->bukti && Storage::exists('public/portofolio/prestasi/' . $prestasi->bukti)) {
+                        Storage::delete('public/portofolio/prestasi/' . $prestasi->bukti);
                     }
                     $file = $request->file('bukti');
                     $nidnPrefix = '';
@@ -296,8 +296,8 @@ class PPrestasiController extends Controller
                     }
                     $originalName = $file->getClientOriginalName();
                     $filename = $nidnPrefix . $originalName;
-                    $filename = $this->generateUniqueFilename('public/p_prestasi', $filename);
-                    $path = $file->storeAs('public/p_prestasi', $filename);
+                    $filename = $this->generateUniqueFilename('public/portofolio/prestasi', $filename);
+                    $path = $file->storeAs('public/portofolio/prestasi', $filename);
                     $data['bukti'] = $filename;
                 }
 
@@ -328,7 +328,7 @@ class PPrestasiController extends Controller
     public function confirm_ajax($id)
     {
         $prestasi = PPrestasiModel::findOrFail($id);
-        return view('p_prestasi.confirm_ajax', compact('prestasi'));
+        return view('portofolio.prestasi.confirm_ajax', compact('prestasi'));
     }
 
     public function delete_ajax(Request $request, $id)
@@ -336,8 +336,8 @@ class PPrestasiController extends Controller
         $prestasi = PPrestasiModel::findOrFail($id);
 
         try {
-            if ($prestasi->bukti && Storage::exists('public/p_prestasi/' . $prestasi->bukti)) {
-                Storage::delete('public/p_prestasi/' . $prestasi->bukti);
+            if ($prestasi->bukti && Storage::exists('public/portofolio/prestasi/' . $prestasi->bukti)) {
+                Storage::delete('public/portofolio/prestasi/' . $prestasi->bukti);
             }
             $prestasi->delete();
 
@@ -357,7 +357,7 @@ class PPrestasiController extends Controller
     public function detail_ajax($id)
     {
         $prestasi = PPrestasiModel::with('user.profile')->findOrFail($id);
-        return view('p_prestasi.detail_ajax', compact('prestasi'));
+        return view('portofolio.prestasi.detail_ajax', compact('prestasi'));
     }
 
     public function validasi_ajax(Request $request, $id)
@@ -378,12 +378,12 @@ class PPrestasiController extends Controller
             ]);
         }
 
-        return view('p_prestasi.validasi_ajax', compact('prestasi'));
+        return view('portofolio.prestasi.validasi_ajax', compact('prestasi'));
     }
 
     public function import()
     {
-        return view('p_prestasi.import');
+        return view('portofolio.prestasi.import');
     }
 
     public function import_ajax(Request $request)
@@ -563,7 +563,7 @@ class PPrestasiController extends Controller
             $sheet->setCellValue('G' . $row, $data->status);
             $sheet->setCellValue('H' . $row, $data->sumber_data);
             if ($data->bukti) {
-                $url = url('storage/p_prestasi/' . $data->bukti);
+                $url = url('storage/portofolio/prestasi/' . $data->bukti);
                 $sheet->setCellValue('I' . $row, 'Lihat File');
                 $sheet->getCell('I' . $row)->getHyperlink()->setUrl($url);
             } else {
@@ -633,7 +633,7 @@ class PPrestasiController extends Controller
             ];
         });
 
-        $pdf = Pdf::loadView('p_prestasi.export_pdf', [
+        $pdf = Pdf::loadView('portofolio.prestasi.export_pdf', [
             'prestasi' => $data
         ]);
 

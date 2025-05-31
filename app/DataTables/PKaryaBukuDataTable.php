@@ -25,22 +25,22 @@ class PKaryaBukuDataTable extends DataTable
         return (new EloquentDataTable($query))
             ->addColumn('aksi', function ($row) use ($user, $isDos, $isAdm) {
                 $buttons = [];
-                $detailUrl = route('p_karya_buku.detail_ajax', $row->id_karya_buku);
+                $detailUrl = route('portofolio.karya_buku.detail_ajax', $row->id_karya_buku);
 
                 $buttons[] = '<button onclick="modalAction(\'' . $detailUrl . '\')" class="btn btn-sm btn-info" style="margin-left: 5px;">
                     <i class="fas fa-info-circle"></i> Detail
                 </button>';
 
                 if ($isDos) {
-                    $validasiUrl = route('p_karya_buku.validasi_ajax', $row->id_karya_buku);
+                    $validasiUrl = route('portofolio.karya_buku.validasi_ajax', $row->id_karya_buku);
                     $buttons[] = '<button onclick="modalAction(\'' . $validasiUrl . '\')" class="btn btn-sm btn-warning" style="margin-left: 5px;">
                         <i class="fas fa-check-circle"></i> Validasi
                     </button>';
                 }
 
                 if ($isDos || $isAdm) {
-                    $editUrl = route('p_karya_buku.edit_ajax', $row->id_karya_buku);
-                    $deleteUrl = route('p_karya_buku.confirm_ajax', $row->id_karya_buku);
+                    $editUrl = route('portofolio.karya_buku.edit_ajax', $row->id_karya_buku);
+                    $deleteUrl = route('portofolio.karya_buku.confirm_ajax', $row->id_karya_buku);
 
                     $buttons[] = '<button onclick="modalAction(\'' . $editUrl . '\')" class="btn btn-sm btn-primary" style="margin-left: 5px;">
                         <i class="fas fa-edit"></i> Ubah

@@ -25,22 +25,22 @@ class PPenelitianDataTable extends DataTable
         return (new EloquentDataTable($query))
             ->addColumn('aksi', function ($row) use ($user, $isDos, $isAdm) {
                 $buttons = [];
-                $detailUrl = route('p_penelitian.detail_ajax', $row->id_penelitian);
+                $detailUrl = route('portofolio.penelitian.detail_ajax', $row->id_penelitian);
 
                 $buttons[] = '<button onclick="modalAction(\'' . $detailUrl . '\')" class="btn btn-sm btn-info" style="margin-left: 5px;">
                     <i class="fas fa-info-circle"></i> Detail
                 </button>';
 
                 if ($isDos) {
-                    $validasiUrl = route('p_penelitian.validasi_ajax', $row->id_penelitian);
+                    $validasiUrl = route('portofolio.penelitian.validasi_ajax', $row->id_penelitian);
                     $buttons[] = '<button onclick="modalAction(\'' . $validasiUrl . '\')" class="btn btn-sm btn-warning" style="margin-left: 5px;">
                         <i class="fas fa-check-circle"></i> Validasi
                     </button>';
                 }
 
                 if ($isDos || $isAdm) {
-                    $editUrl = route('p_penelitian.edit_ajax', $row->id_penelitian);
-                    $deleteUrl = route('p_penelitian.confirm_ajax', $row->id_penelitian);
+                    $editUrl = route('portofolio.penelitian.edit_ajax', $row->id_penelitian);
+                    $deleteUrl = route('portofolio.penelitian.confirm_ajax', $row->id_penelitian);
 
                     $buttons[] = '<button onclick="modalAction(\'' . $editUrl . '\')" class="btn btn-sm btn-primary" style="margin-left: 5px;">
                         <i class="fas fa-edit"></i> Ubah
@@ -76,8 +76,8 @@ class PPenelitianDataTable extends DataTable
                     . strtoupper($row->sumber_data) . '</span>';
             })
             ->editColumn('melibatkan_mahasiswa_s2', function ($row) {
-                return $row->melibatkan_mahasiswa_s2 ? 
-                    '<span class="badge p-2 badge-success">YA</span>' : 
+                return $row->melibatkan_mahasiswa_s2 ?
+                    '<span class="badge p-2 badge-success">YA</span>' :
                     '<span class="badge p-2 badge-secondary">TIDAK</span>';
             })
             ->editColumn('dana', function ($row) {

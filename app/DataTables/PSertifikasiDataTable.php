@@ -25,22 +25,22 @@ class PSertifikasiDataTable extends DataTable
         return (new EloquentDataTable($query))
             ->addColumn('aksi', function ($row) use ($user, $isDos, $isAdm) {
                 $buttons = [];
-                $detailUrl = route('p_sertifikasi.detail_ajax', $row->id_sertifikasi);
+                $detailUrl = route('portofolio.sertifikasi.detail_ajax', $row->id_sertifikasi);
 
                 $buttons[] = '<button onclick="modalAction(\'' . $detailUrl . '\')" class="btn btn-sm btn-info" style="margin-left: 5px;">
                     <i class="fas fa-info-circle"></i> Detail
                 </button>';
 
                 if ($isDos) {
-                    $validasiUrl = route('p_sertifikasi.validasi_ajax', $row->id_sertifikasi);
+                    $validasiUrl = route('portofolio.sertifikasi.validasi_ajax', $row->id_sertifikasi);
                     $buttons[] = '<button onclick="modalAction(\'' . $validasiUrl . '\')" class="btn btn-sm btn-warning" style="margin-left: 5px;">
                         <i class="fas fa-check-circle"></i> Validasi
                     </button>';
                 }
 
                 if ($isDos || $isAdm) {
-                    $editUrl = route('p_sertifikasi.edit_ajax', $row->id_sertifikasi);
-                    $deleteUrl = route('p_sertifikasi.confirm_ajax', $row->id_sertifikasi);
+                    $editUrl = route('portofolio.sertifikasi.edit_ajax', $row->id_sertifikasi);
+                    $deleteUrl = route('portofolio.sertifikasi.confirm_ajax', $row->id_sertifikasi);
 
                     $buttons[] = '<button onclick="modalAction(\'' . $editUrl . '\')" class="btn btn-sm btn-primary" style="margin-left: 5px;">
                         <i class="fas fa-edit"></i> Ubah

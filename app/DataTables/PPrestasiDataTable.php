@@ -25,22 +25,22 @@ class PPrestasiDataTable extends DataTable
         return (new EloquentDataTable($query))
             ->addColumn('aksi', function ($row) use ($user, $isDos, $isAdm) {
                 $buttons = [];
-                $detailUrl = route('p_prestasi.detail_ajax', $row->id_prestasi);
+                $detailUrl = route('portofolio.prestasi.detail_ajax', $row->id_prestasi);
 
                 $buttons[] = '<button onclick="modalAction(\'' . $detailUrl . '\')" class="btn btn-sm btn-info" style="margin-left: 5px;">
                     <i class="fas fa-info-circle"></i> Detail
                 </button>';
 
                 if ($isDos) {
-                    $validasiUrl = route('p_prestasi.validasi_ajax', $row->id_prestasi);
+                    $validasiUrl = route('portofolio.prestasi.validasi_ajax', $row->id_prestasi);
                     $buttons[] = '<button onclick="modalAction(\'' . $validasiUrl . '\')" class="btn btn-sm btn-warning" style="margin-left: 5px;">
                         <i class="fas fa-check-circle"></i> Validasi
                     </button>';
                 }
 
                 if ($isDos || $isAdm) {
-                    $editUrl = route('p_prestasi.edit_ajax', $row->id_prestasi);
-                    $deleteUrl = route('p_prestasi.confirm_ajax', $row->id_prestasi);
+                    $editUrl = route('portofolio.prestasi.edit_ajax', $row->id_prestasi);
+                    $deleteUrl = route('portofolio.prestasi.confirm_ajax', $row->id_prestasi);
 
                     $buttons[] = '<button onclick="modalAction(\'' . $editUrl . '\')" class="btn btn-sm btn-primary" style="margin-left: 5px;">
                         <i class="fas fa-edit"></i> Ubah

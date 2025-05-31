@@ -71,69 +71,71 @@
                     <li class="nav-header">Portofolio Dosen</li>
 
                     <li class="nav-item">
-                        <a href="{{ url('/p_sertifikasi') }}"
-                            class="nav-link {{ request()->is('p_sertifikasi') ? 'active' : '' }}">
+                        <a href="{{ url('/portofolio/sertifikasi') }}"
+                            class="nav-link {{ request()->is('portofolio/sertifikasi') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-certificate"></i>
                             <p>Sertifikasi</p>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="{{ url('/p_kegiatan') }}"
-                            class="nav-link {{ request()->is('p_kegiatan') ? 'active' : '' }}">
+                        <a href="{{ url('/portofolio/kegiatan') }}"
+                            class="nav-link {{ request()->is('portofolio/kegiatan') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-calendar-alt"></i>
                             <p>Kegiatan</p>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="{{ url('/p_prestasi') }}"
-                            class="nav-link {{ request()->is('p_prestasi') ? 'active' : '' }}">
+                        <a href="{{ url('/portofolio/prestasi') }}"
+                            class="nav-link {{ request()->is('portofolio/prestasi') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-award"></i>
                             <p>Prestasi</p>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="{{ url('/p_organisasi') }}"
-                            class="nav-link {{ request()->is('p_organisasi') ? 'active' : '' }}">
+                        <a href="{{ url('/portofolio/organisasi') }}"
+                            class="nav-link {{ request()->is('portofolio/organisasi') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-building"></i>
                             <p>Organisasi</p>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="{{ url('/p_publikasi') }}"
-                            class="nav-link {{ request()->is('p_publikasi') ? 'active' : '' }}">
+                        <a href="{{ url('/portofolio/publikasi') }}"
+                            class="nav-link {{ request()->is('portofolio/publikasi') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-newspaper"></i>
                             <p>Publikasi</p>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="{{ url('/p_penelitian') }}"
-                            class="nav-link {{ request()->is('p_penelitian') ? 'active' : '' }}">
+                        <a href="{{ url('/portofolio/penelitian') }}"
+                            class="nav-link {{ request()->is('portofolio/penelitian') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-laptop-code"></i>
                             <p>Penelitian</p>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="{{ url('/p_karya-buku') }}"
-                            class="nav-link {{ request()->is('p_karya-buku') ? 'active' : '' }}">
+                        <a href="{{ url('/portofolio/karya-buku') }}"
+                            class="nav-link {{ request()->is('portofolio/karya-buku') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-book"></i>
                             <p>Karya Buku</p>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="{{ url('/p_hki') }}" class="nav-link {{ request()->is('p_hki') ? 'active' : '' }}">
+                        <a href="{{ url('/portofolio/hki') }}"
+                            class="nav-link {{ request()->is('portofolio/hki') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-copyright"></i>
                             <p>HKI</p>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="{{ url('/p_pengabdian') }}"
-                            class="nav-link {{ request()->is('p_pengabdian') ? 'active' : '' }}">
+                        <a href="{{ url('/portofolio/pengabdian') }}"
+                            class="nav-link {{ request()->is('portofolio/pengabdian') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-hand-holding-heart"></i>
                             <p>Pengabdian Masyarakat</p>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="{{ url('/p_profesi') }}" class="nav-link {{ request()->is('p_profesi') ? 'active' : '' }}">
+                        <a href="{{ url('/portofolio/profesi') }}"
+                            class="nav-link {{ request()->is('portofolio/profesi') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-user-tie"></i>
                             <p>Profesi</p>
                         </a>

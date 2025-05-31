@@ -27,7 +27,7 @@ class PProfesiController extends Controller
         $isDos = $user->hasRole('DOS');
         $isAng = $user->hasRole('ANG');
 
-        return $dataTable->render('p_profesi.index', compact('isAdm', 'isAng', 'isDos'));
+        return $dataTable->render('portofolio.profesi.index', compact('isAdm', 'isAng', 'isDos'));
     }
 
     private function generateUniqueFilename($directory, $filename)
@@ -56,7 +56,7 @@ class PProfesiController extends Controller
         $user = Auth::user();
         $role = $user ? $user->getRole() : null;
 
-        return view('p_profesi.create_ajax', compact('dosens', 'role'));
+        return view('portofolio.profesi.create_ajax', compact('dosens', 'role'));
     }
 
     public function store_ajax(Request $request)
@@ -148,8 +148,8 @@ class PProfesiController extends Controller
 
                     $originalName = $file->getClientOriginalName();
                     $filename = $nidnPrefix . $originalName;
-                    $filename = $this->generateUniqueFilename('public/p_profesi', $filename);
-                    $path = $file->storeAs('public/p_profesi', $filename);
+                    $filename = $this->generateUniqueFilename('public/portofolio/profesi', $filename);
+                    $path = $file->storeAs('public/portofolio/profesi', $filename);
                     $data['bukti'] = $filename;
                 }
 
@@ -188,7 +188,7 @@ class PProfesiController extends Controller
         $role = $user ? $user->getRole() : null;
 
         $profesi = PProfesiModel::findOrFail($id);
-        return view('p_profesi.edit_ajax', compact('profesi', 'dosens', 'role'));
+        return view('portofolio.profesi.edit_ajax', compact('profesi', 'dosens', 'role'));
     }
 
     public function update_ajax(Request $request, $id)
@@ -280,8 +280,8 @@ class PProfesiController extends Controller
 
                     $originalName = $file->getClientOriginalName();
                     $filename = $nidnPrefix . $originalName;
-                    $filename = $this->generateUniqueFilename('public/p_profesi', $filename);
-                    $path = $file->storeAs('public/p_profesi', $filename);
+                    $filename = $this->generateUniqueFilename('public/portofolio/profesi', $filename);
+                    $path = $file->storeAs('public/portofolio/profesi', $filename);
                     $data['bukti'] = $filename;
                 }
 
@@ -312,7 +312,7 @@ class PProfesiController extends Controller
     public function confirm_ajax($id)
     {
         $profesi = PProfesiModel::findOrFail($id);
-        return view('p_profesi.confirm_ajax', compact('profesi'));
+        return view('portofolio.profesi.confirm_ajax', compact('profesi'));
     }
 
     public function delete_ajax(Request $request, $id)
@@ -320,8 +320,8 @@ class PProfesiController extends Controller
         $profesi = PProfesiModel::findOrFail($id);
 
         try {
-            if ($profesi->bukti && Storage::exists('public/p_profesi/' . $profesi->bukti)) {
-                Storage::delete('public/p_profesi/' . $profesi->bukti);
+            if ($profesi->bukti && Storage::exists('public/portofolio/profesi/' . $profesi->bukti)) {
+                Storage::delete('public/portofolio/profesi/' . $profesi->bukti);
             }
             $profesi->delete();
 
@@ -341,7 +341,7 @@ class PProfesiController extends Controller
     public function detail_ajax($id)
     {
         $profesi = PProfesiModel::with('user.profile')->findOrFail($id);
-        return view('p_profesi.detail_ajax', compact('profesi'));
+        return view('portofolio.profesi.detail_ajax', compact('profesi'));
     }
 
     public function validasi_ajax(Request $request, $id)
@@ -362,12 +362,12 @@ class PProfesiController extends Controller
             ]);
         }
 
-        return view('p_profesi.validasi_ajax', compact('profesi'));
+        return view('portofolio.profesi.validasi_ajax', compact('profesi'));
     }
 
     public function import()
     {
-        return view('p_profesi.import');
+        return view('portofolio.profesi.import');
     }
 
     public function import_ajax(Request $request)
@@ -484,7 +484,7 @@ class PProfesiController extends Controller
             $sheet->setCellValue('H' . $row, $data->sumber_data);
 
             if ($data->bukti) {
-                $url = url('storage/p_profesi/' . $data->bukti);
+                $url = url('storage/portofolio/profesi/' . $data->bukti);
                 $sheet->setCellValue('I' . $row, 'Lihat File');
                 $sheet->getCell('I' . $row)->getHyperlink()->setUrl($url);
             } else {
@@ -556,7 +556,7 @@ class PProfesiController extends Controller
             ];
         });
 
-        $pdf = Pdf::loadView('p_profesi.export_pdf', [
+        $pdf = Pdf::loadView('portofolio.profesi.export_pdf', [
             'profesi' => $data
         ]);
 
