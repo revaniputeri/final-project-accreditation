@@ -6,13 +6,13 @@
         <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
     </div>
     <div class="modal-body">
-        <div class="mb-3">
-            <label for="id_level" class="form-label">Level</label>
-            <select name="id_level" id="id_level">
+        <div class="mb-3 form-group">
+            <label for="id_level">Level</label>
+            <select id="id_level" class="form-control select2" style="width: 100%;" name="id_level" required>
                 <option value=""> >-Pilih Level-< </option>
-                        @foreach ($level as $i)
-                            <option value="{{$i->id_level}}">{{$i->nama_level}}</option>
-                        @endforeach
+                @foreach ($level as $i)
+                    <option value="{{$i->id_level}}">{{$i->nama_level}}</option>
+                @endforeach
             </select>
         </div>
         <div class="mb-3">
