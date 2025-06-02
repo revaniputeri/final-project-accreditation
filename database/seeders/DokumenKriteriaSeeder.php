@@ -12,17 +12,19 @@ class DokumenKriteriaSeeder extends Seeder
     {
         $dokumenKriteria = [];
 
-        // Ambil semua data kriteria yang sudah dibuat
-        $kriterias = DB::table('kriteria')->get();
+        // Ambil semua no_kriteria unik (tanpa duplikat)
+        $uniqueKriterias = DB::table('kriteria')
+            ->select('no_kriteria')
+            ->distinct()
+            ->get();
 
-        Log::info('DokumenKriteriaSeeder: Found ' . count($kriterias) . ' kriteria to process.');
+        Log::info('DokumenKriteriaSeeder: Found ' . count($uniqueKriterias) . ' unique kriteria to process.');
 
-        foreach ($kriterias as $kriteria) {
+        foreach ($uniqueKriterias as $kriteria) {
             $dokumenKriteria[] = [
                 'no_kriteria' => $kriteria->no_kriteria,
                 'versi' => 1, // Versi awal
-                'id_user' => $kriteria->id_user,
-                'judul' => 'Dokumen Kriteria ' . $kriteria->no_kriteria . ' - User ' . $kriteria->id_user,
+                'judul' => 'Dokumen Kriteria ' . $kriteria->no_kriteria,
                 'content_html' => '<p>Konten default untuk kriteria ' . $kriteria->no_kriteria . '</p>',
                 'status' => 'kosong',
                 'id_validator' => null,
@@ -31,7 +33,6 @@ class DokumenKriteriaSeeder extends Seeder
                 'updated_at' => now(),
             ];
         }
-
         DB::table('dokumen_kriteria')->insert($dokumenKriteria);
     }
 }
