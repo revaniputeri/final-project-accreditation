@@ -1,169 +1,193 @@
 @extends('layouts.app')
 
-@section('content')
+@section('title', 'Kriteria')
+@section('subtitle', 'Kriteria')
+
+@section('content_header')
     <div class="container-fluid">
-        <div class="row">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">Data Kriteria</h3>
-                        <div class="card-tools">
-                            <button type="button" class="btn btn-primary btn-sm" data-toggle="modal"
-                                data-target="#modal-create">
-                                <i class="fas fa-plus"></i> Tambah Data
-                            </button>
-                            <div class="btn-group">
-                                <button type="button" class="btn btn-success btn-sm dropdown-toggle" data-toggle="dropdown">
-                                    <i class="fas fa-download"></i> Export
-                                </button>
-                                <div class="dropdown-menu">
-                                    <a class="dropdown-item" href="{{ route('kriteria.export_excel') }}">Export Excel</a>
-                                    <a class="dropdown-item" href="{{ route('kriteria.export_pdf') }}">Export PDF</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <table id="kriteria-table" class="table table-bordered table-striped">
-                            <thead>
-                                <tr>
-                                    <th>No</th>
-                                    <th>No Kriteria</th>
-                                    <th>Nama User</th>
-                                    <th>Jumlah Dokumen</th>
-                                    <th>Aksi</th>
-                                </tr>
-                            </thead>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url('/') }}">Beranda</a></li>
+                <li class="breadcrumb-item active">Kriteria</li>
+            </ol>
+        </nav>
     </div>
+@endsection
 
-    <!-- Modal Create -->
-    <div class="modal fade" id="modal-create" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Tambah Kriteria</h5>
-                    <button type="button" class="close" data-dismiss="modal">
-                        <span>&times;</span>
+@section('content')
+<div class="container-fluid">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary border-bottom">
+            <div class="d-flex justify-content-between align-items-center">
+                <h3 class="card-title mb-0 text-white">Daftar Kriteria</h3>
+                <div class="card-tools">
+                    <a id="exportPdfBtn" class="btn btn-custom-blue me-2" href="{{ route('kriteria.export_pdf') }}">
+                        <i class="fa-solid fa-file-pdf me-2"></i> Export PDF
+                    </a>
+                    <a id="exportExcelBtn" class="btn btn-custom-blue me-2" href="{{ route('kriteria.export_excel') }}">
+                        <i class="fas fa-file-excel me-2"></i> Export Excel
+                    </a>
+                    <button class="btn btn-custom-blue me-2" onclick="modalAction('{{ route('kriteria.import') }}')">
+                        <i class="fa-solid fa-file-arrow-up me-2"></i> Import Data
+                    </button>
+                    <button onclick="modalAction('{{ route('kriteria.create_ajax') }}')" class="btn btn-custom-blue">
+                        <i class="fas fa-plus me-2"></i> Tambah Data
                     </button>
                 </div>
-                <div class="modal-body">
-                    <div id="create-content"></div>
-                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <div class="table-responsive">
+                {{ $dataTable->table([
+                    'id' => 'kriteria-table',
+                    'class' => 'table table-hover table-bordered table-striped',
+                    'style' => 'width:100%',
+                ]) }}
             </div>
         </div>
     </div>
-
-    <!-- Modal Edit -->
-    <div class="modal fade" id="modal-edit" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Edit Kriteria</h5>
-                    <button type="button" class="close" data-dismiss="modal">
-                        <span>&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div id="edit-content"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Detail -->
-    <div class="modal fade" id="modal-detail" tabindex="-1" role="dialog">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Detail Kriteria</h5>
-                    <button type="button" class="close" data-dismiss="modal">
-                        <span>&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div id="detail-content"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Delete -->
-    <div class="modal fade" id="modal-delete" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Konfirmasi Hapus</h5>
-                    <button type="button" class="close" data-dismiss="modal">
-                        <span>&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div id="delete-content"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
+</div>
 @endsection
 
 @push('scripts')
-            <script>
-                $(function () {
-                        var table = $('#kriteria-table').DataTable({
-                            processing: true,
-                            serverSide: true,
-                            ajax: "{{ route('kriteria.index') }}",
-                            order: [[1, 'asc']],
-                            columns: [
-                                { data: 'DT_RowIndex', name: 'DT_RowIndex' },
-                                { data: 'no_kriteria', name: 'no_kriteria' },
-                                { data: 'user.username', name: 'user.username' },
-                                { data: 'dokumen_kriteria_count', name: 'dokumen_kriteria_count' },
-                                { data: 'aksi', name: 'aksi', orderable: false, searchable: false }
-                            ]
-                        });
+{!! $dataTable->scripts() !!}
+<script>
+    function modalAction(url) {
+        $.get(url)
+            .done(function(response) {
+                $('#myModal .modal-content').html(response);
+                $('#myModal').modal('show');
 
-            // Create
-            $('#modal-create').on('show.bs.modal', function () {
-                $.get("{{ route('kriteria.create_ajax') }}", function (data) {
-                    $('#create-content').html(data);
-                });
-            });
+                $(document).off('submit', '#formCreateKriteria, #formEditKriteria, #form-import');
 
-            // Edit
-            $('#kriteria-table').on('click', '.edit-btn', function () {
-                var no_kriteria = $(this).data('no-kriteria');
-                var id_user = $(this).data('id-user');
-                $('#modal-edit').modal('show');
-                $.get("{{ url('kriteria/edit_ajax') }}/" + no_kriteria + "/" + id_user, function (data) {
-                    $('#edit-content').html(data);
-                });
-            });
+                $(document).on('submit', '#formCreateKriteria, #formEditKriteria', function(e) {
+                    e.preventDefault();
+                    var form = $(this);
 
-            // Detail
-            $('#kriteria-table').on('click', '.detail-btn', function () {
-                var no_kriteria = $(this).data('no-kriteria');
-                var id_user = $(this).data('id-user');
-                $('#modal-detail').modal('show');
-                $.get("{{ url('kriteria/detail_ajax') }}/" + no_kriteria + "/" + id_user, function (data) {
-                    $('#detail-content').html(data);
+                    $.ajax({
+                        url: form.attr('action'),
+                        method: form.find('input[name="_method"]').val() || form.attr('method'),
+                        data: form.serialize(),
+                        headers: {
+                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                        },
+                        success: function(res) {
+                            $('#myModal').modal('hide');
+                            window.LaravelDataTables["kriteria-table"].ajax.reload();
+                            if (res.alert && res.message) {
+                                Swal.fire({
+                                    icon: res.alert,
+                                    title: res.alert === 'success' ? 'Sukses' : 'Error',
+                                    text: res.message,
+                                    timer: 2000,
+                                    showConfirmButton: false
+                                });
+                            }
+                        },
+                        error: function(xhr) {
+                            $('#myModal').modal('hide');
+                            window.LaravelDataTables["kriteria-table"].ajax.reload();
+                            if (xhr.responseJSON && xhr.responseJSON.alert && xhr.responseJSON.message) {
+                                Swal.fire({
+                                    icon: xhr.responseJSON.alert,
+                                    title: xhr.responseJSON.alert === 'success' ? 'Sukses' : 'Error',
+                                    text: xhr.responseJSON.message,
+                                    timer: 2000,
+                                    showConfirmButton: false
+                                });
+                            } else {
+                                Swal.fire('Error!', 'Gagal menyimpan data karena duplikat Kode Kriteria.', 'error');
+                            }
+                        }
+                    });
                 });
-            });
 
-            // Delete
-            $('#kriteria-table').on('click', '.delete-btn', function () {
-                var no_kriteria = $(this).data('no-kriteria');
-                var id_user = $(this).data('id-user');
-                $('#modal-delete').modal('show');
-                $.get("{{ url('kriteria/confirm_ajax') }}/" + no_kriteria + "/" + id_user, function (data) {
-                    $('#delete-content').html(data);
+                $(document).off('submit', '#form-import');
+
+                $(document).on('submit', '#form-import', function(e) {
+                    e.preventDefault();
+                    var form = $(this);
+                    var formData = new FormData(form[0]);
+                    var submitBtn = form.find('button[type="submit"]');
+
+                    submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> Memproses...');
+
+                    $.ajax({
+                        url: form.attr('action'),
+                        method: 'POST',
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        success: function(response) {
+                            $('#myModal').modal('hide');
+                            if (response.alert && response.message) {
+                                Swal.fire({
+                                    icon: response.alert,
+                                    title: response.alert === 'success' ? 'Sukses' : 'Error',
+                                    text: response.message,
+                                    timer: 2000,
+                                    showConfirmButton: false
+                                }).then(() => {
+                                    window.LaravelDataTables["kriteria-table"].ajax.reload();
+                                });
+                            }
+                        },
+                        error: function(xhr) {
+                            $('#myModal').modal('hide');
+                            if (xhr.responseJSON && xhr.responseJSON.alert && xhr.responseJSON.message) {
+                                Swal.fire({
+                                    icon: xhr.responseJSON.alert,
+                                    title: xhr.responseJSON.alert === 'success' ? 'Sukses' : 'Error',
+                                    text: xhr.responseJSON.message,
+                                    timer: 2000,
+                                    showConfirmButton: false
+                                });
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: xhr.responseJSON.message
+                                });
+                            }
+                        },
+                        complete: function() {
+                            submitBtn.prop('disabled', false).html('<i class="fas fa-upload me-1"></i> Upload');
+                        }
+                    });
                 });
+            })
+            .fail(function(xhr) {
+                Swal.fire('Error!', 'Gagal memuat form: ' + xhr.statusText, 'error');
             });
+    }
+
+    $(document).on('submit', '#formDeleteKriteria', function(e) {
+        e.preventDefault();
+        var form = $(this);
+        $.ajax({
+            url: form.attr('action'),
+            method: 'POST',
+            data: form.serialize(),
+            success: function(response) {
+                $('#myModal').modal('hide');
+                window.LaravelDataTables["kriteria-table"].ajax.reload();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil',
+                    text: 'Kriteria berhasil dihapus.',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            },
+            error: function(xhr) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal',
+                    text: 'Tidak dapat menghapus kriteria karena masih digunakan.'
+                });
+            }
         });
-    </script>
+    });
+</script>
 @endpush

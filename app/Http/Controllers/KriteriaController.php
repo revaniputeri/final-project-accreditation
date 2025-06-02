@@ -36,8 +36,7 @@ class KriteriaController extends Controller
 
     public function create_ajax()
     {
-        $users = UserModel::all();
-        return view('kriteria.create_ajax', ['users' => $users]);
+        return view('kriteria.create_ajax');
     }
 
     public function store_ajax(Request $request)
@@ -231,5 +230,16 @@ class KriteriaController extends Controller
 
         $pdf->setPaper('a4', 'portrait');
         return $pdf->stream('Data Kriteria ' . date('d-m-Y H:i:s') . '.pdf');
+    }
+
+    public function getLastNumber()
+    {
+        $lastKriteria = KriteriaModel::orderBy('no_kriteria', 'desc')->first();
+        
+        if ($lastKriteria) {
+            return response()->json(['last_number' => $lastKriteria->no_kriteria]);
+        }
+        
+        return response()->json(['last_number' => null]);
     }
 }

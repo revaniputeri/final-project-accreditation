@@ -102,6 +102,9 @@ Route::middleware('auth')->group(function () {
         Route::delete('/delete_ajax/{no_kriteria}/{id_user}', [KriteriaController::class, 'delete_ajax'])->name('kriteria.delete_ajax');
         Route::get('/export_excel', [KriteriaController::class, 'export_excel'])->name('kriteria.export_excel');
         Route::get('/export_pdf', [KriteriaController::class, 'export_pdf'])->name('kriteria.export_pdf');
+        Route::get('/import', [KriteriaController::class, 'import'])->name('kriteria.import');
+        Route::post('/import_ajax', [KriteriaController::class, 'import_ajax'])->name('kriteria.import_ajax');
+        Route::get('/get-last-number', [KriteriaController::class, 'getLastNumber'])->name('kriteria.get_last_number');
     });
 
     // Route untuk dokumen kriteria & validasi

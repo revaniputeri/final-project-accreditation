@@ -60,12 +60,12 @@
         </div>
     </div>
 
-    <div id="myModal" class="modal fade" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <!-- Konten modal akan diisi secara dinamis -->
-            </div>
-        </div>
+    <div class="table-responsive">
+        {{ $dataTable->table([
+            'id' => 'level-table',
+            'class' => 'table table-hover table-bordered table-striped',
+            'style' => 'width:100%',
+        ]) }}
     </div>
 </div>
 @endsection
