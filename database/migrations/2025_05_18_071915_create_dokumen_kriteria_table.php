@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     public function up()
     {
         Schema::create('dokumen_kriteria', function (Blueprint $table) {
@@ -19,6 +18,14 @@ return new class extends Migration
             $table->foreignId('id_validator')->nullable()->constrained('user', 'id_user');
             $table->text('komentar')->nullable();
             $table->timestamps();
+
+            // Foreign key composite ke tabel kriteria
+            $table->foreign(['no_kriteria', 'id_user'])
+                  ->references(['no_kriteria', 'id_user'])
+                  ->on('kriteria')
+                  ->onDelete('cascade');
+
+            $table->unique(['no_kriteria', 'id_user', 'versi']);
         });
     }
 
@@ -27,4 +34,3 @@ return new class extends Migration
         Schema::dropIfExists('dokumen_kriteria');
     }
 };
-

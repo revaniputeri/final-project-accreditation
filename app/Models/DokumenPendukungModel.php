@@ -13,13 +13,24 @@ class DokumenPendukungModel extends Model
     protected $primaryKey = 'id_dokumen_pendukung';
     protected $fillable = [
         'no_kriteria',
+        'id_user',
         'nama_file',
         'path_file',
         'keterangan'
     ];
 
+    public function kriteria()
+    {
+        return $this->belongsTo(KriteriaModel::class, ['no_kriteria', 'id_user'], ['no_kriteria', 'id_user']);
+    }
+
     public function dokumenKriteria()
     {
-        return $this->belongsTo(DokumenKriteriaModel::class, 'no_kriteria', 'no_kriteria');
+        return $this->belongsTo(DokumenKriteriaModel::class, ['no_kriteria', 'id_user'], ['no_kriteria', 'id_user']);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(UserModel::class, 'id_user');
     }
 }
