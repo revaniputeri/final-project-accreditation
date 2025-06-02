@@ -36,8 +36,13 @@ class DokumenKriteriaModel extends Model
         return $this->belongsTo(UserModel::class, 'id_validator');
     }
 
+    public function kriteria()
+    {
+        return $this->belongsTo(KriteriaModel::class, ['no_kriteria', 'id_user'], ['no_kriteria', 'id_user']);
+    }
+
     public function dokumenPendukung()
     {
-        return $this->hasMany(DokumenPendukungModel::class, 'id_dokumen_kriteria');
+        return $this->hasMany(DokumenPendukungModel::class, ['no_kriteria', 'id_user'], ['no_kriteria', 'id_user']);
     }
 }
