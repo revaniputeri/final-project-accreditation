@@ -84,10 +84,9 @@ class KriteriaDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-            Column::make('DT_RowIndex')->title('No')->orderable(false)->searchable(false),
             Column::make('no_kriteria')->title('No Kriteria'),
             Column::make('user.username')->title('Nama User'),
-            Column::make('dokumen_count')->title('Jumlah Dokumen'),
+            Column::make('dokumen_kriteria_count')->title('Jumlah Dokumen'),
             Column::computed('aksi')
                 ->exportable(false)
                 ->printable(false)

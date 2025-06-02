@@ -15,7 +15,7 @@
 $(document).ready(function() {
     $('#btn-delete').on('click', function() {
         $.ajax({
-            url: "{{ route('kriteria.delete.ajax', ['no_kriteria' => $kriteria->no_kriteria, 'id_user' => $kriteria->id_user]) }}",
+            url: "{{ route('kriteria.delete_ajax', ['no_kriteria' => $kriteria->no_kriteria, 'id_user' => $kriteria->id_user]) }}",
             method: 'DELETE',
             data: {
                 _token: '{{ csrf_token() }}'

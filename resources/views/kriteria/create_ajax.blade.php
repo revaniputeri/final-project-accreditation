@@ -24,7 +24,7 @@ $(document).ready(function() {
     $('#form-create').on('submit', function(e) {
         e.preventDefault();
         $.ajax({
-            url: "{{ route('kriteria.store.ajax') }}",
+            url: "{{ route('kriteria.store_ajax') }}",
             method: 'POST',
             data: $(this).serialize(),
             success: function(response) {
