@@ -28,7 +28,7 @@
         $('#form-edit').on('submit', function (e) {
             e.preventDefault();
             $.ajax({
-                url: "{{ route('kriteria.update.ajax', ['no_kriteria' => $kriteria->no_kriteria, 'id_user' => $kriteria->id_user]) }}",
+                url: "{{ route('kriteria.update_ajax', ['no_kriteria' => $kriteria->no_kriteria, 'id_user' => $kriteria->id_user]) }}",
                 method: 'POST',
                 data: $(this).serialize(),
                 success: function (response) {

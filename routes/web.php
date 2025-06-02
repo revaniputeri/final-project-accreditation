@@ -93,15 +93,15 @@ Route::middleware('auth')->group(function () {
 
     Route::prefix('manage-kriteria')->group(function () {
         Route::get('/', [KriteriaController::class, 'index'])->name('kriteria.index');
-        Route::get('/create-ajax', [KriteriaController::class, 'create_ajax'])->name('kriteria.create.ajax');
-        Route::post('/store-ajax', [KriteriaController::class, 'store_ajax'])->name('kriteria.store.ajax');
-        Route::get('/edit-ajax/{no_kriteria}/{id_user}', [KriteriaController::class, 'edit_ajax'])->name('kriteria.edit.ajax');
-        Route::post('/update-ajax/{no_kriteria}/{id_user}', [KriteriaController::class, 'update_ajax'])->name('kriteria.update.ajax');
-        Route::get('/detail-ajax/{no_kriteria}/{id_user}', [KriteriaController::class, 'detail_ajax'])->name('kriteria.detail.ajax');
-        Route::get('/confirm-ajax/{no_kriteria}/{id_user}', [KriteriaController::class, 'confirm_ajax'])->name('kriteria.confirm.ajax');
-        Route::delete('/delete-ajax/{no_kriteria}/{id_user}', [KriteriaController::class, 'delete_ajax'])->name('kriteria.delete.ajax');
-        Route::get('/export-excel', [KriteriaController::class, 'export_excel'])->name('kriteria.export.excel');
-        Route::get('/export-pdf', [KriteriaController::class, 'export_pdf'])->name('kriteria.export.pdf');
+        Route::get('/create_ajax', [KriteriaController::class, 'create_ajax'])->name('kriteria.create_ajax');
+        Route::post('/store_ajax', [KriteriaController::class, 'store_ajax'])->name('kriteria.store_ajax');
+        Route::get('/edit_ajax/{no_kriteria}/{id_user}', [KriteriaController::class, 'edit_ajax'])->name('kriteria.edit_ajax');
+        Route::post('/update_ajax/{no_kriteria}/{id_user}', [KriteriaController::class, 'update_ajax'])->name('kriteria.update_ajax');
+        Route::get('/detail_ajax/{no_kriteria}/{id_user}', [KriteriaController::class, 'detail_ajax'])->name('kriteria.detail_ajax');
+        Route::get('/confirm_ajax/{no_kriteria}/{id_user}', [KriteriaController::class, 'confirm_ajax'])->name('kriteria.confirm_ajax');
+        Route::delete('/delete_ajax/{no_kriteria}/{id_user}', [KriteriaController::class, 'delete_ajax'])->name('kriteria.delete_ajax');
+        Route::get('/export_excel', [KriteriaController::class, 'export_excel'])->name('kriteria.export_excel');
+        Route::get('/export_pdf', [KriteriaController::class, 'export_pdf'])->name('kriteria.export_pdf');
     });
 
     // Route untuk dokumen kriteria & validasi

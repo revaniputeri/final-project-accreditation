@@ -17,8 +17,8 @@
                                     <i class="fas fa-download"></i> Export
                                 </button>
                                 <div class="dropdown-menu">
-                                    <a class="dropdown-item" href="{{ route('kriteria.export.excel') }}">Export Excel</a>
-                                    <a class="dropdown-item" href="{{ route('kriteria.export.pdf') }}">Export PDF</a>
+                                    <a class="dropdown-item" href="{{ route('kriteria.export_excel') }}">Export Excel</a>
+                                    <a class="dropdown-item" href="{{ route('kriteria.export_pdf') }}">Export PDF</a>
                                 </div>
                             </div>
                         </div>
@@ -112,24 +112,25 @@
 @endsection
 
 @push('scripts')
-    <script>
-        $(function () {
-            var table = $('#kriteria-table').DataTable({
-                processing: true,
-                serverSide: true,
-                ajax: "{{ route('kriteria.index') }}",
-                columns: [
-                    { data: 'DT_RowIndex', name: 'DT_RowIndex' },
-                    { data: 'no_kriteria', name: 'no_kriteria' },
-                    { data: 'user.username', name: 'user.username' },
-                    { data: 'dokumen_count', name: 'dokumen_count' },
-                    { data: 'action', name: 'action', orderable: false, searchable: false }
-                ]
-            });
+            <script>
+                $(function () {
+                        var table = $('#kriteria-table').DataTable({
+                            processing: true,
+                            serverSide: true,
+                            ajax: "{{ route('kriteria.index') }}",
+                            order: [[1, 'asc']],
+                            columns: [
+                                { data: 'DT_RowIndex', name: 'DT_RowIndex' },
+                                { data: 'no_kriteria', name: 'no_kriteria' },
+                                { data: 'user.username', name: 'user.username' },
+                                { data: 'dokumen_kriteria_count', name: 'dokumen_kriteria_count' },
+                                { data: 'aksi', name: 'aksi', orderable: false, searchable: false }
+                            ]
+                        });
 
             // Create
             $('#modal-create').on('show.bs.modal', function () {
-                $.get("{{ route('kriteria.create.ajax') }}", function (data) {
+                $.get("{{ route('kriteria.create_ajax') }}", function (data) {
                     $('#create-content').html(data);
                 });
             });
@@ -139,7 +140,7 @@
                 var no_kriteria = $(this).data('no-kriteria');
                 var id_user = $(this).data('id-user');
                 $('#modal-edit').modal('show');
-                $.get("{{ url('kriteria/edit-ajax') }}/" + no_kriteria + "/" + id_user, function (data) {
+                $.get("{{ url('kriteria/edit_ajax') }}/" + no_kriteria + "/" + id_user, function (data) {
                     $('#edit-content').html(data);
                 });
             });
@@ -149,7 +150,7 @@
                 var no_kriteria = $(this).data('no-kriteria');
                 var id_user = $(this).data('id-user');
                 $('#modal-detail').modal('show');
-                $.get("{{ url('kriteria/detail-ajax') }}/" + no_kriteria + "/" + id_user, function (data) {
+                $.get("{{ url('kriteria/detail_ajax') }}/" + no_kriteria + "/" + id_user, function (data) {
                     $('#detail-content').html(data);
                 });
             });
@@ -159,7 +160,7 @@
                 var no_kriteria = $(this).data('no-kriteria');
                 var id_user = $(this).data('id-user');
                 $('#modal-delete').modal('show');
-                $.get("{{ url('kriteria/confirm-ajax') }}/" + no_kriteria + "/" + id_user, function (data) {
+                $.get("{{ url('kriteria/confirm_ajax') }}/" + no_kriteria + "/" + id_user, function (data) {
                     $('#delete-content').html(data);
                 });
             });

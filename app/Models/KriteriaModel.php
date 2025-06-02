@@ -24,20 +24,17 @@ class KriteriaModel extends Model
 
     public function dokumenKriteria()
     {
-        return $this->hasMany(DokumenKriteriaModel::class, 'no_kriteria', 'no_kriteria')
-            ->whereColumn('dokumen_kriteria.id_user', 'kriteria.id_user');
+        return $this->hasMany(DokumenKriteriaModel::class, 'no_kriteria', 'no_kriteria');
     }
 
     public function dokumenPendukung()
     {
-        return $this->hasMany(DokumenPendukungModel::class, 'no_kriteria', 'no_kriteria')
-            ->whereColumn('dokumen_pendukung.id_user', 'kriteria.id_user');
+        return $this->hasMany(DokumenPendukungModel::class, 'no_kriteria', 'no_kriteria');
     }
 
     public function latestDokumen()
     {
         return $this->hasOne(DokumenKriteriaModel::class, 'no_kriteria', 'no_kriteria')
-            ->whereColumn('dokumen_kriteria.id_user', 'kriteria.id_user')
             ->latest('versi');
     }
     public function dokumen()

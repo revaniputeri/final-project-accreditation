@@ -20,6 +20,7 @@ class KriteriaDataTable extends DataTable
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
+            ->addIndexColumn()
             ->addColumn('aksi', function ($row) {
                 $detailUrl = route('kriteria.detail_ajax', ['no_kriteria' => $row->no_kriteria, 'id_user' => $row->id_user]);
                 $editUrl = route('kriteria.edit_ajax', ['no_kriteria' => $row->no_kriteria, 'id_user' => $row->id_user]);
@@ -87,7 +88,7 @@ class KriteriaDataTable extends DataTable
             Column::make('DT_RowIndex')->title('No')->orderable(false)->searchable(false),
             Column::make('no_kriteria')->title('No Kriteria'),
             Column::make('user.username')->title('Nama User'),
-            Column::make('dokumen_count')->title('Jumlah Dokumen'),
+            Column::make('dokumen_kriteria_count')->title('Jumlah Dokumen'),
             Column::computed('aksi')
                 ->exportable(false)
                 ->printable(false)
