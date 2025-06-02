@@ -9,23 +9,22 @@ return new class extends Migration {
     {
         Schema::create('dokumen_kriteria', function (Blueprint $table) {
             $table->id('id_dokumen_kriteria');
-            $table->integer('no_kriteria');
+            $table->integer('no_kriteria'); // Hanya menyimpan no_kriteria saja
             $table->integer('versi');
-            $table->foreignId('id_user')->constrained('user', 'id_user');
             $table->string('judul', 255);
             $table->longText('content_html');
             $table->enum('status', ['tervalidasi', 'revisi', 'kosong', 'perlu validasi'])->default('kosong');
-            $table->foreignId('id_validator')->nullable()->constrained('user', 'id_user');
+            $table->foreignId('id_validator')->nullable()->constrained('users');
             $table->text('komentar')->nullable();
             $table->timestamps();
 
-            // Foreign key composite ke tabel kriteria
-            $table->foreign(['no_kriteria', 'id_user'])
-                  ->references(['no_kriteria', 'id_user'])
-                  ->on('kriteria')
-                  ->onDelete('cascade');
+            // Relasi ke kriteria (tanpa id_user)
+            $table->foreign('no_kriteria')
+                ->references('no_kriteria')
+                ->on('kriteria')
+                ->onDelete('cascade');
 
-            $table->unique(['no_kriteria', 'id_user', 'versi']);
+            $table->unique(['no_kriteria', 'versi']); // Satu versi per no_kriteria
         });
     }
 

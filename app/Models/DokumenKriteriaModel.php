@@ -38,7 +38,20 @@ class DokumenKriteriaModel extends Model
 
     public function kriteria()
     {
-        return $this->belongsTo(KriteriaModel::class, ['no_kriteria', 'id_user'], ['no_kriteria', 'id_user']);
+        return $this->belongsTo(KriteriaModel::class, 'no_kriteria', 'no_kriteria');
+    }
+
+    public function users()
+    {
+        // Mengakses semua user yang terkait dengan no_kriteria ini
+        return $this->hasManyThrough(
+            User::class,
+            KriteriaModel::class,
+            'no_kriteria', // Foreign key pada tabel kriteria
+            'id_user',     // Foreign key pada tabel users
+            'no_kriteria', // Local key pada dokumen_kriteria
+            'id_user'      // Local key pada kriteria
+        );
     }
 
     public function dokumenPendukung()
