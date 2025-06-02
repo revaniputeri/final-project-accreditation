@@ -27,6 +27,7 @@
                         <table id="kriteria-table" class="table table-bordered table-striped">
                             <thead>
                                 <tr>
+                                    <th>No</th>
                                     <th>No Kriteria</th>
                                     <th>Nama User</th>
                                     <th>Jumlah Dokumen</th>
@@ -113,17 +114,19 @@
 @push('scripts')
             <script>
                 $(function () {
-                    var table = $('#kriteria-table').DataTable({
-                        processing: true,
-                        serverSide: true,
-                        ajax: "{{ route('kriteria.index') }}",
-                        columns: [
-                            { data: 'no_kriteria', name: 'no_kriteria' },
-                            { data: 'user.username', name: 'user.username' },
-                            { data: 'dokumen_kriteria_count', name: 'dokumen_kriteria_count' },
-                            { data: 'aksi', name: 'aksi', orderable: false, searchable: false }
-                        ]
-                    });
+                        var table = $('#kriteria-table').DataTable({
+                            processing: true,
+                            serverSide: true,
+                            ajax: "{{ route('kriteria.index') }}",
+                            order: [[1, 'asc']],
+                            columns: [
+                                { data: 'DT_RowIndex', name: 'DT_RowIndex' },
+                                { data: 'no_kriteria', name: 'no_kriteria' },
+                                { data: 'user.username', name: 'user.username' },
+                                { data: 'dokumen_kriteria_count', name: 'dokumen_kriteria_count' },
+                                { data: 'aksi', name: 'aksi', orderable: false, searchable: false }
+                            ]
+                        });
 
             // Create
             $('#modal-create').on('show.bs.modal', function () {
