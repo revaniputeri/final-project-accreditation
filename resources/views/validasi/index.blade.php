@@ -8,7 +8,7 @@
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{{ url('/') }}">Beranda</a></li>
-                <li class="breadcrumb-item active">Validasi</li>
+                <li class="breadcrumb-item active">Validasi Dokumen Kriteria</li>
             </ol>
         </nav>
     </div>
@@ -16,202 +16,325 @@
 
 @section('content')
     <div class="container-fluid">
-        <div class="card shadow-sm">
+        <div class="card shadow-sm mb-4">
             <div class="card-header bg-primary border-bottom">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h3 class="card-title mb-0 text-white">Validasi</h3>
-                    <div class="card-tools">
-                        
-                    </div>
-                </div>
+                <h3 class="card-title">Validasi Dokumen Kriteria</h3>
             </div>
-
             <div class="card-body">
-                {{-- Tombol Kriteria --}}
-                <div class="row">
-                    <div class="form-group row">
-                        <label class="col-2 control-label col-form-label">Kriteria</label>
-                        <div class="flex">
-                            @for ($i = 1; $i <= 9; $i++)
-                                <button type="button" class="btn btn-sm btn-primary kriteria-btn" data-kriteria="{{$i}}">
-                                    Kriteria {{$i}}
-                                </button>
-                            @endfor
-                            <small class="form-text text-muted pl-2">Pilih Kriteria</small>
+                <!-- Dropdown Pilihan Kriteria -->
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label>Pilih Nomor Kriteria</label>
+                            <select id="kriteriaDropdown" class="form-control select2">
+                                <option value="" selected disabled>-- Pilih Kriteria --</option>
+                                @foreach ($dokumenKriteria as $dokumen)
+                                    <option value="{{ $dokumen->no_kriteria }}">
+                                        Kriteria {{ $dokumen->no_kriteria }} - {{ $dokumen->judul }}
+                                    </option>
+                                @endforeach
+                            </select>
                         </div>
                     </div>
                 </div>
 
-                {{-- Tempat tampilnya PDF --}}
-                <div class="row mb-3" id="pdfContainer">
-                    <p class="text-muted">Pilih kriteria untuk melihat PDF</p>
+                <div class="row">
+                    <!-- Tabel Informasi Dokumen -->
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Informasi Dokumen Kriteria</h3>
+                            </div>
+                            <div class="card-body p-0">
+                                <table class="table table-bordered table-hover">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th width="15%">No Kriteria</th>
+                                            <th width="35%">Judul</th>
+                                            <th width="15%">Versi</th>
+                                            <th width="15%">Status</th>
+                                            <th width="20%">Terakhir Diupdate</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="dokumenInfoBody">
+                                        <tr>
+                                            <td colspan="5" class="text-center text-muted">Silakan pilih kriteria
+                                                terlebih dahulu</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preview PDF dan Form Validasi -->
+                <div class="row mt-3">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Preview Dokumen & Form Validasi</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <!-- PDF Preview -->
+                                    <div class="col-md-6">
+                                        <div class="border rounded p-2" style="background-color: #f8f9fa;">
+                                            <div style="width: 100%; height: 842px;"> <!-- A4 height -->
+                                                <iframe id="pdfPreview" src=""
+                                                    style="width: 100%; height: 100%; border: none;">
+                                                    Browser Anda tidak mendukung PDF viewer.
+                                                </iframe>
+                                            </div>
+                                            <div class="text-center mt-2">
+                                                <small class="text-muted">Preview dokumen PDF (Ukuran A4)</small>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Form Validasi -->
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="statusSelect">Status Validasi</label>
+                                            <select id="statusSelect" class="form-control">
+                                                <option value="" selected disabled>-- Pilih Status --</option>
+                                                <option value="tervalidasi">Tervalidasi</option>
+                                                <option value="revisi">Revisi</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="komentarInput">Komentar Validasi</label>
+                                            <textarea id="komentarInput" class="form-control" rows="8" placeholder="Masukkan komentar validasi..."></textarea>
+                                        </div>
+
+                                        <button id="submitValidation" class="btn btn-primary btn-block" disabled>
+                                            <i class="fas fa-check-circle mr-2"></i>Submit Validasi
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-
         </div>
+    </div>
 @endsection
-    @push('css')
-        <style>
-            .pdf-wrapper {
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                width: 100%;
-            }
-        </style>
-    @endpush
-    @push('scripts')
-        <script>
-            $(document).ready(function () {
-                var selectedKriteria = null;
 
-                var pdfLoader = {
-                    ajax: {
-                        reload: function () {
-                            if (!selectedKriteria) return;
+@push('css')
+    <style>
+        .embed-responsive-16by9 {
+            padding-bottom: 56.25%;
+        }
 
-                            $('#pdfContainer').html('<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Loading PDF...</div>');
+        .embed-responsive {
+            position: relative;
+            display: block;
+            width: 100%;
+            padding: 0;
+            overflow: hidden;
+        }
 
-                            $.ajax({
-                                url: "{{ route('validasi.showFile') }}",
-                                dataType: "json",
-                                type: "POST",
-                                data: {
-                                    kriteria: selectedKriteria,
-                                    _token: '{{ csrf_token() }}'
-                                },
-                                success: function (response) {
-                                    if (response.success && response.pdfUrl) {
-                                        // Buat iframe untuk PDF
-                                        var komentarHtml = ``;
-                                        if (response.status === 'revisi' && response.komentar) {
-                                            komentarHtml = `
-                                                                <div class="alert w-75 mx-auto bg-white border">
-                                                                <strong>Alasan Tidak Valid:</strong><br>${response.komentar}
-                                                                </div>
-                                                            `;
-                                        }
-                                        var validDisabled = response.status === 'tervalidasi' ? 'disabled' : '';
-                                        var tidakValidDisabled = response.status === 'revisi' ? 'disabled' : '';
-                                        var iframeHtml = `
-                                                                                        <div class="col-12">
-                                                                                            <div class="card">
-                                                                                                <div class="card-header">
-                                                                                                    <h5>PDF Kriteria ${selectedKriteria}</h5>
-                                                                                                </div>
-                                                                                                <div class="card-body p-0" flex>
-                                                                                                    <div class="pdf-wrapper d-flex justify-content-center">
-                                                                                                    <iframe src="${response.pdfUrl}" 
-                                                                                                            position="center"
-                                                                                                            width="75%" 
-                                                                                                            height="400px" 
-                                                                                                            style="border: none;">
-                                                                                                        <p>Browser Anda tidak mendukung PDF viewer. 
-                                                                                                           <a href="${response.pdfUrl}" target="_blank">Download PDF</a>
-                                                                                                        </p>
-                                                                                                    </iframe>
-                                                                                                    </div>
-                                                                                                </div>
-                                                                                                <div class="card-footer text-center bg-primary">
-                                                                                                        ${komentarHtml}
-                                                                                                        <div style="display: flex; flex-direction: column; align-items: center;">
-                                                                                                            <div id="komentarWrapper" class="mb-2" style="display: none; width: 75%;">
-                                                                                                                <textarea id="komentarInput" class="form-control" style="height: 300px;" placeholder="Tulis alasan tidak valid..."></textarea>
-                                                                                                            </div>
-                                                                                                            <div id="komentarButton" class="mb-2" style="display: none; width: 75%;">
-                                                                                                                <button type="button" id="submit-comment" class="btn btn-sm btn-success ">Kirim Komentar</button>
-                                                                                                                <button type="button" id="batal-comment" class="btn btn-sm btn-secondary ">Batal</button>
-                                                                                                            </div>
-                                                                                                        </div>
-                                                                                                        <a href="${response.pdfUrl}" target="_blank" class="btn btn-sm btn-secondary border">
-                                                                                                        <i class="fas fa-external-link-alt"></i> Buka di tab baru
-                                                                                                        </a>
-                                                                                                        <button id="btn-valid" class="btn btn-sm btn-success mx-1 border" ${validDisabled}>Valid</button>
-                                                                                                        <button id="btn-tidak-valid" class="btn btn-sm btn-danger mx-1 border" ${tidakValidDisabled}>Tidak Valid</button>
+        .embed-responsive .embed-responsive-item {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
 
+        .select2-container--default .select2-selection--single {
+            height: 38px;
+            padding-top: 4px;
+        }
 
-                                                                                                </div>
-                                                                                            </div>
-                                                                                        </div>
-                                                                                    `;
-                                        $('#pdfContainer').html(iframeHtml);
-                                    } else {
-                                        $('#pdfContainer').html('<div class="alert alert-warning">PDF tidak ditemukan untuk kriteria ini</div>');
-                                    }
-                                },
-                                error: function () {
-                                    $('#pdfContainer').html('<div class="alert alert-danger">Error loading PDF</div>');
-                                }
-                            });
-                        }
-                    }
-                };
+        .card-info {
+            border-top: 3px solid #17a2b8;
+        }
+    </style>
+@endpush
 
-                $('.kriteria-btn').on('click', function () {
-                    console.log("Tombol kriteria diklik");
-                    selectedKriteria = $(this).data('kriteria');
-
-                    // Update button states
-                    $('.kriteria-btn').removeClass('btn-success').addClass('btn-primary');
-                    $(this).removeClass('btn-primary').addClass('btn-success');
-
-                    pdfLoader.ajax.reload();
-                });
-                $(document).on('click', '#btn-valid', function () {
-                    // Kirim data ke controller Laravel
-                    $.ajax({
-                        url: "{{ route('validasi.valid') }}",
-                        type: "PUT",
-                        data: {
-                            kriteria: selectedKriteria,
-                            status: 'tervalidasi',
-                            _token: '{{ csrf_token() }}'
-                        },
-                        success: function (response) {
-                            if (!response.success) {
-                                Swal.fire('Gagal', 'Terjadi kesalahan saat menyimpan.', 'error');
-                            } else {
-                                Swal.fire('Berhasil', 'Data Tervalidasi.', 'success')
-                                    .then(() => {
-                                        pdfLoader.ajax.reload(); // 🔄 reload halaman
-                                    });
-                            }
-                        }
-                    });
-                });
-                $(document).on('click', '#submit-comment', function () {
-                    // Kirim data ke controller Laravel
-                    $.ajax({
-                        url: "{{ route('validasi.store') }}",
-                        type: "PUT",
-                        data: {
-                            kriteria: selectedKriteria,
-                            komentar: $('#komentarInput').val(),
-                            status: 'revisi',
-                            _token: '{{ csrf_token() }}'
-                        },
-                        success: function (response) {
-                            if (!response.success) {
-                                Swal.fire('Gagal', 'Terjadi kesalahan saat menyimpan.', 'error');
-                            }
-                            else {
-                                Swal.fire('Berhasil', 'Komentar dikirim.', 'success')
-                                    .then(() => {
-                                        pdfLoader.ajax.reload(); // 🔄 reload halaman
-                                    });
-                            }
-                        }
-                    });
-                });
-                $(document).on('click', '#btn-tidak-valid', function () {
-                    $('#komentarWrapper').show();
-                    $('#komentarButton').show();
-                });
-                $(document).on('click', '#batal-comment', function () {
-                    $('#komentarWrapper').hide();
-                    $('#komentarButton').hide();
-                });
+@push('scripts')
+    <!-- Select2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Inisialisasi Select2
+            $('.select2').select2({
+                placeholder: "-- Pilih Kriteria --",
+                allowClear: true
             });
 
-        </script>
-    @endpush
+            var selectedKriteria = null;
+
+            function loadPdfAndData(kriteriaId) {
+                if (!kriteriaId) return;
+
+                $('#pdfPreview').attr('src', '');
+                $('#statusSelect').val('');
+                $('#komentarInput').val('');
+                $('#submitValidation').prop('disabled', true);
+
+                // Load dokumen info
+                $.ajax({
+                    url: "{{ route('validasi.getDokumenInfo') }}",
+                    dataType: "json",
+                    type: "POST",
+                    data: {
+                        no_kriteria: kriteriaId,
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(response) {
+                        if (response.success && response.data) {
+                            var data = response.data;
+                            var rowHtml = '<tr>' +
+                                '<td>' + data.no_kriteria + '</td>' +
+                                '<td>' + data.judul + '</td>' +
+                                '<td>' + data.versi + '</td>' +
+                                '<td><span class="badge p-2 ' + getStatusBadgeClass(data.status) +
+                                '">' +
+                                data.status.toUpperCase() + '</span></td>' +
+                                '<td>' + (data.updated_at || '-') + '</td>' +
+                                '</tr>';
+                            $('#dokumenInfoBody').html(rowHtml);
+                        } else {
+                            $('#dokumenInfoBody').html(
+                                '<tr><td colspan="5" class="text-center text-muted">Informasi dokumen tidak ditemukan</td></tr>'
+                            );
+                        }
+                    },
+                    error: function() {
+                        $('#dokumenInfoBody').html(
+                            '<tr><td colspan="5" class="text-center text-danger">Gagal memuat informasi dokumen</td></tr>'
+                        );
+                    }
+                });
+
+                // Load PDF and validation data
+                $.ajax({
+                    url: "{{ route('validasi.showFile') }}",
+                    dataType: "json",
+                    type: "POST",
+                    data: {
+                        kriteria: kriteriaId,
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(response) {
+                        if (response.success && response.pdfUrl) {
+                            $('#pdfPreview').attr('src', response.pdfUrl);
+                            if (response.status) {
+                                $('#statusSelect').val(response.status);
+                            }
+                            if (response.komentar) {
+                                $('#komentarInput').val(response.komentar);
+                            }
+                            $('#submitValidation').prop('disabled', false);
+                        } else {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Peringatan',
+                                text: 'Dokumen PDF tidak ditemukan.'
+                            });
+                        }
+                    },
+                    error: function() {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Gagal memuat dokumen PDF.'
+                        });
+                    }
+                });
+            }
+
+            function getStatusBadgeClass(status) {
+                switch (status.toLowerCase()) {
+                    case 'tervalidasi':
+                        return 'badge-success';
+                    case 'revisi':
+                        return 'badge-warning';
+                    case 'perlu validasi':
+                        return 'badge-info';
+                    default:
+                        return 'badge-secondary';
+                }
+            }
+
+            $('#kriteriaDropdown').on('change', function() {
+                selectedKriteria = $(this).val();
+                if (selectedKriteria) {
+                    loadPdfAndData(selectedKriteria);
+                } else {
+                    $('#dokumenInfoBody').html(
+                        '<tr><td colspan="5" class="text-center text-muted">Silakan pilih kriteria terlebih dahulu</td></tr>'
+                    );
+                    $('#pdfPreview').attr('src', '');
+                    $('#statusSelect').val('');
+                    $('#komentarInput').val('');
+                    $('#submitValidation').prop('disabled', true);
+                }
+            });
+
+            $('#submitValidation').on('click', function() {
+                if (!selectedKriteria) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Peringatan',
+                        text: 'Pilih kriteria terlebih dahulu.'
+                    });
+                    return;
+                }
+                var status = $('#statusSelect').val();
+                var komentar = $('#komentarInput').val();
+
+                if (!status) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Peringatan',
+                        text: 'Pilih status validasi.'
+                    });
+                    return;
+                }
+
+                $.ajax({
+                    url: "{{ route('validasi.store') }}",
+                    type: "PUT",
+                    data: {
+                        kriteria: selectedKriteria,
+                        status: status,
+                        komentar: komentar,
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Sukses',
+                                text: 'Validasi berhasil disimpan.'
+                            });
+                            // Refresh informasi dokumen setelah validasi
+                            loadPdfAndData(selectedKriteria);
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'Gagal menyimpan validasi: ' + (response
+                                    .message || '')
+                            });
+                        }
+                    },
+                    error: function(xhr) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Terjadi kesalahan saat menyimpan validasi.'
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+@endpush

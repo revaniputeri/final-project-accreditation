@@ -45,7 +45,7 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
-    Route ::get('/', [DashboardController::class, 'index']);
+    Route::get('/', [DashboardController::class, 'index']);
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 
     // Route untuk manage
@@ -85,7 +85,6 @@ Route::middleware('auth')->group(function () {
         Route::post('/import_ajax', [UserController::class, 'import_ajax'])->name('import_ajax');
         Route::get('/export_excel', [UserController::class, 'export_excel'])->name('export_excel');
         Route::get('/export_pdf', [UserController::class, 'export_pdf'])->name('export_pdf');
-
     });
 
     Route::middleware('auth')->group(function () {
@@ -116,6 +115,7 @@ Route::middleware('auth')->group(function () {
         Route::POST('/showFile', [ValidasiController::class, 'showFile'])->name('showFile');
         Route::PUT('/valid', [ValidasiController::class, 'valid'])->name('valid');
         Route::PUT('/store', [ValidasiController::class, 'store'])->name('store');
+        Route::post('/getDokumenInfo', [ValidasiController::class, 'getDokumenInfo'])->name('getDokumenInfo');
     });
 
     Route::prefix('dokumen_kriteria')->name('dokumen_kriteria.')->middleware('authorize:ANG')->group(function () {
