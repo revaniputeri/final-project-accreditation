@@ -18,6 +18,9 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ValidasiController;
 use App\Http\Controllers\DokumenKriteriaController;
 use App\Http\Controllers\ImageUploadController;
+use App\Http\Controllers\KriteriaController;
+use App\Http\Controllers\DashboardController;
+use SebastianBergmann\CodeCoverage\Report\Html\Dashboard;
 
 /*
 |--------------------------------------------------------------------------
@@ -42,13 +45,10 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
-    Route::get('/', function () {
-        return view('home');
-    });
+    Route ::get('/', [DashboardController::class, 'index']);
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 
     // Route untuk manage
-
     Route::prefix('manage-level')->name('level.')->middleware('authorize:ADM')->group(function () {
         Route::get('/', [LevelController::class, 'index'])->name('level.index');
 
@@ -94,8 +94,23 @@ Route::middleware('auth')->group(function () {
 
     });
 
-    // Route untuk dokumen kriteria & validasi
+    Route::prefix('manage-kriteria')->group(function () {
+        Route::get('/', [KriteriaController::class, 'index'])->name('kriteria.index');
+        Route::get('/create_ajax', [KriteriaController::class, 'create_ajax'])->name('kriteria.create_ajax');
+        Route::post('/store_ajax', [KriteriaController::class, 'store_ajax'])->name('kriteria.store_ajax');
+        Route::get('/edit_ajax/{no_kriteria}/{id_user}', [KriteriaController::class, 'edit_ajax'])->name('kriteria.edit_ajax');
+        Route::post('/update_ajax/{no_kriteria}/{id_user}', [KriteriaController::class, 'update_ajax'])->name('kriteria.update_ajax');
+        Route::get('/detail_ajax/{no_kriteria}/{id_user}', [KriteriaController::class, 'detail_ajax'])->name('kriteria.detail_ajax');
+        Route::get('/confirm_ajax/{no_kriteria}/{id_user}', [KriteriaController::class, 'confirm_ajax'])->name('kriteria.confirm_ajax');
+        Route::delete('/delete_ajax/{no_kriteria}/{id_user}', [KriteriaController::class, 'delete_ajax'])->name('kriteria.delete_ajax');
+        Route::get('/export_excel', [KriteriaController::class, 'export_excel'])->name('kriteria.export_excel');
+        Route::get('/export_pdf', [KriteriaController::class, 'export_pdf'])->name('kriteria.export_pdf');
+        Route::get('/import', [KriteriaController::class, 'import'])->name('kriteria.import');
+        Route::post('/import_ajax', [KriteriaController::class, 'import_ajax'])->name('kriteria.import_ajax');
+        Route::get('/get-last-number', [KriteriaController::class, 'getLastNumber'])->name('kriteria.get_last_number');
+    });
 
+    // Route untuk dokumen kriteria & validasi
     Route::prefix('validasi')->name('validasi.')->middleware('authorize:ADM,VAL')->group(function () {
         Route::GET('/', [ValidasiController::class, 'index'])->name('index');
         Route::POST('/showFile', [ValidasiController::class, 'showFile'])->name('showFile');
@@ -342,5 +357,11 @@ Route::middleware('auth')->group(function () {
             Route::get('/export_excel', [PProfesiController::class, 'export_excel'])->name('export_excel');
             Route::get('/export_pdf', [PProfesiController::class, 'export_pdf'])->name('export_pdf');
         });
+    });
+
+    // Route dashboard
+    Route::prefix('chart')->name('chart.')->middleware('authorize:ADM,VAL,ANG')->group(function () {
+        Route::get('/', [DashboardController::class, 'index'])->name('index');
+        Route::get('/more-info', [DashboardController::class, 'moreInfo'])->name('moreInfo');
     });
 });

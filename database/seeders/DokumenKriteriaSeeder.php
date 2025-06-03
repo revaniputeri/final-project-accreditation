@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class DokumenKriteriaSeeder extends Seeder
 {
@@ -11,25 +12,20 @@ class DokumenKriteriaSeeder extends Seeder
     {
         $dokumenKriteria = [];
 
-        $angUsers = DB::table('user')
-            ->join('level', 'user.id_level', '=', 'level.id_level')
-            ->where('level.kode_level', 'ANG')
-            // Removed the id_user range filter to include all users with level 'ANG'
+        // Ambil semua no_kriteria unik (tanpa duplikat)
+        $uniqueKriterias = DB::table('kriteria')
+            ->select('no_kriteria')
+            ->distinct()
             ->get();
 
-        // Nomor kriteria unik untuk setiap user (1-5)
-        $noKriteria = 1;
+        Log::info('DokumenKriteriaSeeder: Found ' . count($uniqueKriterias) . ' unique kriteria to process.');
 
-        // Debug: Log the number of users found
-        info('DokumenKriteriaSeeder: Found ' . count($angUsers) . ' users with level ANG.');
-
-        foreach ($angUsers as $user) {
+        foreach ($uniqueKriterias as $kriteria) {
             $dokumenKriteria[] = [
-                'no_kriteria' => $noKriteria++, // Nomor kriteria increment (1-5)
+                'no_kriteria' => $kriteria->no_kriteria,
                 'versi' => 1, // Versi awal
-                'id_user' => $user->id_user,
-                'judul' => 'Dokumen Kriteria ' . ($noKriteria-1) . ' - User ' . $user->id_user,
-                'content_html' => '<p>Konten default untuk kriteria ' . ($noKriteria-1) . '</p>',
+                'judul' => 'Dokumen Kriteria ' . $kriteria->no_kriteria,
+                'content_html' => '<p>Konten default untuk kriteria ' . $kriteria->no_kriteria . '</p>',
                 'status' => 'kosong',
                 'id_validator' => null,
                 'komentar' => null,
@@ -37,7 +33,6 @@ class DokumenKriteriaSeeder extends Seeder
                 'updated_at' => now(),
             ];
         }
-
         DB::table('dokumen_kriteria')->insert($dokumenKriteria);
     }
 }
