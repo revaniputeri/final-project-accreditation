@@ -14,6 +14,14 @@
                 <td>{{ $dokumen_pendukung->no_kriteria }}</td>
             </tr>
             <tr>
+                <th>Diunggah Oleh</th>
+                <td>{{ $dokumen_pendukung->user && $dokumen_pendukung->user->profile ? $dokumen_pendukung->user->profile->nama_lengkap : '-' }}</td>
+            </tr>
+            <tr>
+                <th>NIDN</th>
+                <td>{{ $dokumen_pendukung->user && $dokumen_pendukung->user->profile ? $dokumen_pendukung->user->profile->nidn : '-' }}</td>
+            </tr>
+            <tr>
                 <th>Nama File</th>
                 <td>{{ $dokumen_pendukung->nama_file }}</td>
             </tr>

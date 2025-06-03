@@ -4,25 +4,32 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 class KriteriaSeeder extends Seeder
 {
     public function run()
     {
-        $kriteriaData = [];
-
-        // Ambil semua user dengan role ANG
-        $angUsers = DB::table('user')
+        $users = DB::table('user')
             ->join('level', 'user.id_level', '=', 'level.id_level')
             ->where('level.kode_level', 'ANG')
+            ->select('user.id_user')
             ->get();
 
-        Log::info('KriteriaSeeder: Found ' . count($angUsers) . ' users with role ANG.');
+        $maxUserPerKriteria = 2;
+        $jumlahKriteria = 2;
+        $kriteriaData = [];
 
-        foreach ($angUsers as $user) {
-            // Buat 5 kriteria untuk setiap user (no_kriteria 1-5)
-            for ($noKriteria = 1; $noKriteria <= 5; $noKriteria++) {
+        $userIndex = 0;
+
+        for ($noKriteria = 1; $noKriteria <= $jumlahKriteria; $noKriteria++) {
+            for ($i = 0; $i < $maxUserPerKriteria; $i++) {
+                if ($userIndex >= count($users)) {
+                    break 2;
+                }
+
+                $user = $users[$userIndex];
+                $userIndex++;
+
                 $kriteriaData[] = [
                     'no_kriteria' => $noKriteria,
                     'id_user' => $user->id_user,
@@ -32,7 +39,6 @@ class KriteriaSeeder extends Seeder
             }
         }
 
-        // Insert data kriteria
         DB::table('kriteria')->insert($kriteriaData);
     }
 }

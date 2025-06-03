@@ -18,9 +18,11 @@ class DokumenKriteriaController extends Controller
         /** @var UserModel|null $user */
         $user = Auth::user();
 
-        // Get latest dokumen per no_kriteria for the user
-        $latestDokumen = DokumenKriteriaModel::where('id_user', $user->id_user)
-            ->orderByDesc('versi')
+        // Get latest dokumen per no_kriteria for the user by joining kriteria table
+        $latestDokumen = DokumenKriteriaModel::select('dokumen_kriteria.*')
+            ->join('kriteria', 'dokumen_kriteria.no_kriteria', '=', 'kriteria.no_kriteria')
+            ->where('kriteria.id_user', $user->id_user)
+            ->orderByDesc('dokumen_kriteria.versi')
             ->first();
 
         $dokumen = $latestDokumen ? collect([$latestDokumen]) : collect();
@@ -72,14 +74,15 @@ class DokumenKriteriaController extends Controller
             // Strip outer div before creating new version
             $cleanContent = $stripOuterDiv($request->content_html);
 
-            $versiTerakhir = DokumenKriteriaModel::where('id_user', Auth::id())
-                ->where('no_kriteria', $dokumenLama->no_kriteria)
-                ->max('versi');
+            $versiTerakhir = DokumenKriteriaModel::select('dokumen_kriteria.*')
+                ->join('kriteria', 'dokumen_kriteria.no_kriteria', '=', 'kriteria.no_kriteria')
+                ->where('kriteria.id_user', Auth::id())
+                ->where('dokumen_kriteria.no_kriteria', $dokumenLama->no_kriteria)
+                ->max('dokumen_kriteria.versi');
 
             $versiBaru = $versiTerakhir ? $versiTerakhir + 1 : 1;
 
             DokumenKriteriaModel::create([
-                'id_user' => Auth::id(),
                 'judul' => $dokumenLama->judul,
                 'content_html' => $cleanContent,
                 'no_kriteria' => $dokumenLama->no_kriteria,
@@ -132,6 +135,7 @@ class DokumenKriteriaController extends Controller
 
                 DokumenPendukungModel::create([
                     'no_kriteria' => $request->no_kriteria,
+                    'id_user' => Auth::id(),
                     'nama_file' => $request->nama_file,
                     'path_file' => $filename,
                     'keterangan' => $request->Keterangan,
@@ -195,17 +199,23 @@ class DokumenKriteriaController extends Controller
             try {
                 $data = $request->only(['no_kriteria', 'nama_file', 'keterangan']);
 
-                    if ($request->hasFile('dokumen_pendukung')) {
-                        if ($dokumen_pendukung->path_file && Storage::exists('public/dokumen_pendukung/' . $dokumen_pendukung->path_file)) {
-                            Storage::delete('public/dokumen_pendukung/' . $dokumen_pendukung->path_file);
-                        }
-                        $file = $request->file('dokumen_pendukung');
-                        $path = $file->store('public/dokumen_pendukung');
-                        $filename = basename($path);
-                        $data['path_file'] = $filename;
+                if ($request->hasFile('dokumen_pendukung')) {
+                    if ($dokumen_pendukung->path_file && Storage::exists('public/dokumen_pendukung/' . $dokumen_pendukung->path_file)) {
+                        Storage::delete('public/dokumen_pendukung/' . $dokumen_pendukung->path_file);
                     }
+                    $file = $request->file('dokumen_pendukung');
+                    $path = $file->store('public/dokumen_pendukung');
+                    $filename = basename($path);
+                    $data['path_file'] = $filename;
+                }
 
                 $dokumen_pendukung->update($data);
+
+                // Ensure id_user is set to current user if not present
+                if (!$dokumen_pendukung->id_user) {
+                    $dokumen_pendukung->id_user = Auth::id();
+                    $dokumen_pendukung->save();
+                }
 
                 return response()->json([
                     'status' => true,
