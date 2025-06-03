@@ -1,4 +1,4 @@
-<form id="formEditProfile" method="POST" action="{{ route('user.updateProfile_ajax', ['id' => $user->id_profile]) }}">
+<form id="formEditProfile" method="POST" action="{{ route('profile.updateProfile_ajax', ['id' => $user->id_profile]) }}">
     @csrf
     @method('PUT')
     <div class="modal-header bg-primary text-white">

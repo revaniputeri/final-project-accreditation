@@ -67,7 +67,13 @@ Route::middleware('auth')->group(function () {
         Route::get('/export_excel', [LevelController::class, 'export_excel'])->name('export_excel');
         Route::get('/export_pdf', [LevelController::class, 'export_pdf'])->name('export_pdf');
     });
-
+    Route::prefix('manage-profile')->name('profile.')->middleware('authorize:ADM,VAL,ANG')->group(function () {
+        Route::get('/pageProfile', [UserController::class, 'pageProfile'])->name('pageProfile');
+        Route::get('/{id}/editProfile_ajax', [UserController::class, 'editProfile_ajax'])->name('editProfile_ajax');
+        Route::PUT('/{id}/updateProfile_ajax', [UserController::class, 'updateProfile_ajax'])->name('updateProfile_ajax');
+        Route::get('/editPhoto_ajax', [UserController::class, 'editPhoto_ajax'])->name('editPhoto_ajax');
+        Route::Post('/storePhoto_ajax', [UserController::class, 'storePhoto_ajax'])->name('storePhoto_ajax');
+    });
     Route::prefix('manage-user')->name('user.')->middleware('authorize:ADM')->group(function () {
         Route::get('/', [UserController::class, 'index'])->name('user.index');
 
@@ -86,9 +92,6 @@ Route::middleware('auth')->group(function () {
         Route::get('/export_excel', [UserController::class, 'export_excel'])->name('export_excel');
         Route::get('/export_pdf', [UserController::class, 'export_pdf'])->name('export_pdf');
 
-        Route::get('/pageProfile', [UserController::class, 'pageProfile'])->name('pageProfile');
-        Route::get('/{id}/editProfile_ajax', [UserController::class, 'editProfile_ajax'])->name('editProfile_ajax');
-        Route::PUT('/{id}/updateProfile_ajax', [UserController::class, 'updateProfile_ajax'])->name('updateProfile_ajax');
     });
 
     // Route untuk dokumen kriteria & validasi

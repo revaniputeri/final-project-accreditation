@@ -28,6 +28,18 @@
 
             <div class="card-body">
                 <div class="text-center mb-4">
+                    <div class="position-relative">
+                        <img class="profile-user-img img-fluid img-circle"
+                            src="{{ asset('storage/user_avatar/' . Auth::user()->id_user . '.png') }}"
+                            alt="User profile picture">
+                        {{-- Icon Kamera Bootstrap --}}
+                        <label onclick="modalAction('{{route('profile.editPhoto_ajax')}}')"
+                            class="position-absolute bottom-0 end-0 bg-primary text-white rounded-circle p-1 ml-n4  "
+                            style="cursor: pointer;">
+                            <i class="icon fas fa-camera"></i>
+
+                        </label>
+                    </div>
                     {{-- <img src="{{ $user->avatar ?? 'https://via.placeholder.com/120' }}" alt="Foto Profil" --}} {{--
                         class="rounded-circle" width="120" height="120"> --}}
                 </div>
@@ -67,7 +79,7 @@
 
                 <div class="text-center mt-4">
                     <button type="button"
-                        onclick="modalAction('{{route('user.editProfile_ajax', ['id' => $user->id_profile])}}')"
+                        onclick="modalAction('{{route('profile.editProfile_ajax', ['id' => $user->id_profile])}}')"
                         class="btn btn-sm btn-primary">Edit Profile</button>
                 </div>
             </div>
@@ -144,6 +156,6 @@
                     Swal.fire('Error!', 'Gagal memuat form: ' + xhr.statusText, 'error');
                 });
         }
-        
+
     </script>
 @endpush
