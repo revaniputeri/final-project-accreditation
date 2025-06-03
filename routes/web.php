@@ -86,9 +86,12 @@ Route::middleware('auth')->group(function () {
         Route::get('/export_excel', [UserController::class, 'export_excel'])->name('export_excel');
         Route::get('/export_pdf', [UserController::class, 'export_pdf'])->name('export_pdf');
 
-        Route::get('/pageProfile', [UserController::class, 'pageProfile'])->name('pageProfile');
-        Route::get('/{id}/editProfile_ajax', [UserController::class, 'editProfile_ajax'])->name('editProfile_ajax');
-        Route::PUT('/{id}/updateProfile_ajax', [UserController::class, 'updateProfile_ajax'])->name('updateProfile_ajax');
+    });
+
+    Route::middleware('auth')->group(function () {
+        Route::get('/pageProfile', [UserController::class, 'pageProfile'])->name('user.pageProfile');
+        Route::get('/{id}/editProfile_ajax', [UserController::class, 'editProfile_ajax'])->name('user.editProfile_ajax');
+        Route::PUT('/{id}/updateProfile_ajax', [UserController::class, 'updateProfile_ajax'])->name('user.updateProfile_ajax');
     });
 
     Route::prefix('manage-kriteria')->group(function () {

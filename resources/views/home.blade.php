@@ -43,7 +43,7 @@
                     <div class="small-box bg-info text-center custom-box">
                         <div class="inner py-3">
                             <h1>{{ $data['totalTerValidasi'] }}</h1>
-                            <p>Data Tervalidasi</p>
+                            <p>Data Portofolio Tervalidasi</p>
                         </div>
                         <a href="{{ route('chart.moreInfo', ['status' => 'Tervalidasi']) }}" class="small-box-footer">
                             More info <i class="fas fa-arrow-circle-right"></i>
@@ -56,7 +56,7 @@
                     <div class="small-box bg-warning text-center custom-box">
                         <div class="inner py-3 text-white">
                             <h1>{{ $data['totalPerluValidasi'] }}</h1>
-                            <p>Data Perlu Validasi</p>
+                            <p>Data Portofolio Perlu Validasi</p>
                         </div>
                         <a href="{{ route('chart.moreInfo', ['status' => 'Perlu Validasi']) }}" class="small-box-footer text-white">
                             More info <i class="fas fa-arrow-circle-right text-white"></i>
@@ -69,7 +69,7 @@
                     <div class="small-box bg-danger text-center custom-box">
                         <div class="inner py-3">
                             <h1>{{ $data['totalTidakValid'] }}</h1>
-                            <p>Data Tidak Valid</p>
+                            <p>Data Portofolio Tidak Valid</p>
                         </div>
                         <a href="{{ route('chart.moreInfo', ['status' => 'Tidak Valid']) }}" class="small-box-footer">
                             More info <i class="fas fa-arrow-circle-right"></i>
