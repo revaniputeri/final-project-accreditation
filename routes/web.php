@@ -19,6 +19,8 @@ use App\Http\Controllers\ValidasiController;
 use App\Http\Controllers\DokumenKriteriaController;
 use App\Http\Controllers\ImageUploadController;
 use App\Http\Controllers\KriteriaController;
+use App\Http\Controllers\DashboardController;
+use SebastianBergmann\CodeCoverage\Report\Html\Dashboard;
 
 /*
 |--------------------------------------------------------------------------
@@ -43,9 +45,7 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
-    Route::get('/', function () {
-        return view('home');
-    });
+    Route ::get('/', [DashboardController::class, 'index']);
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 
     // Route untuk manage
@@ -354,5 +354,11 @@ Route::middleware('auth')->group(function () {
             Route::get('/export_excel', [PProfesiController::class, 'export_excel'])->name('export_excel');
             Route::get('/export_pdf', [PProfesiController::class, 'export_pdf'])->name('export_pdf');
         });
+    });
+
+    // Route dashboard
+    Route::prefix('chart')->name('chart.')->middleware('authorize:ADM,VAL,ANG')->group(function () {
+        Route::get('/', [DashboardController::class, 'index'])->name('index');
+        Route::get('/more-info', [DashboardController::class, 'moreInfo'])->name('moreInfo');
     });
 });
