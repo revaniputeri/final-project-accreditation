@@ -25,6 +25,59 @@ class DokumenKriteriaSeeder extends Seeder
                 'no_kriteria' => $kriteria->no_kriteria,
                 'versi' => 1, // Versi awal
                 'judul' => 'Dokumen Kriteria ' . $kriteria->no_kriteria,
+                'kategori' => 'penetapan',
+                'content_html' => '<p>Konten default untuk kriteria ' . $kriteria->no_kriteria . '</p>',
+                'status' => 'kosong',
+                'id_validator' => null,
+                'komentar' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+
+            $dokumenKriteria[] = [
+                'no_kriteria' => $kriteria->no_kriteria,
+                'versi' => 1, // Versi awal
+                'judul' => 'Dokumen Kriteria ' . $kriteria->no_kriteria,
+                'kategori' => 'pelaksanaan',
+                'content_html' => '<p>Konten default untuk kriteria ' . $kriteria->no_kriteria . '</p>',
+                'status' => 'kosong',
+                'id_validator' => null,
+                'komentar' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+
+            $dokumenKriteria[] = [
+                'no_kriteria' => $kriteria->no_kriteria,
+                'versi' => 1, // Versi awal
+                'judul' => 'Dokumen Kriteria ' . $kriteria->no_kriteria,
+                'kategori' => 'evaluasi',
+                'content_html' => '<p>Konten default untuk kriteria ' . $kriteria->no_kriteria . '</p>',
+                'status' => 'kosong',
+                'id_validator' => null,
+                'komentar' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+
+            $dokumenKriteria[] = [
+                'no_kriteria' => $kriteria->no_kriteria,
+                'versi' => 1, // Versi awal
+                'judul' => 'Dokumen Kriteria ' . $kriteria->no_kriteria,
+                'kategori' => 'pengendalian',
+                'content_html' => '<p>Konten default untuk kriteria ' . $kriteria->no_kriteria . '</p>',
+                'status' => 'kosong',
+                'id_validator' => null,
+                'komentar' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+
+            $dokumenKriteria[] = [
+                'no_kriteria' => $kriteria->no_kriteria,
+                'versi' => 1, // Versi awal
+                'judul' => 'Dokumen Kriteria ' . $kriteria->no_kriteria,
+                'kategori' => 'peningkatan',
                 'content_html' => '<p>Konten default untuk kriteria ' . $kriteria->no_kriteria . '</p>',
                 'status' => 'kosong',
                 'id_validator' => null,

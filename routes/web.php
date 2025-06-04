@@ -68,8 +68,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/export_excel', [LevelController::class, 'export_excel'])->name('export_excel');
         Route::get('/export_pdf', [LevelController::class, 'export_pdf'])->name('export_pdf');
     });
-  
-    Route::prefix('manage-profile')->name('profile.')->middleware('authorize:ADM,VAL,ANG')->group(function () {
+
+    Route::prefix('manage-profile')->name('profile.')->middleware('auth')->group(function () {
         Route::get('/pageProfile', [UserController::class, 'pageProfile'])->name('pageProfile');
         Route::get('/{id}/editProfile_ajax', [UserController::class, 'editProfile_ajax'])->name('editProfile_ajax');
         Route::PUT('/{id}/updateProfile_ajax', [UserController::class, 'updateProfile_ajax'])->name('updateProfile_ajax');
