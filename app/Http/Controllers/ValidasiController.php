@@ -6,50 +6,95 @@ use App\Models\DokumenKriteriaModel;
 use Illuminate\Http\Request;
 use App\Models\ProfileUser;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 
 class ValidasiController extends Controller
 {
     public function index(){
-        return view('validasi.index');
+        // Get latest version for each no_kriteria
+        $subQuery = DokumenKriteriaModel::selectRaw('MAX(versi) as max_versi, no_kriteria')
+            ->groupBy('no_kriteria');
+
+        $dokumenKriteria = DokumenKriteriaModel::joinSub($subQuery, 'latest', function($join) {
+            $join->on('dokumen_kriteria.no_kriteria', '=', 'latest.no_kriteria')
+                 ->on('dokumen_kriteria.versi', '=', 'latest.max_versi');
+        })->get();
+
+        return view('validasi.index', compact('dokumenKriteria'));
     }
-public function showFile(Request $request)
+
+    public function showFile(Request $request)
     {
         try {
             $kriteria = $request->kriteria;
-            
+
             if (!$kriteria) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Kriteria tidak boleh kosong'
                 ]);
             }
-            $validasi = DokumenKriteriaModel::where('id_dokumen_kriteria', $kriteria)->first();
-            // Generate path PDF berdasarkan kriteria
-            $pdfFileName = "kriteria_{$kriteria}.pdf";
-            
-            // Path sebenarnya di public/pdfs (untuk pengecekan file exists)
-            $pdfPath = public_path("pdfs/{$pdfFileName}");
-            
-            // URL untuk akses public
-            $pdfUrl = asset("pdfs/{$pdfFileName}");
-           
-            // Check apakah file PDF ada
-            if (file_exists($pdfPath)) {
-                return response()->json([
-                    'success' => true,
-                    'pdfUrl' => $pdfUrl,
-                    'kriteria' => $kriteria,
-                    'fileName' => $pdfFileName,
-                    'status' => $validasi->status ?? null,
-                    'komentar' => $validasi->komentar ?? null,
-                ]);
-            } else {
+
+            $dokumen = DokumenKriteriaModel::where('no_kriteria', $kriteria)->latest('versi')->first();
+
+            if (!$dokumen) {
                 return response()->json([
                     'success' => false,
-                    'message' => "PDF untuk kriteria {$kriteria} tidak ditemukan di: {$pdfPath}"
+                    'message' => 'Dokumen kriteria tidak ditemukan'
                 ]);
             }
-           
+
+            // Setup Dompdf options
+            $options = new Options();
+            $options->setIsRemoteEnabled(true);
+            $dompdf = new Dompdf($options);
+
+            // Fix image URLs in content_html by embedding images as base64
+            $contentHtml = $dokumen->content_html;
+
+            // Use DOMDocument to parse and replace image src with base64 data
+            libxml_use_internal_errors(true);
+            $dom = new \DOMDocument();
+            $dom->loadHTML(mb_convert_encoding($contentHtml, 'HTML-ENTITIES', 'UTF-8'));
+
+            $images = $dom->getElementsByTagName('img');
+            foreach ($images as $img) {
+                $src = $img->getAttribute('src');
+                // Check if src is a local storage path
+                if (preg_match('/^(\/?storage\/img\/.+)$/', $src, $matches)) {
+                    $path = public_path(ltrim($matches[1], '/'));
+                    if (file_exists($path)) {
+                        $type = mime_content_type($path);
+                        $data = base64_encode(file_get_contents($path));
+                        $base64 = 'data:' . $type . ';base64,' . $data;
+                        $img->setAttribute('src', $base64);
+                    }
+                }
+            }
+            $contentHtml = $dom->saveHTML();
+
+            // Load fixed content_html to Dompdf
+            $dompdf->loadHtml($contentHtml);
+
+            // (Optional) Set paper size and orientation
+            $dompdf->setPaper('A4', 'portrait');
+
+            // Render the PDF
+            $dompdf->render();
+
+            // Output the PDF as base64 string
+            $output = $dompdf->output();
+            $base64Pdf = 'data:application/pdf;base64,' . base64_encode($output);
+
+            return response()->json([
+                'success' => true,
+                'pdfUrl' => $base64Pdf,
+                'kriteria' => $kriteria,
+                'status' => $dokumen->status ?? null,
+                'komentar' => $dokumen->komentar ?? null,
+            ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -59,10 +104,10 @@ public function showFile(Request $request)
     }
     public function valid(Request $request){
         $user = Auth::user();
-        $idValidator = ProfileUser::where('id_user', $user->id_user)->value('id_profile');
+        $idValidator = $user->id; // Use user id for foreign key
         $kriteria = $request->kriteria;
         $status = $request->status;
-        $check = DokumenKriteriaModel::where('id_dokumen_kriteria',$kriteria)->first();
+        $check = DokumenKriteriaModel::where('no_kriteria', $kriteria)->latest('versi')->first();
 
         if (!$check) {
             return response()->json([
@@ -82,28 +127,65 @@ public function showFile(Request $request)
                     'message' => "Berhasil Menyimpan"
                 ]);
     }
+
     public function store(Request $request){
-        $user = Auth::user();
-        $idValidator = ProfileUser::where('id_user', $user->id_user)->value('id_profile');
-        $kriteria = $request->kriteria;
-        $status = $request->status;
-        $komentar = $request->komentar;
-        $check = DokumenKriteriaModel::where('id_dokumen_kriteria',$kriteria)->first();
-        if (!$check) {
+        try {
+            $user = Auth::user();
+            $idValidator = $user->id; // Use user id for foreign key
+            $kriteria = $request->kriteria;
+            $status = $request->status;
+            $komentar = $request->komentar;
+            $check = DokumenKriteriaModel::where('no_kriteria', $kriteria)->latest('versi')->first();
+            if (!$check) {
+                return response()->json([
+                        'success' => false,
+                        'message' => "PDF untuk kriteria data kriteria tidak ditemukan"
+                    ]);
+            }
+            $check->update([
+                'id_validator'=>$idValidator,
+                'status'=> $status,
+                'komentar'=>$komentar,
+                'updated_at'=>now()
+            ]);
             return response()->json([
-                    'success' => false,
-                    'message' => "PDF untuk kriteria data kriteria tidak ditemukan"
-                ]);
+                        'success' => true,
+                        'message' => "Berhasil Menyimpan"
+                    ]);
+        } catch (\Exception $e) {
+            Log::error('Error in ValidasiController@store: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error saat menyimpan data validasi: ' . $e->getMessage()
+            ]);
         }
-        $check->update([
-            'id_validator'=>$idValidator,
-            'status'=> $status,
-            'komentar'=>$komentar,
-            'updated_at'=>now()
-        ]);
+    }
+
+    public function getDokumenInfo(Request $request)
+    {
+        $noKriteria = $request->no_kriteria;
+        if (!$noKriteria) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Nomor kriteria tidak boleh kosong'
+            ]);
+        }
+        $dokumen = DokumenKriteriaModel::where('no_kriteria', $noKriteria)->latest('versi')->first();
+        if (!$dokumen) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Dokumen kriteria tidak ditemukan'
+            ]);
+        }
         return response()->json([
-                    'success' => true,
-                    'message' => "Berhasil Menyimpan"
-                ]);
+            'success' => true,
+            'data' => [
+                'no_kriteria' => $dokumen->no_kriteria,
+                'judul' => $dokumen->judul,
+                'versi' => $dokumen->versi,
+                'status' => $dokumen->status,
+                'updated_at' => $dokumen->updated_at ? $dokumen->updated_at->format('Y-m-d H:i:s') : null,
+            ]
+        ]);
     }
 }

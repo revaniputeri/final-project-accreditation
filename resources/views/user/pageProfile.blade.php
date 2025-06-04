@@ -8,7 +8,7 @@
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{{ url('/') }}">Beranda</a></li>
-                <li class="breadcrumb-item active">User</li>
+                <li class="breadcrumb-item active">Profile User</li>
             </ol>
         </nav>
     </div>
@@ -19,7 +19,7 @@
         <div class="card shadow-sm">
             <div class="card-header bg-primary border-bottom">
                 <div class="d-flex justify-content-between align-items-center">
-                    <h3 class="card-title mb-0 text-white">UserProfile</h3>
+                    <h3 class="card-title mb-0 text-white">Profile User</h3>
                     <div class="card-tools">
 
                     </div>
@@ -144,6 +144,6 @@
                     Swal.fire('Error!', 'Gagal memuat form: ' + xhr.statusText, 'error');
                 });
         }
-        
+
     </script>
 @endpush
