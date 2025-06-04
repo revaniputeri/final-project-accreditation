@@ -49,13 +49,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/', [DashboardController::class, 'index']);
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 
-    // Route untuk profile user
-    Route::middleware('auth')->group(function () {
-        Route::get('/pageProfile', [UserController::class, 'pageProfile'])->name('user.pageProfile');
-        Route::get('/{id}/editProfile_ajax', [UserController::class, 'editProfile_ajax'])->name('user.editProfile_ajax');
-        Route::PUT('/{id}/updateProfile_ajax', [UserController::class, 'updateProfile_ajax'])->name('user.updateProfile_ajax');
-    });
-
     // Route untuk manage-level
     Route::prefix('manage-level')->name('level.')->middleware('authorize:ADM')->group(function () {
         Route::get('/', [LevelController::class, 'index'])->name('level.index');
@@ -74,6 +67,14 @@ Route::middleware('auth')->group(function () {
         Route::post('/import_ajax', [LevelController::class, 'import_ajax'])->name('import_ajax');
         Route::get('/export_excel', [LevelController::class, 'export_excel'])->name('export_excel');
         Route::get('/export_pdf', [LevelController::class, 'export_pdf'])->name('export_pdf');
+    });
+  
+    Route::prefix('manage-profile')->name('profile.')->middleware('authorize:ADM,VAL,ANG')->group(function () {
+        Route::get('/pageProfile', [UserController::class, 'pageProfile'])->name('pageProfile');
+        Route::get('/{id}/editProfile_ajax', [UserController::class, 'editProfile_ajax'])->name('editProfile_ajax');
+        Route::PUT('/{id}/updateProfile_ajax', [UserController::class, 'updateProfile_ajax'])->name('updateProfile_ajax');
+        Route::get('/editPhoto_ajax', [UserController::class, 'editPhoto_ajax'])->name('editPhoto_ajax');
+        Route::Post('/storePhoto_ajax', [UserController::class, 'storePhoto_ajax'])->name('storePhoto_ajax');
     });
 
     // Route untuk manage-user

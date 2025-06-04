@@ -15,6 +15,9 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\File;
 
 class UserController extends Controller
 {
@@ -432,13 +435,15 @@ class UserController extends Controller
         return $pdf->stream('Data User' . date('d-m-Y H:i:s') . '.pdf');
     }
 
-    public function pageProfile(){
+    public function pageProfile()
+    {
         $Auth = auth()->user();
         $user = ProfileUser::with('user.level')->where('id_user', $Auth->id_user)->first();
-        $level = LevelModel::where('id_level',$user->user->id_level)->first();
-        return view('user.pageProfile',['user'=> $user,'level'=>$level]);
+        $level = LevelModel::where('id_level', $user->user->id_level)->first();
+        return view('user.pageProfile', ['user' => $user, 'level' => $level]);
     }
-    public function editProfile_ajax($id){
+    public function editProfile_ajax($id)
+    {
         $user = ProfileUser::with('user')->find($id);
         if (!$user) {
             return response()->json([
@@ -446,9 +451,10 @@ class UserController extends Controller
                 'message' => 'Data Profile tidak ditemukan'
             ]);
         }
-        return view('user.editProfile_ajax',['user'=> $user]);
+        return view('user.editProfile_ajax', ['user' => $user]);
     }
-    public function updateProfile_ajax(Request $request, $id){
+    public function updateProfile_ajax(Request $request, $id)
+    {
         if ($request->ajax() || $request->wantsJson()) {
             // Aturan validasi
             $rules = [
@@ -509,4 +515,41 @@ class UserController extends Controller
         // Jika bukan AJAX, redirect ke homepage
         return redirect('/');
     }
+
+    public function editPhoto_ajax()
+    {
+        return view('user.editPhoto_ajax');
+    }
+
+    public function storePhoto_ajax(Request $request)
+    {
+        $request->validate([
+            'avatar' => 'required|image|mimes:jpg,jpeg,png,gif|max:2048',
+        ]);
+
+        $user = Auth::user();
+
+        $filename = $user->id_user . '.png';
+
+        // Path relatif di dalam disk 'public'
+        $path = 'user_avatar/' . $filename;
+
+        // Hapus file lama jika ada
+        if (Storage::disk('public')->exists($path)) {
+            Storage::disk('public')->delete($path);
+        }
+
+        // Simpan file baru ke storage/app/public/user_avatar
+        $request->file('avatar')->storeAs('user_avatar', $filename, 'public');
+
+        // Simpan ke database jika perlu
+        // $user->avatar = $filename;
+        $user->save();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Foto berhasil diperbarui'
+        ]);
+    }
+
 }
