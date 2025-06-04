@@ -37,10 +37,11 @@ class UserSeeder extends Seeder
             'updated_at' => now(),
         ]);
 
-        // Create criteria staff (5 users)
+        // Create criteria staff (9 users)
         for ($i = 1; $i <= 9; $i++) {
+            $nidn = '000000' . str_pad(rand(1000, 9999), 4, '0', STR_PAD_LEFT);
             DB::table('user')->insert([
-                'username' => 'kriteria' . $i,
+                'username' => $nidn,
                 'password' => Hash::make('password'),
                 'id_level' => DB::table('level')->where('kode_level', 'ANG')->first()->id_level,
                 'created_at' => now(),
@@ -50,8 +51,9 @@ class UserSeeder extends Seeder
 
         // Create 10 lecturer accounts
         for ($i = 1; $i <= 10; $i++) {
+            $nidn = (string) rand(1000000000, 9999999999);
             DB::table('user')->insert([
-                'username' => 'dosen' . $i,
+                'username' => $nidn,
                 'password' => Hash::make('password'),
                 'id_level' => DB::table('level')->where('kode_level', 'DOS')->first()->id_level,
                 'created_at' => now(),

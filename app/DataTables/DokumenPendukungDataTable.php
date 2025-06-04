@@ -21,6 +21,9 @@ class DokumenPendukungDataTable extends DataTable
     {
         return (new EloquentDataTable($query))
             ->addIndexColumn() // Add this line to add row index column
+            ->addColumn('user_full_name', function ($row) {
+                return $row->user && $row->user->profile ? $row->user->profile->nama_lengkap : '-';
+            })
             ->addColumn('aksi', function ($row) {
                 $detailUrl = route('dokumen_kriteria.detail_ajax', $row->id_dokumen_pendukung);
                 $editUrl = route('dokumen_kriteria.edit_ajax', $row->id_dokumen_pendukung);
@@ -72,7 +75,8 @@ class DokumenPendukungDataTable extends DataTable
 
     public function query(DokumenPendukungModel $model): QueryBuilder
     {
-        $query = $model->newQuery();
+        $query = $model->newQuery()
+            ->with(['user.profile']);
 
         if ($this->no_kriteria) {
             $query->where('no_kriteria', $this->no_kriteria);
@@ -112,6 +116,7 @@ class DokumenPendukungDataTable extends DataTable
             Column::computed('DT_RowIndex')->title('No')->searchable(false)->orderable(false),
             Column::make('nama_file')->title('Nama File'),
             Column::make('keterangan')->title('Keterangan'),
+            Column::make('user_full_name')->title('Diunggah Oleh'),
             Column::computed('aksi')
                 ->exportable(false)
                 ->printable(false)
