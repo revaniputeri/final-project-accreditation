@@ -222,6 +222,10 @@ Route::middleware('auth')->group(function () {
             Route::post('/import_ajax', [POrganisasiController::class, 'import_ajax'])->name('import_ajax');
             Route::get('/export_excel', [POrganisasiController::class, 'export_excel'])->name('export_excel');
             Route::get('/export_pdf', [POrganisasiController::class, 'export_pdf'])->name('export_pdf');
+
+            // Chart
+            Route::get('/chart1',[POrganisasiController::class,'chart1'])->name('chart1');
+            Route::get('/chart2',[POrganisasiController::class,'chart2'])->name('chart2');
         });
 
         // Route Portofolio Publikasi

@@ -668,4 +668,37 @@ class POrganisasiController extends Controller
 
         return $pdf->stream('Data Organisasi ' . date('d-m-Y H:i:s') . '.pdf');
     }
+    public function chart1(){
+        $data = POrganisasiModel::select(DB::raw('COUNT(id_user) as jumlah, tingkat'))
+            ->groupBy('tingkat')
+            ->get();
+            if(!$data) {
+            return response()->json([
+                'message' => 'Data tidak ditemukan',
+                'status' => false
+            ], 404);
+        }
+
+        return response()->json([
+            'data' => $data,
+            'status' => true,
+            'message' => 'Data berhasil diambil'
+        ]);
+    }
+    public function chart2(){
+        $data = POrganisasiModel::select(DB::raw('COUNT(id_user) as jumlah, status'))
+            ->groupBy('status')
+            ->get();
+            if(!$data) {
+            return response()->json([
+                'message' => 'Data tidak ditemukan',
+                'status' => false
+            ], 404);
+        }
+        return response()->json([
+            'data' => $data,
+            'status' => true,
+            'message' => 'Data berhasil diambil'
+        ]);
+    }
 }

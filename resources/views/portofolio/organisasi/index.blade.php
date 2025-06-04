@@ -23,10 +23,12 @@
                 <div class="d-flex justify-content-between align-items-center">
                     <h3 class="card-title mb-0 text-white">Daftar Organisasi</h3>
                     <div class="card-tools">
-                        <a id="exportPdfBtn" class="btn btn-custom-blue me-2" href="{{ route('portofolio.organisasi.export_pdf') }}">
+                        <a id="exportPdfBtn" class="btn btn-custom-blue me-2"
+                            href="{{ route('portofolio.organisasi.export_pdf') }}">
                             <i class="fa-solid fa-file-pdf me-2"></i> Export PDF
                         </a>
-                        <a id="exportExcelBtn" class="btn btn-custom-blue me-2" href="{{ route('portofolio.organisasi.export_excel') }}">
+                        <a id="exportExcelBtn" class="btn btn-custom-blue me-2"
+                            href="{{ route('portofolio.organisasi.export_excel') }}">
                             <i class="fas fa-file-excel me-2"></i> Export Excel
                         </a>
                         @if ($isAdm || $isDos)
@@ -66,14 +68,53 @@
 
                 <div class="table-responsive">
                     {{ $dataTable->table([
-                        'id' => 'p_organisasi-table',
-                        'class' => 'table table-hover table-bordered table-striped',
-                        'style' => 'width:100%',
-                    ]) }}
+        'id' => 'p_organisasi-table',
+        'class' => 'table table-hover table-bordered table-striped',
+        'style' => 'width:100%',
+    ]) }}
                 </div>
             </div>
         </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title">Jumlah Partisipasi Berdasarkan skala</h3>
 
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart">
+                            <canvas id="chartOrganisasi1"
+                                style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card card-danger">
+                    <div class="card-header">
+                        <h3 class="card-title">Status Validasi</h3>
+
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="chartOrganisasi2"
+                            style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+            </div>
+        
+        </div>
 
         {{-- Modal --}}
         <div id="myModal" class="modal fade" tabindex="-1" aria-hidden="true">
@@ -91,13 +132,13 @@
     <script>
         function modalAction(url) {
             $.get(url)
-                .done(function(response) {
+                .done(function (response) {
                     $('#myModal .modal-content').html(response);
                     $('#myModal').modal('show');
 
                     $(document).off('submit', '#formCreateOrganisasi, #formEditOrganisasi');
 
-                    $(document).on('submit', '#formCreateOrganisasi, #formEditOrganisasi', function(e) {
+                    $(document).on('submit', '#formCreateOrganisasi, #formEditOrganisasi', function (e) {
                         e.preventDefault();
                         var form = $(this);
                         var formData = new FormData(form[0]);
@@ -117,7 +158,7 @@
                             headers: {
                                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                             },
-                            success: function(res) {
+                            success: function (res) {
                                 $('#myModal').modal('hide');
                                 window.LaravelDataTables["p_organisasi-table"].ajax.reload();
                                 if (res.alert && res.message) {
@@ -130,12 +171,12 @@
                                     });
                                 }
                             },
-                            error: function(xhr) {
+                            error: function (xhr) {
                                 if (xhr.status === 422 && xhr.responseJSON && xhr.responseJSON
                                     .msgField) {
                                     // Validation error
                                     var errors = xhr.responseJSON.msgField;
-                                    $.each(errors, function(field, messages) {
+                                    $.each(errors, function (field, messages) {
                                         var input = form.find('[name="' + field + '"]');
                                         input.addClass('is-invalid');
                                         input.next('.invalid-feedback').text(messages[0]);
@@ -164,7 +205,7 @@
                     $(document).off('submit', '#form-import');
 
                     // Handle import form submit
-                    $(document).on('submit', '#form-import', function(e) {
+                    $(document).on('submit', '#form-import', function (e) {
                         e.preventDefault();
                         var form = $(this);
                         var formData = new FormData(form[0]);
@@ -179,7 +220,7 @@
                             data: formData,
                             processData: false,
                             contentType: false,
-                            success: function(response) {
+                            success: function (response) {
                                 $('#myModal').modal('hide');
                                 if (response.alert && response.message) {
                                     Swal.fire({
@@ -195,7 +236,7 @@
                                     });
                                 }
                             },
-                            error: function(xhr) {
+                            error: function (xhr) {
                                 $('#myModal').modal('hide');
                                 if (xhr.responseJSON && xhr.responseJSON.alert && xhr.responseJSON
                                     .message) {
@@ -214,26 +255,26 @@
                                     });
                                 }
                             },
-                            complete: function() {
+                            complete: function () {
                                 submitBtn.prop('disabled', false).html(
                                     '<i class="fas fa-upload me-2"></i> Upload');
                             }
                         });
                     });
                 })
-                .fail(function(xhr) {
+                .fail(function (xhr) {
                     Swal.fire('Error!', 'Gagal memuat form: ' + xhr.statusText, 'error');
                 });
         }
 
-        $(document).on('submit', '#formDeleteOrganisasi', function(e) {
+        $(document).on('submit', '#formDeleteOrganisasi', function (e) {
             e.preventDefault();
             var form = $(this);
             $.ajax({
                 url: form.attr('action'),
                 method: 'POST',
                 data: form.serialize(),
-                success: function(response) {
+                success: function (response) {
                     $('#myModal').modal('hide');
                     window.LaravelDataTables["p_organisasi-table"].ajax.reload();
                     Swal.fire({
@@ -244,7 +285,7 @@
                         showConfirmButton: false
                     });
                 },
-                error: function(xhr) {
+                error: function (xhr) {
                     Swal.fire({
                         icon: 'error',
                         title: 'Gagal',
@@ -254,14 +295,14 @@
             });
         });
 
-        $(document).ready(function() {
-            $('#filterStatus, #filterSumberData').change(function() {
+        $(document).ready(function () {
+            $('#filterStatus, #filterSumberData').change(function () {
                 window.LaravelDataTables["p_organisasi-table"].draw();
             });
         });
 
         // Kirim parameter filter ke server saat DataTable ajax request
-        $('#p_organisasi-table').on('preXhr.dt', function(e, settings, data) {
+        $('#p_organisasi-table').on('preXhr.dt', function (e, settings, data) {
             data.filter_status = $('#filterStatus').val();
             data.filter_sumber = $('#filterSumberData').val();
         });
@@ -294,12 +335,83 @@
             $('#exportExcelBtn').attr('href', url.toString());
         }
 
-        $(document).ready(function() {
+        $(document).ready(function () {
             updateExportPdfLink();
             updateExportExcelLink();
-            $('#filterStatus, #filterSumberData').change(function() {
+            $('#filterStatus, #filterSumberData').change(function () {
                 updateExportPdfLink();
                 updateExportExcelLink();
+            });
+        });
+        $(document).ready(function () {
+            $.ajax({
+                url: "{{ route('portofolio.organisasi.chart1') }}",
+                method: 'GET',
+                success: function (response) {
+                    const tingkat = [];
+                    const jumlah = [];
+
+                    response.data.forEach(item => {
+                        tingkat.push(item.tingkat);
+                        jumlah.push(item.jumlah);
+                    });
+
+                    const ctx = document.getElementById('chartOrganisasi1').getContext('2d');
+
+                    new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: tingkat,
+                            datasets: [{
+                                data: jumlah,
+                                backgroundColor: ['bronze', 'silver'],
+                                borderColor: 'rgba(75, 192, 192, 1)',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+                }
+            });
+        });
+        $(document).ready(function () {
+            $.ajax({
+                url: "{{ route('portofolio.organisasi.chart2') }}",
+                method: 'GET',
+                success: function (response) {
+                    const status = [];
+                    const jumlah = [];
+
+                    response.data.forEach(item => {
+                        status.push(item.status);
+                        jumlah.push(item.jumlah);
+                    });
+
+                    const ctx = document.getElementById('chartOrganisasi2').getContext('2d');
+
+                    new Chart(ctx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: status,
+                            datasets: [{
+                                data: jumlah,
+                                backgroundColor: ['green', '#f39c12', 'red'],
+                                borderColor: 'rgba(75, 192, 192, 1)',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                        }
+                    });
+                }
             });
         });
     </script>

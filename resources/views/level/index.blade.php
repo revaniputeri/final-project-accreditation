@@ -60,13 +60,7 @@
         </div>
     </div>
 
-    <div class="table-responsive">
-        {{ $dataTable->table([
-            'id' => 'level-table',
-            'class' => 'table table-hover table-bordered table-striped',
-            'style' => 'width:100%',
-        ]) }}
-    </div>
+    
 </div>
 @endsection
 
