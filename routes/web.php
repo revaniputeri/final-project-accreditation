@@ -21,6 +21,7 @@ use App\Http\Controllers\ImageUploadController;
 use App\Http\Controllers\KriteriaController;
 use App\Http\Controllers\DashboardController;
 use SebastianBergmann\CodeCoverage\Report\Html\Dashboard;
+use App\Http\Controllers\DokumenAkhirController;
 
 /*
 |--------------------------------------------------------------------------
@@ -45,10 +46,10 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
-    Route ::get('/', [DashboardController::class, 'index']);
+    Route::get('/', [DashboardController::class, 'index']);
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 
-    // Route untuk manage
+    // Route untuk manage-level
     Route::prefix('manage-level')->name('level.')->middleware('authorize:ADM')->group(function () {
         Route::get('/', [LevelController::class, 'index'])->name('level.index');
 
@@ -67,6 +68,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/export_excel', [LevelController::class, 'export_excel'])->name('export_excel');
         Route::get('/export_pdf', [LevelController::class, 'export_pdf'])->name('export_pdf');
     });
+  
     Route::prefix('manage-profile')->name('profile.')->middleware('authorize:ADM,VAL,ANG')->group(function () {
         Route::get('/pageProfile', [UserController::class, 'pageProfile'])->name('pageProfile');
         Route::get('/{id}/editProfile_ajax', [UserController::class, 'editProfile_ajax'])->name('editProfile_ajax');
@@ -74,6 +76,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/editPhoto_ajax', [UserController::class, 'editPhoto_ajax'])->name('editPhoto_ajax');
         Route::Post('/storePhoto_ajax', [UserController::class, 'storePhoto_ajax'])->name('storePhoto_ajax');
     });
+
+    // Route untuk manage-user
     Route::prefix('manage-user')->name('user.')->middleware('authorize:ADM')->group(function () {
         Route::get('/', [UserController::class, 'index'])->name('user.index');
 
@@ -91,9 +95,9 @@ Route::middleware('auth')->group(function () {
         Route::post('/import_ajax', [UserController::class, 'import_ajax'])->name('import_ajax');
         Route::get('/export_excel', [UserController::class, 'export_excel'])->name('export_excel');
         Route::get('/export_pdf', [UserController::class, 'export_pdf'])->name('export_pdf');
-
     });
 
+    // Route untuk manage-kriteria
     Route::prefix('manage-kriteria')->group(function () {
         Route::get('/', [KriteriaController::class, 'index'])->name('kriteria.index');
         Route::get('/create_ajax', [KriteriaController::class, 'create_ajax'])->name('kriteria.create_ajax');
@@ -110,14 +114,16 @@ Route::middleware('auth')->group(function () {
         Route::get('/get-last-number', [KriteriaController::class, 'getLastNumber'])->name('kriteria.get_last_number');
     });
 
-    // Route untuk dokumen kriteria & validasi
+    // Route untuk validasi
     Route::prefix('validasi')->name('validasi.')->middleware('authorize:ADM,VAL')->group(function () {
         Route::GET('/', [ValidasiController::class, 'index'])->name('index');
         Route::POST('/showFile', [ValidasiController::class, 'showFile'])->name('showFile');
         Route::PUT('/valid', [ValidasiController::class, 'valid'])->name('valid');
         Route::PUT('/store', [ValidasiController::class, 'store'])->name('store');
+        Route::post('/getDokumenInfo', [ValidasiController::class, 'getDokumenInfo'])->name('getDokumenInfo');
     });
 
+    // Route untuk dokumen kriteria
     Route::prefix('dokumen_kriteria')->name('dokumen_kriteria.')->middleware('authorize:ANG')->group(function () {
         Route::get('/', [DokumenKriteriaController::class, 'index'])->name('index');
         Route::put('/update/{id}', [DokumenKriteriaController::class, 'update'])->name('update');
@@ -363,5 +369,11 @@ Route::middleware('auth')->group(function () {
     Route::prefix('chart')->name('chart.')->middleware('authorize:ADM,VAL,ANG')->group(function () {
         Route::get('/', [DashboardController::class, 'index'])->name('index');
         Route::get('/more-info', [DashboardController::class, 'moreInfo'])->name('moreInfo');
+    });
+
+
+    // Route untuk dokumen akhir
+    Route::prefix('dokumen-akhir')->name('dokumen_akhir.')->middleware('authorize:VAL,DIR,ADM')->group(function () {
+        Route::get('/', [DokumenAkhirController::class, 'index'])->name('index');
     });
 });

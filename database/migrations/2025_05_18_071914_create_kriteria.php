@@ -8,11 +8,12 @@ return new class extends Migration {
     public function up()
     {
         Schema::create('kriteria', function (Blueprint $table) {
+            $table->id('id_kriteria');
             $table->integer('no_kriteria');
             $table->foreignId('id_user')->constrained('user', 'id_user');
             $table->timestamps();
 
-            $table->primary(['no_kriteria', 'id_user']);
+            $table->unique(['no_kriteria', 'id_user']); // Ini menjaga agar tidak ada duplikat no_kriteria per user
         });
     }
 

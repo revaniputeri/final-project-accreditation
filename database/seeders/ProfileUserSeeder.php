@@ -60,48 +60,73 @@ class ProfileUserSeeder extends Seeder
         ]);
 
         // Criteria staff profiles
-        for ($i = 1; $i <= 9; $i++) {
+        $dummyNamesStaff = [
+            'Slamet Riyadi',
+            'Rini Kusuma',
+            'Tono Sutrisno',
+            'Dewi Anggraini',
+            'Budi Hartono',
+            'Sari Melati',
+            'Agus Santoso',
+            'Nina Marlina',
+            'Joko Prabowo',
+        ];
+
+        for ($i = 0; $i < 9; $i++) {
+            // Ambil nidn dari username user level ANG
+            $nidn = DB::table('user')
+                ->where('id_level', DB::table('level')->where('kode_level', 'ANG')->value('id_level'))
+                ->skip($i)
+                ->first()
+                ->username;
+
             DB::table('profile_user')->insert([
-                'id_user' => DB::table('user')->where('username', 'kriteria' . $i)->first()->id_user,
-                'nama_lengkap' => 'Staff Kriteria ' . $i,
+                'id_user' => DB::table('user')->where('username', $nidn)->first()->id_user,
+                'nama_lengkap' => $dummyNamesStaff[$i],
                 'tempat_tanggal_lahir' => 'Kota, ' . rand(1, 28) . ' ' . ['Januari', 'Februari', 'Maret'][rand(0, 2)] . ' ' . rand(1980, 1990),
-                'nidn' => '0000000' . (100 + $i),
+                'nidn' => $nidn,
                 'nip' => '199' . rand(0, 9) . rand(0, 9) . rand(0, 9) . '0101' . rand(1000, 9999),
                 'jabatan_fungsional' => 'Staff Akademik',
                 'pendidikan_terakhir' => 'S1',
                 'pangkat' => 'III/a',
                 'no_telp' => '08' . rand(100000000, 999999999),
-                'alamat' => 'Jl. Staff No. ' . $i,
+                'alamat' => 'Jl. Staff No. ' . ($i + 1),
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
         }
 
         // Lecturer profiles
+        $dummyNamesDosen = [
+            'Arif Santoso',
+            'Lina Marlina',
+            'Yusuf Hidayat',
+            'Maya Sari',
+            'Dedi Prasetyo',
+            'Rina Wulandari',
+            'Joko Saputra',
+            'Fitri Anggraeni',
+            'Agus Gunawan',
+            'Sari Dewi',
+        ];
+
         $gelar = ['S.T., M.T.', 'S.Kom., M.Kom.', 'S.Si., M.Si.'];
         $jabatan = ['Asisten Ahli', 'Lektor', 'Lektor Kepala', 'Guru Besar'];
         $pangkat = ['III/a', 'III/b', 'III/c', 'IV/a', 'IV/b'];
 
-        // Daftar nama asli
-        $namaAsli = [
-            'Andi Setiawan',
-            'Rina Kurniawati',
-            'Budi Santoso',
-            'Dewi Lestari',
-            'Fajar Nugroho',
-            'Siti Nurhaliza',
-            'Agus Prasetyo',
-            'Nina Kartika',
-            'Joko Subagyo',
-            'Maya Wulandari'
-        ];
+        for ($i = 0; $i < 10; $i++) {
+            // Ambil nidn dari username user level DOS
+            $nidn = DB::table('user')
+                ->where('id_level', DB::table('level')->where('kode_level', 'DOS')->value('id_level'))
+                ->skip($i)
+                ->first()
+                ->username;
 
-        for ($i = 1; $i <= 10; $i++) {
             DB::table('profile_user')->insert([
-                'id_user' => DB::table('user')->where('username', 'dosen' . $i)->first()->id_user,
-                'nama_lengkap' => $namaAsli[$i - 1] . ' ' . $gelar[array_rand($gelar)],
+                'id_user' => DB::table('user')->where('username', $nidn)->first()->id_user,
+                'nama_lengkap' => $dummyNamesDosen[$i] . ' ' . $gelar[array_rand($gelar)],
                 'tempat_tanggal_lahir' => 'Kota, ' . rand(1, 28) . ' ' . ['Januari', 'Februari', 'Maret'][rand(0, 2)] . ' ' . rand(1970, 1985),
-                'nidn' => rand(1000000000, 9999999999),
+                'nidn' => $nidn,
                 'nip' => '19' . rand(70, 85) . rand(0, 9) . rand(0, 9) . '0101' . rand(1000, 9999),
                 'gelar_depan' => (rand(0, 3) == 0 ? 'Dr.' : null),
                 'gelar_belakang' => $gelar[array_rand($gelar)],
@@ -109,7 +134,7 @@ class ProfileUserSeeder extends Seeder
                 'pendidikan_terakhir' => (rand(0, 1) ? 'S2' : 'S3'),
                 'pangkat' => $pangkat[array_rand($pangkat)],
                 'no_telp' => '08' . rand(100000000, 999999999),
-                'alamat' => 'Jl. Dosen No. ' . $i,
+                'alamat' => 'Jl. Dosen No. ' . ($i + 1),
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);

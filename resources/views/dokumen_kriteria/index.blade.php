@@ -48,8 +48,8 @@
                                     @php
                                         $badgeClass = [
                                             'tervalidasi' => 'badge-success',
-                                            'perlu validasi' => 'badge-warning',
-                                            'tidak valid' => 'badge-danger',
+                                            'revisi' => 'badge-warning',
+                                            'perlu validasi' => 'badge-info',
                                             '' => 'badge-secondary',
                                         ];
                                     @endphp
@@ -70,21 +70,27 @@
             <div class="card-header bg-primary border-bottom">
                 <div class="d-flex justify-content-between align-items-center">
                     <h3 class="card-title mb-0 text-white">Daftar Dokumen Pendukung</h3>
-                    <button
-                        onclick="modalAction('{{ route('dokumen_kriteria.create_ajax', [], false) }}?no_kriteria={{ $latestDokumen ? $latestDokumen->no_kriteria : '' }}')"
-                        class="btn btn-custom-blue">
-                        <i class="fas fa-plus me-2"></i> Tambah Data
-                    </button>
+                    @if ($latestDokumen)
+                        <button
+                            onclick="modalAction('{{ route('dokumen_kriteria.create_ajax', [], false) }}?no_kriteria={{ $latestDokumen->no_kriteria }}')"
+                            class="btn btn-custom-blue">
+                            <i class="fas fa-plus me-2"></i> Tambah Data
+                        </button>
+                    @endif
                 </div>
             </div>
             <div class="card-body">
-                <div class="table-responsive">
-                    {{ $dataTable->table([
-                        'id' => 'dokumen-pendukung-table',
-                        'class' => 'table table-hover table-bordered table-striped',
-                        'style' => 'width:100%',
-                    ]) }}
-                </div>
+                @if ($latestDokumen)
+                    <div class="table-responsive">
+                        {{ $dataTable->table([
+                            'id' => 'dokumen-pendukung-table',
+                            'class' => 'table table-hover table-bordered table-striped',
+                            'style' => 'width:100%',
+                        ]) }}
+                    </div>
+                @else
+                    <p class="mb-0">Tidak ada data dokumen pendukung.</p>
+                @endif
             </div>
         </div>
 
@@ -366,14 +372,38 @@
             editimage_cors_hosts: ['picsum.photos'],
             menubar: 'file edit view insert format tools table help',
             menu: {
-                file: { title: 'File', items: 'restore save print preview | importcss' },
-                edit: { title: 'Edit', items: 'undo redo | cut copy paste pastetext | selectall' },
-                view: { title: 'View', items: 'code visualaid visualchars visualblocks | spellchecker | preview fullscreen' },
-                insert: { title: 'Insert', items: 'image link media template codesample inserttable | charmap emoticons hr' },
-                format: { title: 'Format', items: 'bold italic underline strikethrough superscript subscript codeformat | removeformat' },
-                tools: { title: 'Tools', items: 'spellchecker spellcheckerlanguage | a11ycheck code' },
-                table: { title: 'Table', items: 'inserttable | cell row column | tableprops deletetable' },
-                help: { title: 'Help', items: 'help' }
+                file: {
+                    title: 'File',
+                    items: 'restore save print preview | importcss'
+                },
+                edit: {
+                    title: 'Edit',
+                    items: 'undo redo | cut copy paste pastetext | selectall'
+                },
+                view: {
+                    title: 'View',
+                    items: 'code visualaid visualchars visualblocks | spellchecker | preview fullscreen'
+                },
+                insert: {
+                    title: 'Insert',
+                    items: 'image link media template codesample inserttable | charmap emoticons hr'
+                },
+                format: {
+                    title: 'Format',
+                    items: 'bold italic underline strikethrough superscript subscript codeformat | removeformat'
+                },
+                tools: {
+                    title: 'Tools',
+                    items: 'spellchecker spellcheckerlanguage | a11ycheck code'
+                },
+                table: {
+                    title: 'Table',
+                    items: 'inserttable | cell row column | tableprops deletetable'
+                },
+                help: {
+                    title: 'Help',
+                    items: 'help'
+                }
             },
             toolbar: "undo redo | accordion accordionremove | blocks fontfamily fontsize | bold italic underline strikethrough | align numlist bullist | link image | table media | lineheight outdent indent| forecolor backcolor removeformat | charmap emoticons | code fullscreen preview | save print | pagebreak anchor codesample | ltr rtl",
             width: '100%', // Toolbar full width
