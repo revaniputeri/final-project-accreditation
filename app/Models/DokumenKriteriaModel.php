@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class DokumenKriteriaModel extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'dokumen_kriteria';
     protected $primaryKey = 'id_dokumen_kriteria';
@@ -17,13 +18,15 @@ class DokumenKriteriaModel extends Model
         'content_html',
         'no_kriteria',
         'versi',
+        'kategori',
         'status',
         'id_validator',
         'komentar'
     ];
 
     protected $casts = [
-        'status' => 'string'
+        'status' => 'string',
+        'kategori' => 'string'
     ];
 
     public function user()

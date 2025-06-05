@@ -544,7 +544,12 @@ class UserController extends Controller
 
         // Simpan ke database jika perlu
         // $user->avatar = $filename;
-        $user->save();
+        $profile = ProfileUser::where('id_user', $user->id_user)->first();
+        if ($profile) {
+            // $profile->avatar = $filename; // jika ada kolom avatar
+            $profile->updated_at = now();
+            $profile->save();
+        }
 
         return response()->json([
             'status' => true,

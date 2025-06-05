@@ -28,20 +28,19 @@
 
             <div class="card-body">
                 <div class="text-center mb-4">
-                    <div class="position-relative">
-                        <img class="profile-user-img img-fluid img-circle"
-                            src="{{ asset('storage/user_avatar/' . Auth::user()->id_user . '.png') }}"
-                            alt="User profile picture">
-                        {{-- Icon Kamera Bootstrap --}}
-                        <label onclick="modalAction('{{route('profile.editPhoto_ajax')}}')"
-                            class="position-absolute bottom-0 end-0 bg-primary text-white rounded-circle p-1 ml-n4  "
-                            style="cursor: pointer;">
-                            <i class="icon fas fa-camera"></i>
+                    <div class="position-relative d-inline-block">
+                        <img src="{{ asset('storage/user_avatar/' . Auth::user()->id_user . '.png') }}" alt="User Photo"
+                            class="profile-user-img img-fluid rounded-circle border border-3 border-primary shadow"
+                            style="width: 120px; height: 120px; object-fit: cover;"
+                            onerror="this.onerror=null; this.src='{{ asset('storage/user_avatar/default.jpg') }}';">
 
+                        <!-- Icon Kamera Bootstrap -->
+                        <label onclick="modalAction('{{ route('profile.editPhoto_ajax') }}')"
+                            class="position-absolute bottom-0 end-0 bg-primary text-white rounded-circle p-2 shadow"
+                            style="cursor: pointer; transform: translate(25%, 25%);">
+                            <i class="fas fa-camera"></i>
                         </label>
                     </div>
-                    {{-- <img src="{{ $user->avatar ?? 'https://via.placeholder.com/120' }}" alt="Foto Profil" --}} {{--
-                        class="rounded-circle" width="120" height="120"> --}}
                 </div>
                 <h4 class="text-center">{{ $user->nama_lengkap }}</h4>
                 <p class="text-center text-muted">{{ $level->nama_level }}</p>
@@ -79,7 +78,7 @@
 
                 <div class="text-center mt-4">
                     <button type="button"
-                        onclick="modalAction('{{route('profile.editProfile_ajax', ['id' => $user->id_profile])}}')"
+                        onclick="modalAction('{{ route('profile.editProfile_ajax', ['id' => $user->id_profile]) }}')"
                         class="btn btn-sm btn-primary">Edit Profile</button>
                 </div>
             </div>
@@ -98,13 +97,13 @@
     <script>
         function modalAction(url) {
             $.get(url)
-                .done(function (response) {
+                .done(function(response) {
                     $('#myModal .modal-content').html(response);
                     $('#myModal').modal('show');
 
                     $(document).off('submit', '#formEditProfile');
 
-                    $(document).on('submit', '#formEditProfile', function (e) {
+                    $(document).on('submit', '#formEditProfile', function(e) {
                         e.preventDefault();
                         var form = $(this);
 
@@ -115,13 +114,14 @@
                             headers: {
                                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                             },
-                            success: function (response) {
+                            success: function(response) {
                                 $('#myModal').modal('hide');
 
                                 if (response.alert && response.message) {
                                     Swal.fire({
                                         icon: response.alert,
-                                        title: response.alert === 'success' ? 'Sukses' : 'Error',
+                                        title: response.alert === 'success' ? 'Sukses' :
+                                            'Error',
                                         text: response.message,
                                         timer: 2000,
                                         showConfirmButton: false
@@ -131,12 +131,14 @@
                                     });
                                 }
                             },
-                            error: function (xhr) {
+                            error: function(xhr) {
                                 $('#myModal').modal('hide');
-                                if (xhr.responseJSON && xhr.responseJSON.alert && xhr.responseJSON.message) {
+                                if (xhr.responseJSON && xhr.responseJSON.alert && xhr.responseJSON
+                                    .message) {
                                     Swal.fire({
                                         icon: xhr.responseJSON.alert,
-                                        title: xhr.responseJSON.alert === 'success' ? 'Sukses' : 'Error',
+                                        title: xhr.responseJSON.alert === 'success' ?
+                                            'Sukses' : 'Error',
                                         text: xhr.responseJSON.message,
                                         timer: 2000,
                                         showConfirmButton: false
@@ -145,17 +147,17 @@
                                         location.reload();
                                     });
                                 } else {
-                                    let msg = xhr.statusText || 'Terjadi kesalahan saat menyimpan data.';
+                                    let msg = xhr.statusText ||
+                                        'Terjadi kesalahan saat menyimpan data.';
                                     Swal.fire('Error!', msg, 'error');
                                 }
                             }
                         });
                     });
                 })
-                .fail(function (xhr) {
+                .fail(function(xhr) {
                     Swal.fire('Error!', 'Gagal memuat form: ' + xhr.statusText, 'error');
                 });
         }
-
     </script>
 @endpush

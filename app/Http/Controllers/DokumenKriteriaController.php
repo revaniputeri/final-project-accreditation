@@ -18,19 +18,37 @@ class DokumenKriteriaController extends Controller
         /** @var UserModel|null $user */
         $user = Auth::user();
 
-        // Get latest dokumen per no_kriteria for the user by joining kriteria table
-        $latestDokumen = DokumenKriteriaModel::select('dokumen_kriteria.*')
-            ->join('kriteria', 'dokumen_kriteria.no_kriteria', '=', 'kriteria.no_kriteria')
-            ->where('kriteria.id_user', $user->id_user)
-            ->orderByDesc('dokumen_kriteria.versi')
-            ->first();
+        // Get user's assigned no_kriteria(s)
+        $userNoKriteria = \App\Models\KriteriaModel::where('id_user', $user->id_user)->pluck('no_kriteria')->toArray();
 
-        $dokumen = $latestDokumen ? collect([$latestDokumen]) : collect();
+        // Get kategori list for user's no_kriteria(s)
+        $kategoriList = DokumenKriteriaModel::whereIn('no_kriteria', $userNoKriteria)
+            ->select('kategori')
+            ->distinct()
+            ->orderBy('kategori')
+            ->pluck('kategori')
+            ->toArray();
 
-        // Pass no_kriteria to DataTable ajax parameters
-        $dataTable->with('no_kriteria', $latestDokumen ? $latestDokumen->no_kriteria : null);
+        // Get dokumen_kriteria grouped by kategori for user's no_kriteria(s)
+        $dokumenGrouped = DokumenKriteriaModel::whereIn('no_kriteria', $userNoKriteria)
+            ->orderBy('kategori')
+            ->orderByDesc('versi')
+            ->get()
+            ->groupBy('kategori');
 
-        return $dataTable->render('dokumen_kriteria.index', compact('dokumen'));
+        // Default kategori to first in list or null
+        $selectedKategori = request()->query('kategori', $kategoriList[0] ?? null);
+
+        // Filter dokumen for selected kategori
+        $dokumen = $dokumenGrouped->get($selectedKategori, collect());
+
+        // Pass no_kriteria and kategori to DataTable
+        $dataTable->with([
+            'no_kriteria' => $userNoKriteria[0] ?? null,
+            'kategori' => $selectedKategori,
+        ]);
+
+        return $dataTable->render('dokumen_kriteria.index', compact('dokumen', 'kategoriList', 'selectedKategori', 'dokumenGrouped'));
     }
 
     public function update(Request $request, $id)
@@ -78,6 +96,7 @@ class DokumenKriteriaController extends Controller
                 ->join('kriteria', 'dokumen_kriteria.no_kriteria', '=', 'kriteria.no_kriteria')
                 ->where('kriteria.id_user', Auth::id())
                 ->where('dokumen_kriteria.no_kriteria', $dokumenLama->no_kriteria)
+                ->where('dokumen_kriteria.kategori', $dokumenLama->kategori)
                 ->max('dokumen_kriteria.versi');
 
             $versiBaru = $versiTerakhir ? $versiTerakhir + 1 : 1;
@@ -86,6 +105,7 @@ class DokumenKriteriaController extends Controller
                 'judul' => $dokumenLama->judul,
                 'content_html' => $cleanContent,
                 'no_kriteria' => $dokumenLama->no_kriteria,
+                'kategori' => $dokumenLama->kategori,
                 'versi' => $versiBaru,
                 'status' => 'perlu validasi',
             ]);
@@ -111,6 +131,7 @@ class DokumenKriteriaController extends Controller
         if ($request->ajax() || $request->wantsJson()) {
             $rules = [
                 'no_kriteria' => 'required|string|exists:dokumen_kriteria,no_kriteria',
+                'kategori' => 'required|string',
                 'nama_file' => 'required|string|max:255',
                 'Keterangan' => 'required|string|max:100',
                 'dokumen_pendukung' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048',
@@ -135,6 +156,7 @@ class DokumenKriteriaController extends Controller
 
                 DokumenPendukungModel::create([
                     'no_kriteria' => $request->no_kriteria,
+                    'kategori' => $request->kategori,
                     'id_user' => Auth::id(),
                     'nama_file' => $request->nama_file,
                     'path_file' => $filename,
@@ -178,6 +200,7 @@ class DokumenKriteriaController extends Controller
         if ($request->ajax() || $request->wantsJson()) {
             $rules = [
                 'no_kriteria' => 'required|string|exists:dokumen_kriteria,no_kriteria',
+                'kategori' => 'required|string',
                 'nama_file' => 'required|string|max:255',
                 'keterangan' => 'required|string|max:100',
                 'dokumen_pendukung' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
@@ -197,7 +220,7 @@ class DokumenKriteriaController extends Controller
 
             $dokumen_pendukung = DokumenPendukungModel::findOrFail($id);
             try {
-                $data = $request->only(['no_kriteria', 'nama_file', 'keterangan']);
+                $data = $request->only(['no_kriteria', 'kategori', 'nama_file', 'keterangan']);
 
                 if ($request->hasFile('dokumen_pendukung')) {
                     if ($dokumen_pendukung->path_file && Storage::exists('public/dokumen_pendukung/' . $dokumen_pendukung->path_file)) {
@@ -248,8 +271,8 @@ class DokumenKriteriaController extends Controller
     {
         $dokumen_pendukung = DokumenPendukungModel::findOrFail($id);
         try {
-            if ($dokumen_pendukung->path_file && Storage::exists($dokumen_pendukung->path_file)) {
-                Storage::delete($dokumen_pendukung->path_file);
+            if ($dokumen_pendukung->path_file && Storage::exists('public/dokumen_pendukung/' . $dokumen_pendukung->path_file)) {
+                Storage::delete('public/dokumen_pendukung/' . $dokumen_pendukung->path_file);
             }
             $dokumen_pendukung->delete();
 

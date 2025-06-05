@@ -13,6 +13,7 @@ return new class extends Migration
             $table->string('nama_level', 100);
             $table->string('kode_level', 20);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

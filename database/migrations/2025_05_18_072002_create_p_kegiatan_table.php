@@ -19,6 +19,7 @@ return new class extends Migration
             $table->enum('sumber_data', ['p3m', 'dosen'])->default('dosen');
             $table->string('bukti')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

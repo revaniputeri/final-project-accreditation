@@ -23,7 +23,7 @@
             <div class="card-body">
                 <!-- Dropdown Pilihan Kriteria -->
                 <div class="row mb-3">
-                    <div class="col-md-12">
+                    <div class="col-md-6">
                         <div class="form-group">
                             <label>Pilih Nomor Kriteria</label>
                             <select id="kriteriaDropdown" class="form-control select2">
@@ -33,6 +33,19 @@
                                         Kriteria {{ $dokumen->no_kriteria }} - {{ $dokumen->judul }}
                                     </option>
                                 @endforeach
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Pilih Kategori</label>
+                            <select id="kategoriDropdown" class="form-control select2">
+                                <option value="" selected disabled>-- Pilih Kategori --</option>
+                                <option value="penetapan">Penetapan</option>
+                                <option value="pelaksanaan">Pelaksanaan</option>
+                                <option value="evaluasi">Evaluasi</option>
+                                <option value="pengendalian">Pengendalian</option>
+                                <option value="peningkatan">Peningkatan</option>
                             </select>
                         </div>
                     </div>
@@ -170,8 +183,8 @@
 
             var selectedKriteria = null;
 
-            function loadPdfAndData(kriteriaId) {
-                if (!kriteriaId) return;
+            function loadPdfAndData(kriteriaId, kategori) {
+                if (!kriteriaId || !kategori) return;
 
                 $('#pdfPreview').attr('src', '');
                 $('#statusSelect').val('');
@@ -185,6 +198,7 @@
                     type: "POST",
                     data: {
                         no_kriteria: kriteriaId,
+                        kategori: kategori,
                         _token: '{{ csrf_token() }}'
                     },
                     success: function(response) {
@@ -220,6 +234,7 @@
                     type: "POST",
                     data: {
                         kriteria: kriteriaId,
+                        kategori: kategori,
                         _token: '{{ csrf_token() }}'
                     },
                     success: function(response) {
@@ -263,78 +278,96 @@
                 }
             }
 
-            $('#kriteriaDropdown').on('change', function() {
-                selectedKriteria = $(this).val();
-                if (selectedKriteria) {
-                    loadPdfAndData(selectedKriteria);
-                } else {
-                    $('#dokumenInfoBody').html(
-                        '<tr><td colspan="5" class="text-center text-muted">Silakan pilih kriteria terlebih dahulu</td></tr>'
-                    );
-                    $('#pdfPreview').attr('src', '');
-                    $('#statusSelect').val('');
-                    $('#komentarInput').val('');
-                    $('#submitValidation').prop('disabled', true);
-                }
-            });
-
-            $('#submitValidation').on('click', function() {
-                if (!selectedKriteria) {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Peringatan',
-                        text: 'Pilih kriteria terlebih dahulu.'
-                    });
-                    return;
-                }
-                var status = $('#statusSelect').val();
-                var komentar = $('#komentarInput').val();
-
-                if (!status) {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Peringatan',
-                        text: 'Pilih status validasi.'
-                    });
-                    return;
-                }
-
-                $.ajax({
-                    url: "{{ route('validasi.store') }}",
-                    type: "PUT",
-                    data: {
-                        kriteria: selectedKriteria,
-                        status: status,
-                        komentar: komentar,
-                        _token: '{{ csrf_token() }}'
-                    },
-                    success: function(response) {
-                        if (response.success) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Sukses',
-                                text: 'Validasi berhasil disimpan.'
-                            });
-                            // Refresh informasi dokumen setelah validasi
-                            loadPdfAndData(selectedKriteria);
+                    $('#kriteriaDropdown').on('change', function() {
+                        selectedKriteria = $(this).val();
+                        selectedKategori = $('#kategoriDropdown').val();
+                        if (selectedKriteria && selectedKategori) {
+                            loadPdfAndData(selectedKriteria, selectedKategori);
                         } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error',
-                                text: 'Gagal menyimpan validasi: ' + (response
-                                    .message || '')
-                            });
+                            $('#dokumenInfoBody').html(
+                                '<tr><td colspan="5" class="text-center text-muted">Silakan pilih kriteria dan kategori terlebih dahulu</td></tr>'
+                            );
+                            $('#pdfPreview').attr('src', '');
+                            $('#statusSelect').val('');
+                            $('#komentarInput').val('');
+                            $('#submitValidation').prop('disabled', true);
                         }
-                    },
-                    error: function(xhr) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'Terjadi kesalahan saat menyimpan validasi.'
+                    });
+
+                    $('#kategoriDropdown').on('change', function() {
+                        selectedKategori = $(this).val();
+                        selectedKriteria = $('#kriteriaDropdown').val();
+                        if (selectedKriteria && selectedKategori) {
+                            loadPdfAndData(selectedKriteria, selectedKategori);
+                        } else {
+                            $('#dokumenInfoBody').html(
+                                '<tr><td colspan="5" class="text-center text-muted">Silakan pilih kriteria dan kategori terlebih dahulu</td></tr>'
+                            );
+                            $('#pdfPreview').attr('src', '');
+                            $('#statusSelect').val('');
+                            $('#komentarInput').val('');
+                            $('#submitValidation').prop('disabled', true);
+                        }
+                    });
+
+                    $('#submitValidation').on('click', function() {
+                        if (!selectedKriteria || !selectedKategori) {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Peringatan',
+                                text: 'Pilih kriteria dan kategori terlebih dahulu.'
+                            });
+                            return;
+                        }
+                        var status = $('#statusSelect').val();
+                        var komentar = $('#komentarInput').val();
+
+                        if (!status) {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Peringatan',
+                                text: 'Pilih status validasi.'
+                            });
+                            return;
+                        }
+
+                        $.ajax({
+                            url: "{{ route('validasi.store') }}",
+                            type: "PUT",
+                            data: {
+                                kriteria: selectedKriteria,
+                                kategori: selectedKategori,
+                                status: status,
+                                komentar: komentar,
+                                _token: '{{ csrf_token() }}'
+                            },
+                            success: function(response) {
+                                if (response.success) {
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Sukses',
+                                        text: 'Validasi berhasil disimpan.'
+                                    });
+                                    // Refresh informasi dokumen setelah validasi
+                                    loadPdfAndData(selectedKriteria, selectedKategori);
+                                } else {
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Error',
+                                        text: 'Gagal menyimpan validasi: ' + (response
+                                            .message || '')
+                                    });
+                                }
+                            },
+                            error: function(xhr) {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: 'Terjadi kesalahan saat menyimpan validasi.'
+                                });
+                            }
                         });
-                    }
+                    });
                 });
-            });
-        });
-    </script>
+            </script>
 @endpush
