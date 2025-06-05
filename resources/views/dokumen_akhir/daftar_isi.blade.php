@@ -1,8 +1,12 @@
 <div style="font-size: 20px; margin: 0px;">
     <h2>Daftar Isi</h2>
     <ul>
-        @foreach($kriteriaList as $kriteria)
-            <li><a href="#kriteria-{{ $kriteria['no_kriteria'] }}" style="text-decoration: none; color: black;">{{ $kriteria['judul'] }}</a></li>
+        @foreach($daftarIsiList as $item)
+            <li>
+                <a href="{{ $item['link'] }}" style="text-decoration: none; color: rgb(0, 0, 0); cursor: pointer;">
+                    {{ $item['judul'] }} ... {{ $item['kategori'] }}
+                </a>
+            </li>
         @endforeach
     </ul>
 </div>
