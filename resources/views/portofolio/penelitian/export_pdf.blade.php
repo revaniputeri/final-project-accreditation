@@ -80,7 +80,7 @@
         <thead>
             <tr>
                 <th>No</th>
-                <th>ID Penelitian</th>
+                {{-- <th>ID Penelitian</th> --}}
                 <th>Nama Dosen</th>
                 <th>Judul Penelitian</th>
                 <th>Skema</th>
@@ -99,7 +99,7 @@
             @foreach ($penelitian as $key => $item)
                 <tr>
                     <td class="text-center">{{ $key + 1 }}</td>
-                    <td>{{ $item['id_penelitian'] }}</td>
+                    {{-- <td>{{ $item['id_penelitian'] }}</td> --}}
                     <td>{{ $item['nama_dosen'] }}</td>
                     <td>{{ $item['judul_penelitian'] }}</td>
                     <td>{{ $item['skema'] }}</td>
