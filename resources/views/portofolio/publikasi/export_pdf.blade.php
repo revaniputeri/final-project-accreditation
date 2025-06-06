@@ -42,7 +42,7 @@
         <thead>
             <tr>
                 <th>No</th>
-                <th>ID Publikasi</th>
+                {{-- <th>ID Publikasi</th> --}}
                 <th>Nama Dosen</th>
                 <th>Judul</th>
                 <th>Tempat Publikasi</th>
@@ -60,7 +60,7 @@
             @foreach ($publikasi as $key => $item)
                 <tr>
                     <td class="text-center">{{ $key + 1 }}</td>
-                    <td>{{ $item['id_publikasi'] }}</td>
+                    {{-- <td>{{ $item['id_publikasi'] }}</td> --}}
                     <td>{{ $item['nama_dosen'] }}</td>
                     <td>{{ $item['judul'] }}</td>
                     <td>{{ $item['tempat_publikasi'] }}</td>
