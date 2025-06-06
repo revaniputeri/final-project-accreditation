@@ -71,7 +71,6 @@ class PKegiatanController extends Controller
                 'tempat' => 'required|string|max:255',
                 'waktu' => 'required|date',
                 'peran' => 'required|string|max:100',
-                'deskripsi' => 'nullable|string',
                 'bukti' => $role === 'DOS' ? 'required|file|mimes:pdf,jpg,jpeg,png|max:2048' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             ];
 
@@ -123,7 +122,6 @@ class PKegiatanController extends Controller
                     'tempat',
                     'waktu',
                     'peran',
-                    'deskripsi',
                 ]);
 
                 $data['id_user'] = $id_user;
@@ -205,7 +203,6 @@ class PKegiatanController extends Controller
                 'tempat' => 'required|string|max:255',
                 'waktu' => 'required|date',
                 'peran' => 'required|string|max:100',
-                'deskripsi' => 'nullable|string',
                 'bukti' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             ];
 
@@ -259,7 +256,6 @@ class PKegiatanController extends Controller
                     'tempat',
                     'waktu',
                     'peran',
-                    'deskripsi',
                 ]);
 
                 if ($role === 'ADM') {
@@ -386,38 +382,63 @@ class PKegiatanController extends Controller
             /** @var UserModel|null $user */
             $user = Auth::user();
             $role = $user ? $user->getRole() : null;
-            $userNidn = DB::table('profile_user')->where('id_user', $user->id_user)->value('nidn');
+            $userNidn = null;
+
+            if ($role === 'DOS') {
+                $userNidn = DB::table('profile_user')->where('id_user', $user->id_user)->value('nidn');
+            }
 
             foreach ($data as $row => $values) {
-                if ($row == 1) continue;
+                if ($row == 1) continue; // Skip header row
 
-                $nidn = trim($values['A']);
+                $nidn = trim($values['A'] ?? '');
+                $jenisKegiatan = trim($values['B'] ?? '');
+                $tempat = trim($values['C'] ?? '');
+                $waktu = trim($values['D'] ?? '');
+                $peran = trim($values['E'] ?? '');
 
+                // Validasi data kosong
+                if (empty($nidn) || empty($jenisKegiatan) || empty($tempat) || empty($waktu) || empty($peran)) {
+                    $errors[] = "Baris $row: Data tidak lengkap. Pastikan semua kolom terisi.";
+                    continue;
+                }
+
+                // Cek jika DOS hanya bisa import data dengan NIDN sendiri
                 if ($role === 'DOS' && $nidn !== $userNidn) {
                     $errors[] = "Baris $row: Anda hanya dapat mengimpor data dengan NIDN milik Anda ($userNidn).";
                     continue;
                 }
 
-                $user = DB::table('profile_user')->where('nidn', $nidn)->first();
-                if (!$user) {
+                // Cari user berdasarkan NIDN
+                $profileUser = DB::table('profile_user')->where('nidn', $nidn)->first();
+                if (!$profileUser) {
                     $errors[] = "Baris $row: NIDN $nidn tidak ditemukan di data profil user";
                     continue;
                 }
 
+                // Konversi format tanggal jika diperlukan
+                if (is_numeric($waktu)) {
+                    try {
+                        $waktu = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($waktu)->format('Y-m-d');
+                    } catch (\Exception $e) {
+                        $errors[] = "Baris $row: Format tanggal tidak valid";
+                        continue;
+                    }
+                }
+
+                // Validasi data
                 $validator = Validator::make([
-                    'id_user' => $user->id_user,
-                    'jenis_kegiatan' => $values['B'],
-                    'tempat' => $values['C'],
-                    'waktu' => $values['D'],
-                    'peran' => $values['E'],
-                    'deskripsi' => $values['F'],
+                    'id_user' => $profileUser->id_user,
+                    'jenis_kegiatan' => $jenisKegiatan,
+                    'tempat' => $tempat,
+                    'waktu' => $waktu,
+                    'peran' => $peran,
                 ], [
                     'id_user' => 'required|integer|exists:user,id_user',
                     'jenis_kegiatan' => 'required|string|max:100',
                     'tempat' => 'required|string|max:255',
                     'waktu' => 'required|date',
                     'peran' => 'required|string|max:100',
-                    'deskripsi' => 'nullable|string',
                 ]);
 
                 if ($validator->fails()) {
@@ -426,12 +447,11 @@ class PKegiatanController extends Controller
                 }
 
                 $insertData[] = [
-                    'id_user' => $user->id_user,
-                    'jenis_kegiatan' => $values['B'],
-                    'tempat' => $values['C'],
-                    'waktu' => $values['D'],
-                    'peran' => $values['E'],
-                    'deskripsi' => $values['F'] ?? null,
+                    'id_user' => $profileUser->id_user,
+                    'jenis_kegiatan' => $jenisKegiatan,
+                    'tempat' => $tempat,
+                    'waktu' => $waktu,
+                    'peran' => $peran,
                     'status' => $role === 'DOS' ? 'Tervalidasi' : 'perlu validasi',
                     'sumber_data' => $role === 'DOS' ? 'dosen' : 'p3m',
                     'created_at' => now(),
@@ -445,31 +465,40 @@ class PKegiatanController extends Controller
                 return response()->json([
                     'status' => false,
                     'alert' => 'error',
-                    'message' => 'Tidak ada data baru yang valid untuk diimport:' .
-                        "\n" . implode("\n", array_slice($allMessages, 0, 1)) .
-                        (count($allMessages) > 3 ? "\n...dan " . (count($allMessages) - 3) . " lainnya." : ''),
+                    'message' => 'Tidak ada data baru yang valid untuk diimport.' .
+                        (count($allMessages) > 0 ? "\n\nDetail:\n" . implode("\n", array_slice($allMessages, 0, 5)) .
+                        (count($allMessages) > 5 ? "\n...dan " . (count($allMessages) - 5) . " error lainnya." : '') : ''),
                     'showConfirmButton' => true
                 ], 422);
             }
 
-            $insertedCount = PKegiatanModel::insert($insertData);
+            $insertedCount = count($insertData);
+            PKegiatanModel::insert($insertData);
+
+            $message = "Import data berhasil! $insertedCount data kegiatan berhasil ditambahkan.";
+            if (count($skippedData) > 0) {
+                $message .= "\n" . count($skippedData) . " data dilewati karena sudah ada.";
+            }
+            if (count($errors) > 0) {
+                $message .= "\n" . count($errors) . " data gagal diimport karena error validasi.";
+            }
 
             return response()->json([
                 'status' => true,
                 'alert' => 'success',
-                'message' => 'Import data berhasil',
+                'message' => $message,
                 'inserted_count' => $insertedCount,
                 'skipped_count' => count($skippedData),
-                'info' => $allMessages,
-                'error_count' => count($errors)
+                'error_count' => count($errors),
+                'details' => count($allMessages) > 0 ? array_slice($allMessages, 0, 10) : []
             ]);
+
         } catch (\Exception $e) {
             Log::error('Import error: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
             return response()->json([
                 'status' => false,
                 'alert' => 'error',
-                'message' => 'Terjadi kesalahan saat memproses file',
-                'error' => $e->getMessage(),
+                'message' => 'Terjadi kesalahan saat memproses file: ' . $e->getMessage(),
                 'showConfirmButton' => true
             ], 500);
         }
