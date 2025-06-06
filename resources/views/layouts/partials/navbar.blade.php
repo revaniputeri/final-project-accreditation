@@ -14,7 +14,7 @@
                     data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     <img src="{{ asset('storage/user_avatar/' . Auth::user()->id_user . '.png') }}" alt="User Photo"
                         class="rounded-circle me-2 mr-2" style="width: 40px; height: 40px; object-fit: cover;"
-                        onerror="this.onerror=null; this.src='{{ asset('img/default-avatar.png') }}';">
+                        onerror="this.onerror=null; this.src='{{ asset('storage/user_avatar/default.jpg') }}';">
                     <span>{{ Auth::user()->username }}</span>
                 </a>
                 <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">

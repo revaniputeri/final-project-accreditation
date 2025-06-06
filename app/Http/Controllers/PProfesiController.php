@@ -425,7 +425,6 @@ class PProfesiController extends Controller
         $query = PProfesiModel::join('user', 'p_profesi.id_user', '=', 'user.id_user')
             ->join('profile_user', 'user.id_user', '=', 'profile_user.id_user')
             ->select(
-                'p_profesi.id_profesi',
                 'profile_user.nama_lengkap as nama_user',
                 'p_profesi.perguruan_tinggi',
                 'p_profesi.kurun_waktu',
@@ -458,47 +457,45 @@ class PProfesiController extends Controller
         $sheet = $spreadsheet->getActiveSheet();
 
         $sheet->setCellValue('A1', 'No');
-        $sheet->setCellValue('B1', 'ID Profesi');
-        $sheet->setCellValue('C1', 'Nama Dosen');
-        $sheet->setCellValue('D1', 'Perguruan Tinggi');
-        $sheet->setCellValue('E1', 'Kurun Waktu');
-        $sheet->setCellValue('F1', 'Gelar');
-        $sheet->setCellValue('G1', 'Status');
-        $sheet->setCellValue('H1', 'Sumber Data');
-        $sheet->setCellValue('I1', 'Bukti');
-        $sheet->setCellValue('J1', 'Created At');
-        $sheet->setCellValue('K1', 'Updated At');
+        $sheet->setCellValue('B1', 'Nama Dosen');
+        $sheet->setCellValue('C1', 'Perguruan Tinggi');
+        $sheet->setCellValue('D1', 'Kurun Waktu');
+        $sheet->setCellValue('E1', 'Gelar');
+        $sheet->setCellValue('F1', 'Status');
+        $sheet->setCellValue('G1', 'Sumber Data');
+        $sheet->setCellValue('H1', 'Bukti');
+        $sheet->setCellValue('I1', 'Created At');
+        $sheet->setCellValue('J1', 'Updated At');
 
-        $sheet->getStyle('A1:k1')->getFont()->setBold(true);
+        $sheet->getStyle('A1:J1')->getFont()->setBold(true);
 
         $no = 1;
         $row = 2;
         foreach ($profesi as $data) {
             $sheet->setCellValue('A' . $row, $no);
-            $sheet->setCellValue('B' . $row, $data->id_profesi);
-            $sheet->setCellValue('C' . $row, $data->nama_user);
-            $sheet->setCellValue('D' . $row, $data->perguruan_tinggi);
-            $sheet->setCellValue('E' . $row, $data->kurun_waktu);
-            $sheet->setCellValue('F' . $row, $data->gelar);
-            $sheet->setCellValue('G' . $row, $data->status);
-            $sheet->setCellValue('H' . $row, $data->sumber_data);
+            $sheet->setCellValue('B' . $row, $data->nama_user);
+            $sheet->setCellValue('C' . $row, $data->perguruan_tinggi);
+            $sheet->setCellValue('D' . $row, $data->kurun_waktu);
+            $sheet->setCellValue('E' . $row, $data->gelar);
+            $sheet->setCellValue('F' . $row, $data->status);
+            $sheet->setCellValue('G' . $row, $data->sumber_data);
 
             if ($data->bukti) {
                 $url = url('storage/portofolio/profesi/' . $data->bukti);
-                $sheet->setCellValue('I' . $row, 'Lihat File');
-                $sheet->getCell('I' . $row)->getHyperlink()->setUrl($url);
+                $sheet->setCellValue('H' . $row, 'Lihat File');
+                $sheet->getCell('H' . $row)->getHyperlink()->setUrl($url);
             } else {
-                $sheet->setCellValue('I' . $row, 'Tidak ada file');
+                $sheet->setCellValue('H' . $row, 'Tidak ada file');
             }
 
-            $sheet->setCellValue('J' . $row, $data->created_at);
-            $sheet->setCellValue('K' . $row, $data->updated_at);
+            $sheet->setCellValue('I' . $row, $data->created_at);
+            $sheet->setCellValue('J' . $row, $data->updated_at);
 
             $row++;
             $no++;
         }
 
-        foreach (range('A', 'K') as $columnID) {
+        foreach (range('A', 'J') as $columnID) {
             $sheet->getColumnDimension($columnID)->setAutoSize(true);
         }
 

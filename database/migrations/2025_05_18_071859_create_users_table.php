@@ -15,6 +15,7 @@ return new class extends Migration
             $table->foreignId('id_level')->constrained('level', 'id_level');
             $table->rememberToken();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

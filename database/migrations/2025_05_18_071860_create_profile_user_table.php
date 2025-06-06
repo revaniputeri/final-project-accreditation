@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('no_telp', 20)->nullable();
             $table->text('alamat')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

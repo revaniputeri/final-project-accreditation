@@ -516,7 +516,6 @@ class PHKIController extends Controller
         $query = PHKIModel::join('user', 'p_hki.id_user', '=', 'user.id_user')
             ->join('profile_user', 'user.id_user', '=', 'profile_user.id_user')
             ->select(
-                'p_hki.id_hki',
                 'profile_user.nama_lengkap as nama_user',
                 'p_hki.judul',
                 'p_hki.tahun',
@@ -552,18 +551,17 @@ class PHKIController extends Controller
 
         // Header kolom
         $sheet->setCellValue('A1', 'No');
-        $sheet->setCellValue('B1', 'ID HKI');
-        $sheet->setCellValue('C1', 'Nama Dosen');
-        $sheet->setCellValue('D1', 'Judul');
-        $sheet->setCellValue('E1', 'Tahun');
-        $sheet->setCellValue('F1', 'Skema');
-        $sheet->setCellValue('G1', 'Nomor');
-        $sheet->setCellValue('H1', 'Melibatkan Mahasiswa S2');
-        $sheet->setCellValue('I1', 'Status');
-        $sheet->setCellValue('J1', 'Sumber Data');
-        $sheet->setCellValue('K1', 'Bukti');
-        $sheet->setCellValue('L1', 'Created At');
-        $sheet->setCellValue('M1', 'Updated At');
+        $sheet->setCellValue('B1', 'Nama Dosen');
+        $sheet->setCellValue('C1', 'Judul');
+        $sheet->setCellValue('D1', 'Tahun');
+        $sheet->setCellValue('E1', 'Skema');
+        $sheet->setCellValue('F1', 'Nomor');
+        $sheet->setCellValue('G1', 'Melibatkan Mahasiswa S2');
+        $sheet->setCellValue('H1', 'Status');
+        $sheet->setCellValue('I1', 'Sumber Data');
+        $sheet->setCellValue('J1', 'Bukti');
+        $sheet->setCellValue('K1', 'Created At');
+        $sheet->setCellValue('L1', 'Updated At');
 
         $sheet->getStyle('A1:L1')->getFont()->setBold(true);
 
@@ -571,35 +569,34 @@ class PHKIController extends Controller
         $row = 2;
         foreach ($hki as $data) {
             $sheet->setCellValue('A' . $row, $no);
-            $sheet->setCellValue('B' . $row, $data->id_hki);
-            $sheet->setCellValue('C' . $row, $data->nama_user);
-            $sheet->setCellValue('D' . $row, $data->judul);
-            $sheet->setCellValue('E' . $row, $data->tahun);
-            $sheet->setCellValue('F' . $row, $data->skema);
-            $sheet->setCellValue('G' . $row, $data->nomor);
-            $sheet->setCellValue('H' . $row, $data->melibatkan_mahasiswa_s2 ? 'Ya' : 'Tidak');
-            $sheet->setCellValue('I' . $row, $data->status);
-            $sheet->setCellValue('J' . $row, $data->sumber_data);
+            $sheet->setCellValue('B' . $row, $data->nama_user);
+            $sheet->setCellValue('C' . $row, $data->judul);
+            $sheet->setCellValue('D' . $row, $data->tahun);
+            $sheet->setCellValue('E' . $row, $data->skema);
+            $sheet->setCellValue('F' . $row, $data->nomor);
+            $sheet->setCellValue('G' . $row, $data->melibatkan_mahasiswa_s2 ? 'Ya' : 'Tidak');
+            $sheet->setCellValue('H' . $row, $data->status);
+            $sheet->setCellValue('I' . $row, $data->sumber_data);
 
             if ($data->bukti) {
                 $url = url('storage/portofolio/hki/' . $data->bukti);
-                $sheet->setCellValue('K' . $row, 'Lihat File');
-                $sheet->getCell('K' . $row)->getHyperlink()->setUrl($url);
-                $sheet->getStyle('K' . $row)->getFont()->getColor()->setARGB(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_BLUE);
-                $sheet->getStyle('K' . $row)->getFont()->setUnderline(true);
+                $sheet->setCellValue('J' . $row, 'Lihat File');
+                $sheet->getCell('J' . $row)->getHyperlink()->setUrl($url);
+                $sheet->getStyle('J' . $row)->getFont()->getColor()->setARGB(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_BLUE);
+                $sheet->getStyle('J' . $row)->getFont()->setUnderline(true);
             } else {
-                $sheet->setCellValue('K' . $row, 'Tidak ada file');
+                $sheet->setCellValue('J' . $row, 'Tidak ada file');
             }
 
-            $sheet->setCellValue('L' . $row, $data->created_at);
-            $sheet->setCellValue('M' . $row, $data->updated_at);
+            $sheet->setCellValue('K' . $row, $data->created_at);
+            $sheet->setCellValue('L' . $row, $data->updated_at);
 
             $row++;
             $no++;
         }
 
         // Set auto size kolom
-        foreach (range('A', 'M') as $columnID) {
+        foreach (range('A', 'L') as $columnID) {
             $sheet->getColumnDimension($columnID)->setAutoSize(true);
         }
 

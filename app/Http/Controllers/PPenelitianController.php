@@ -526,7 +526,6 @@ class PPenelitianController extends Controller
         $query = PPenelitianModel::join('user', 'p_penelitian.id_user', '=', 'user.id_user')
             ->join('profile_user', 'user.id_user', '=', 'profile_user.id_user')
             ->select(
-                'p_penelitian.id_penelitian',
                 'profile_user.nama_lengkap as nama_user',
                 'p_penelitian.judul_penelitian',
                 'p_penelitian.skema',
@@ -566,52 +565,50 @@ class PPenelitianController extends Controller
         $sheet = $spreadsheet->getActiveSheet();
 
         $sheet->setCellValue('A1', 'No');
-        $sheet->setCellValue('B1', 'ID Penelitian');
-        $sheet->setCellValue('C1', 'Nama Dosen');
-        $sheet->setCellValue('D1', 'Judul Penelitian');
-        $sheet->setCellValue('E1', 'Skema');
-        $sheet->setCellValue('F1', 'Tahun');
-        $sheet->setCellValue('G1', 'Dana');
-        $sheet->setCellValue('H1', 'Peran');
-        $sheet->setCellValue('I1', 'Melibatkan Mahasiswa S2');
-        $sheet->setCellValue('J1', 'Status');
-        $sheet->setCellValue('K1', 'Sumber Data');
-        $sheet->setCellValue('L1', 'Bukti');
-        $sheet->setCellValue('M1', 'Created At');
-        $sheet->setCellValue('N1', 'Updated At');
+        $sheet->setCellValue('B1', 'Nama Dosen');
+        $sheet->setCellValue('C1', 'Judul Penelitian');
+        $sheet->setCellValue('D1', 'Skema');
+        $sheet->setCellValue('E1', 'Tahun');
+        $sheet->setCellValue('F1', 'Dana');
+        $sheet->setCellValue('G1', 'Peran');
+        $sheet->setCellValue('H1', 'Melibatkan Mahasiswa S2');
+        $sheet->setCellValue('I1', 'Status');
+        $sheet->setCellValue('J1', 'Sumber Data');
+        $sheet->setCellValue('K1', 'Bukti');
+        $sheet->setCellValue('L1', 'Created At');
+        $sheet->setCellValue('M1', 'Updated At');
 
-        $sheet->getStyle('A1:N1')->getFont()->setBold(true);
+        $sheet->getStyle('A1:M1')->getFont()->setBold(true);
 
         $no = 1;
         $row = 2;
         foreach ($penelitian as $data) {
             $sheet->setCellValue('A' . $row, $no);
-            $sheet->setCellValue('B' . $row, $data->id_penelitian);
-            $sheet->setCellValue('C' . $row, $data->nama_user);
-            $sheet->setCellValue('D' . $row, $data->judul_penelitian);
-            $sheet->setCellValue('E' . $row, $data->skema);
-            $sheet->setCellValue('F' . $row, $data->tahun);
-            $sheet->setCellValue('G' . $row, $data->dana);
-            $sheet->setCellValue('H' . $row, $data->peran);
-            $sheet->setCellValue('I' . $row, $data->melibatkan_mahasiswa_s2 ? 'Ya' : 'Tidak');
-            $sheet->setCellValue('J' . $row, $data->status);
-            $sheet->setCellValue('K' . $row, $data->sumber_data);
+            $sheet->setCellValue('B' . $row, $data->nama_user);
+            $sheet->setCellValue('C' . $row, $data->judul_penelitian);
+            $sheet->setCellValue('D' . $row, $data->skema);
+            $sheet->setCellValue('E' . $row, $data->tahun);
+            $sheet->setCellValue('F' . $row, $data->dana);
+            $sheet->setCellValue('G' . $row, $data->peran);
+            $sheet->setCellValue('H' . $row, $data->melibatkan_mahasiswa_s2 ? 'Ya' : 'Tidak');
+            $sheet->setCellValue('I' . $row, $data->status);
+            $sheet->setCellValue('J' . $row, $data->sumber_data);
             // Tambahkan link ke file bukti
             if ($data->bukti) {
                 $url = url('storage/portofolio/penelitian/' . $data->bukti);
-                $sheet->setCellValue('L' . $row, 'Lihat File');
-                $sheet->getCell('L' . $row)->getHyperlink()->setUrl($url);
+                $sheet->setCellValue('K' . $row, 'Lihat File');
+                $sheet->getCell('K' . $row)->getHyperlink()->setUrl($url);
             } else {
-                $sheet->setCellValue('L' . $row, 'Tidak ada file');
+                $sheet->setCellValue('K' . $row, 'Tidak ada file');
             }
-            $sheet->setCellValue('M' . $row, $data->created_at);
-            $sheet->setCellValue('N' . $row, $data->updated_at);
+            $sheet->setCellValue('L' . $row, $data->created_at);
+            $sheet->setCellValue('M' . $row, $data->updated_at);
 
             $row++;
             $no++;
         }
 
-        foreach (range('A', 'N') as $columnID) {
+        foreach (range('A', 'M') as $columnID) {
             $sheet->getColumnDimension($columnID)->setAutoSize(true);
         }
 

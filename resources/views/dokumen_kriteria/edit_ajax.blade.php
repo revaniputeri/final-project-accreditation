@@ -2,6 +2,7 @@
         @csrf
         @method('PUT')
         <input type="hidden" name="no_kriteria" value="{{ $dokumen_pendukung->no_kriteria }}">
+        <input type="hidden" name="kategori" value="{{ request()->query('kategori', '') }}">
         <div class="modal-header bg-primary text-white">
             <h5 class="modal-title">Edit Dokumen Pendukung</h5>
             <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>

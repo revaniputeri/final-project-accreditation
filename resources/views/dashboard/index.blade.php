@@ -7,7 +7,7 @@
 <div class="container-fluid">
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ url('/') }}">Beranda</a></li>
+            <li class="breadcrumb-item"><a href="{{ url('/dashboard') }}">Beranda</a></li>
             <li class="breadcrumb-item active">More Info</li>
         </ol>
     </nav>
@@ -19,7 +19,7 @@
     <div class="card shadow-sm">
         <div class="card-header bg-primary border-bottom">
             <div class="d-flex justify-content-between align-items-center">
-                <h3 class="card-title mb-0 text-white">Daftar Portofolio ({{ ucfirst($status) }})</h3>
+                <h3 class="card-title mb-0 text-white">Daftar Portofolio ({{ ucwords($status) }})</h3>
             </div>
         </div>
 
@@ -46,7 +46,7 @@
                         <option value="sertifikasi">Sertifikasi</option>
                         <option value="prestasi">Prestasi</option>
                         <option value="hki">HKI</option>
-                        <option value="karyabuku">Karya Buku</option>
+                        <option value="karya buku">Karya Buku</option>
                     </select>
                 </div>
             </div>
@@ -72,7 +72,7 @@
                             <td>{{ ucfirst($item->jenis) }}</td>
                             <td>{{ $item->nama }}</td>
                             <td class="text-center">
-                                <span class="badge bg-secondary text-uppercase">{{ $item->sumber }}</span>
+                                <span class="badge p-2 bg-secondary text-uppercase">{{ $item->sumber }}</span>
                             </td>
                             <td class="text-center">
                                 @php
@@ -82,7 +82,7 @@
                                         'tidak valid' => 'bg-danger',
                                     ][$item->status] ?? 'bg-secondary';
                                 @endphp
-                                <span class="badge {{ $statusClass }}">
+                                <span class="badge p-2 {{ $statusClass }}">
                                     {{ strtoupper($item->status ?? '-') }}
                                 </span>
                             </td>
@@ -100,9 +100,12 @@
 <script>
     $(document).ready(function () {
         const table = $('#moreInfoTable').DataTable({
-            ordering: false,
+            ordering: true,
             lengthMenu: [10, 25, 50, 100],
             pageLength: 10,
+            columnDefs: [
+                { targets: [4, 5], orderable: false }
+            ],
             language: {
                 search: "Cari:",
                 lengthMenu: "Tampilkan _MENU_ entri",
@@ -122,8 +125,8 @@
         $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
             const filterSumber = $('#filterSumberData').val().toLowerCase();
             const filterJenis = $('#filterJenis').val().toLowerCase();
-            const jenis = data[1].toLowerCase();
-            const sumber = data[3].toLowerCase();
+            const jenis = data[2].toLowerCase();
+            const sumber = data[4].toLowerCase();
 
             return (!filterSumber || sumber.includes(filterSumber)) &&
                    (!filterJenis || jenis.includes(filterJenis));
