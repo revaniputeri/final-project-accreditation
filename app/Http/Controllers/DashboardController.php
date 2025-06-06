@@ -44,7 +44,7 @@ class DashboardController extends Controller
             ];
         }
 
-        return view('home', compact('data'));
+        return view('dashboard', compact('data'));
     }
 
     public function moreInfo(Request $request)
