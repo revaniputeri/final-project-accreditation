@@ -518,7 +518,6 @@ class PSertifikasiController extends Controller
         $query = PSertifikasiModel::join('user', 'p_sertifikasi.id_user', '=', 'user.id_user')
             ->join('profile_user', 'user.id_user', '=', 'profile_user.id_user')
             ->select(
-                'p_sertifikasi.id_sertifikasi',
                 'profile_user.nama_lengkap as nama_user',
                 'p_sertifikasi.tahun_diperoleh',
                 'p_sertifikasi.penerbit',
@@ -553,50 +552,48 @@ class PSertifikasiController extends Controller
         $sheet = $spreadsheet->getActiveSheet();
 
         $sheet->setCellValue('A1', 'No');
-        $sheet->setCellValue('B1', 'ID Sertifikasi');
-        $sheet->setCellValue('C1', 'Nama Dosen');
-        $sheet->setCellValue('D1', 'Tahun Diperoleh');
-        $sheet->setCellValue('E1', 'Penerbit');
-        $sheet->setCellValue('F1', 'Nama Sertifikasi');
-        $sheet->setCellValue('G1', 'Nomor Sertifikat');
-        $sheet->setCellValue('H1', 'Masa Berlaku');
-        $sheet->setCellValue('I1', 'Status');
-        $sheet->setCellValue('J1', 'Sumber Data');
-        $sheet->setCellValue('K1', 'Bukti');
-        $sheet->setCellValue('L1', 'Created At');
-        $sheet->setCellValue('M1', 'Updated At');
+        $sheet->setCellValue('B1', 'Nama Dosen');
+        $sheet->setCellValue('C1', 'Tahun Diperoleh');
+        $sheet->setCellValue('D1', 'Penerbit');
+        $sheet->setCellValue('E1', 'Nama Sertifikasi');
+        $sheet->setCellValue('F1', 'Nomor Sertifikat');
+        $sheet->setCellValue('G1', 'Masa Berlaku');
+        $sheet->setCellValue('H1', 'Status');
+        $sheet->setCellValue('I1', 'Sumber Data');
+        $sheet->setCellValue('J1', 'Bukti');
+        $sheet->setCellValue('K1', 'Created At');
+        $sheet->setCellValue('L1', 'Updated At');
 
-        $sheet->getStyle('A1:M1')->getFont()->setBold(true);
+        $sheet->getStyle('A1:L1')->getFont()->setBold(true);
 
         $no = 1;
         $row = 2;
         foreach ($sertifikasi as $data) {
             $sheet->setCellValue('A' . $row, $no);
-            $sheet->setCellValue('B' . $row, $data->id_sertifikasi);
-            $sheet->setCellValue('C' . $row, $data->nama_user);
-            $sheet->setCellValue('D' . $row, $data->tahun_diperoleh);
-            $sheet->setCellValue('E' . $row, $data->penerbit);
-            $sheet->setCellValue('F' . $row, $data->nama_sertifikasi);
-            $sheet->setCellValue('G' . $row, $data->nomor_sertifikat);
-            $sheet->setCellValue('H' . $row, $data->masa_berlaku);
-            $sheet->setCellValue('I' . $row, $data->status);
-            $sheet->setCellValue('J' . $row, $data->sumber_data);
+            $sheet->setCellValue('B' . $row, $data->nama_user);
+            $sheet->setCellValue('C' . $row, $data->tahun_diperoleh);
+            $sheet->setCellValue('D' . $row, $data->penerbit);
+            $sheet->setCellValue('E' . $row, $data->nama_sertifikasi);
+            $sheet->setCellValue('F' . $row, $data->nomor_sertifikat);
+            $sheet->setCellValue('G' . $row, $data->masa_berlaku);
+            $sheet->setCellValue('H' . $row, $data->status);
+            $sheet->setCellValue('I' . $row, $data->sumber_data);
             // Tambahkan link ke file bukti
             if ($data->bukti) {
                 $url = url('storage/portofolio/sertifikasi/' . $data->bukti);
-                $sheet->setCellValue('K' . $row, 'Lihat File');
-                $sheet->getCell('K' . $row)->getHyperlink()->setUrl($url);
+                $sheet->setCellValue('J' . $row, 'Lihat File');
+                $sheet->getCell('J' . $row)->getHyperlink()->setUrl($url);
             } else {
-                $sheet->setCellValue('K' . $row, 'Tidak ada file');
+                $sheet->setCellValue('J' . $row, 'Tidak ada file');
             }
-            $sheet->setCellValue('L' . $row, $data->created_at);
-            $sheet->setCellValue('M' . $row, $data->updated_at);
+            $sheet->setCellValue('K' . $row, $data->created_at);
+            $sheet->setCellValue('L' . $row, $data->updated_at);
 
             $row++;
             $no++;
         }
 
-        foreach (range('A', 'M') as $columnID) {
+        foreach (range('A', 'L') as $columnID) {
             $sheet->getColumnDimension($columnID)->setAutoSize(true);
         }
 

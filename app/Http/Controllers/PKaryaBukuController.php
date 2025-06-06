@@ -516,7 +516,6 @@ class PKaryaBukuController extends Controller
         $query = PKaryaBukuModel::join('user', 'p_karya_buku.id_user', '=', 'user.id_user')
             ->join('profile_user', 'user.id_user', '=', 'profile_user.id_user')
             ->select(
-                'p_karya_buku.id_karya_buku',
                 'profile_user.nama_lengkap as nama_user',
                 'p_karya_buku.judul_buku',
                 'p_karya_buku.tahun',
@@ -551,49 +550,47 @@ class PKaryaBukuController extends Controller
         $sheet = $spreadsheet->getActiveSheet();
 
         $sheet->setCellValue('A1', 'No');
-        $sheet->setCellValue('B1', 'ID Karya Buku');
-        $sheet->setCellValue('C1', 'Nama Dosen');
-        $sheet->setCellValue('D1', 'Judul Buku');
-        $sheet->setCellValue('E1', 'Tahun');
-        $sheet->setCellValue('F1', 'Penerbit');
-        $sheet->setCellValue('G1', 'ISBN');
-        $sheet->setCellValue('H1', 'Jumlah Halaman');
-        $sheet->setCellValue('I1', 'Status');
-        $sheet->setCellValue('J1', 'Sumber Data');
-        $sheet->setCellValue('K1', 'Bukti');
-        $sheet->setCellValue('L1', 'Created At');
-        $sheet->setCellValue('M1', 'Updated At');
+        $sheet->setCellValue('B1', 'Nama Dosen');
+        $sheet->setCellValue('C1', 'Judul Buku');
+        $sheet->setCellValue('D1', 'Tahun');
+        $sheet->setCellValue('E1', 'Penerbit');
+        $sheet->setCellValue('F1', 'ISBN');
+        $sheet->setCellValue('G1', 'Jumlah Halaman');
+        $sheet->setCellValue('H1', 'Status');
+        $sheet->setCellValue('I1', 'Sumber Data');
+        $sheet->setCellValue('J1', 'Bukti');
+        $sheet->setCellValue('K1', 'Created At');
+        $sheet->setCellValue('L1', 'Updated At');
 
-        $sheet->getStyle('A1:M1')->getFont()->setBold(true);
+        $sheet->getStyle('A1:L1')->getFont()->setBold(true);
 
         $no = 1;
         $row = 2;
         foreach ($karyaBuku as $data) {
             $sheet->setCellValue('A' . $row, $no);
-            $sheet->setCellValue('B' . $row, $data->id_karya_buku);
-            $sheet->setCellValue('C' . $row, $data->nama_user);
-            $sheet->setCellValue('D' . $row, $data->judul_buku);
-            $sheet->setCellValue('E' . $row, $data->tahun);
-            $sheet->setCellValue('F' . $row, $data->penerbit);
-            $sheet->setCellValue('G' . $row, $data->isbn);
-            $sheet->setCellValue('H' . $row, $data->jumlah_halaman);
-            $sheet->setCellValue('I' . $row, $data->status);
-            $sheet->setCellValue('J' . $row, $data->sumber_data);
+            $sheet->setCellValue('B' . $row, $data->nama_user);
+            $sheet->setCellValue('C' . $row, $data->judul_buku);
+            $sheet->setCellValue('D' . $row, $data->tahun);
+            $sheet->setCellValue('E' . $row, $data->penerbit);
+            $sheet->setCellValue('F' . $row, $data->isbn);
+            $sheet->setCellValue('G' . $row, $data->jumlah_halaman);
+            $sheet->setCellValue('H' . $row, $data->status);
+            $sheet->setCellValue('I' . $row, $data->sumber_data);
             if ($data->bukti) {
                 $url = url('storage/portofolio/karya_buku/' . $data->bukti);
-                $sheet->setCellValue('K' . $row, 'Lihat File');
-                $sheet->getCell('K' . $row)->getHyperlink()->setUrl($url);
+                $sheet->setCellValue('J' . $row, 'Lihat File');
+                $sheet->getCell('J' . $row)->getHyperlink()->setUrl($url);
             } else {
-                $sheet->setCellValue('K' . $row, 'Tidak ada file');
+                $sheet->setCellValue('J' . $row, 'Tidak ada file');
             }
-            $sheet->setCellValue('L' . $row, $data->created_at);
-            $sheet->setCellValue('M' . $row, $data->updated_at);
+            $sheet->setCellValue('K' . $row, $data->created_at);
+            $sheet->setCellValue('L' . $row, $data->updated_at);
 
             $row++;
             $no++;
         }
 
-        foreach (range('A', 'M') as $columnID) {
+        foreach (range('A', 'L') as $columnID) {
             $sheet->getColumnDimension($columnID)->setAutoSize(true);
         }
 

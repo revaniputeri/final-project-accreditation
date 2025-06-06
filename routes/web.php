@@ -34,7 +34,14 @@ use App\Http\Controllers\DokumenAkhirController;
 |
 */
 
-// routes/web.php
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
+
+Route::get('/', function () {
+    return view('landing_page.index');
+});
+
+Route::get('/kriteria/{no_kriteria}', [KriteriaController::class, 'showDokumenPendukung'])->name('kriteria.showDokumenPendukung');
 
 Route::middleware('guest')->group(function () {
     Route::get('login', [AuthController::class, 'login'])->name('login');
@@ -46,7 +53,7 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
-    Route::get('/', [DashboardController::class, 'index']);
+    Route::get('/dashboard', [DashboardController::class, 'index']);
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 
     // Route untuk manage-level

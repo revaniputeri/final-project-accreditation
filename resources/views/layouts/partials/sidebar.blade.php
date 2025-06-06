@@ -29,7 +29,7 @@
 
                 <!-- Dashboard -->
                 <li class="nav-item">
-                    <a href="{{ url('/') }}" class="nav-link {{ request()->is('/') ? 'active' : '' }}">
+                    <a href="{{ url('/dashboard') }}" class="nav-link {{ request()->is('/') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-home"></i>
                         <p>Dashboard</p>
                     </a>

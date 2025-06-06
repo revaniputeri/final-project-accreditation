@@ -13,6 +13,7 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Auth;
 use App\Models\DokumenKriteriaModel;
+use App\Models\DokumenPendukungModel;
 
 class KriteriaController extends Controller
 {
@@ -32,6 +33,15 @@ class KriteriaController extends Controller
         $dataTable->with('no_kriteria', $latestDokumen ? $latestDokumen->no_kriteria : null);
 
         return $dataTable->render('kriteria.index', compact('kriteria'));
+    }
+
+    public function showDokumenPendukung($no_kriteria)
+    {
+        $dokumenPendukung = DokumenPendukungModel::where('no_kriteria', $no_kriteria)
+            ->get()
+            ->groupBy('kategori');
+
+        return view('landing_page.kriteria', compact('dokumenPendukung', 'no_kriteria'));
     }
 
     public function create_ajax()
@@ -235,11 +245,11 @@ class KriteriaController extends Controller
     public function getLastNumber()
     {
         $lastKriteria = KriteriaModel::orderBy('no_kriteria', 'desc')->first();
-        
+
         if ($lastKriteria) {
             return response()->json(['last_number' => $lastKriteria->no_kriteria]);
         }
-        
+
         return response()->json(['last_number' => null]);
     }
 }
