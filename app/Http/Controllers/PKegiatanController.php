@@ -480,7 +480,6 @@ class PKegiatanController extends Controller
         $query = PKegiatanModel::join('user', 'p_kegiatan.id_user', '=', 'user.id_user')
             ->join('profile_user', 'user.id_user', '=', 'profile_user.id_user')
             ->select(
-                'p_kegiatan.id_kegiatan',
                 'profile_user.nama_lengkap as nama_user',
                 'p_kegiatan.jenis_kegiatan',
                 'p_kegiatan.tempat',
@@ -514,47 +513,45 @@ class PKegiatanController extends Controller
         $sheet = $spreadsheet->getActiveSheet();
 
         $sheet->setCellValue('A1', 'No');
-        $sheet->setCellValue('B1', 'ID Kegiatan');
-        $sheet->setCellValue('C1', 'Nama Dosen');
-        $sheet->setCellValue('D1', 'Jenis Kegiatan');
-        $sheet->setCellValue('E1', 'Tempat');
-        $sheet->setCellValue('F1', 'Waktu');
-        $sheet->setCellValue('G1', 'Peran');
-        $sheet->setCellValue('H1', 'Status');
-        $sheet->setCellValue('I1', 'Sumber Data');
-        $sheet->setCellValue('J1', 'Bukti');
-        $sheet->setCellValue('K1', 'Created At');
-        $sheet->setCellValue('L1', 'Updated At');
+        $sheet->setCellValue('B1', 'Nama Dosen');
+        $sheet->setCellValue('C1', 'Jenis Kegiatan');
+        $sheet->setCellValue('D1', 'Tempat');
+        $sheet->setCellValue('E1', 'Waktu');
+        $sheet->setCellValue('F1', 'Peran');
+        $sheet->setCellValue('G1', 'Status');
+        $sheet->setCellValue('H1', 'Sumber Data');
+        $sheet->setCellValue('I1', 'Bukti');
+        $sheet->setCellValue('J1', 'Created At');
+        $sheet->setCellValue('K1', 'Updated At');
 
-        $sheet->getStyle('A1:L1')->getFont()->setBold(true);
+        $sheet->getStyle('A1:K1')->getFont()->setBold(true);
 
         $no = 1;
         $row = 2;
         foreach ($kegiatan as $data) {
             $sheet->setCellValue('A' . $row, $no);
-            $sheet->setCellValue('B' . $row, $data->id_kegiatan);
-            $sheet->setCellValue('C' . $row, $data->nama_user);
-            $sheet->setCellValue('D' . $row, $data->jenis_kegiatan);
-            $sheet->setCellValue('E' . $row, $data->tempat);
-            $sheet->setCellValue('F' . $row, $data->waktu);
-            $sheet->setCellValue('G' . $row, $data->peran);
-            $sheet->setCellValue('H' . $row, $data->status);
-            $sheet->setCellValue('I' . $row, $data->sumber_data);
+            $sheet->setCellValue('B' . $row, $data->nama_user);
+            $sheet->setCellValue('C' . $row, $data->jenis_kegiatan);
+            $sheet->setCellValue('D' . $row, $data->tempat);
+            $sheet->setCellValue('E' . $row, $data->waktu);
+            $sheet->setCellValue('F' . $row, $data->peran);
+            $sheet->setCellValue('G' . $row, $data->status);
+            $sheet->setCellValue('H' . $row, $data->sumber_data);
             if ($data->bukti) {
                 $url = url('storage/portofolio/kegiatan/' . $data->bukti);
-                $sheet->setCellValue('J' . $row, 'Lihat File');
-                $sheet->getCell('J' . $row)->getHyperlink()->setUrl($url);
+                $sheet->setCellValue('I' . $row, 'Lihat File');
+                $sheet->getCell('I' . $row)->getHyperlink()->setUrl($url);
             } else {
-                $sheet->setCellValue('J' . $row, 'Tidak ada file');
+                $sheet->setCellValue('I' . $row, 'Tidak ada file');
             }
-            $sheet->setCellValue('K' . $row, $data->created_at);
-            $sheet->setCellValue('L' . $row, $data->updated_at);
+            $sheet->setCellValue('J' . $row, $data->created_at);
+            $sheet->setCellValue('K' . $row, $data->updated_at);
 
             $row++;
             $no++;
         }
 
-        foreach (range('A', 'L') as $columnID) {
+        foreach (range('A', 'K') as $columnID) {
             $sheet->getColumnDimension($columnID)->setAutoSize(true);
         }
 

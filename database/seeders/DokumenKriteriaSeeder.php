@@ -26,7 +26,7 @@ class DokumenKriteriaSeeder extends Seeder
                 'versi' => 1, // Versi awal
                 'judul' => 'Dokumen Kriteria ' . $kriteria->no_kriteria,
                 'kategori' => 'penetapan',
-                'content_html' => '<p>Konten default untuk kriteria ' . $kriteria->no_kriteria . '</p>',
+                'content_html' => '<p>Konten default untuk kriteria ' . $kriteria->no_kriteria . ' dengan kategori penetapan</p>',
                 'status' => 'kosong',
                 'id_validator' => null,
                 'komentar' => null,
@@ -39,7 +39,7 @@ class DokumenKriteriaSeeder extends Seeder
                 'versi' => 1, // Versi awal
                 'judul' => 'Dokumen Kriteria ' . $kriteria->no_kriteria,
                 'kategori' => 'pelaksanaan',
-                'content_html' => '<p>Konten default untuk kriteria ' . $kriteria->no_kriteria . '</p>',
+                'content_html' => '<p>Konten default untuk kriteria ' . $kriteria->no_kriteria . ' dengan kategori pelaksanaan</p>',
                 'status' => 'kosong',
                 'id_validator' => null,
                 'komentar' => null,
@@ -52,7 +52,7 @@ class DokumenKriteriaSeeder extends Seeder
                 'versi' => 1, // Versi awal
                 'judul' => 'Dokumen Kriteria ' . $kriteria->no_kriteria,
                 'kategori' => 'evaluasi',
-                'content_html' => '<p>Konten default untuk kriteria ' . $kriteria->no_kriteria . '</p>',
+                'content_html' => '<p>Konten default untuk kriteria ' . $kriteria->no_kriteria . ' dengan kategori evaluasi</p>',
                 'status' => 'kosong',
                 'id_validator' => null,
                 'komentar' => null,
@@ -65,7 +65,7 @@ class DokumenKriteriaSeeder extends Seeder
                 'versi' => 1, // Versi awal
                 'judul' => 'Dokumen Kriteria ' . $kriteria->no_kriteria,
                 'kategori' => 'pengendalian',
-                'content_html' => '<p>Konten default untuk kriteria ' . $kriteria->no_kriteria . '</p>',
+                'content_html' => '<p>Konten default untuk kriteria ' . $kriteria->no_kriteria . ' dengan kategori pengendalian</p>',
                 'status' => 'kosong',
                 'id_validator' => null,
                 'komentar' => null,
@@ -78,7 +78,7 @@ class DokumenKriteriaSeeder extends Seeder
                 'versi' => 1, // Versi awal
                 'judul' => 'Dokumen Kriteria ' . $kriteria->no_kriteria,
                 'kategori' => 'peningkatan',
-                'content_html' => '<p>Konten default untuk kriteria ' . $kriteria->no_kriteria . '</p>',
+                'content_html' => '<p>Konten default untuk kriteria ' . $kriteria->no_kriteria . ' dengan kategori peningkatan</p>',
                 'status' => 'kosong',
                 'id_validator' => null,
                 'komentar' => null,
@@ -89,3 +89,4 @@ class DokumenKriteriaSeeder extends Seeder
         DB::table('dokumen_kriteria')->insert($dokumenKriteria);
     }
 }
+

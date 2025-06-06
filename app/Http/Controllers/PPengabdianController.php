@@ -548,7 +548,6 @@ class PPengabdianController extends Controller
         $query = PPengabdianModel::join('user', 'p_pengabdian.id_user', '=', 'user.id_user')
             ->join('profile_user', 'user.id_user', '=', 'profile_user.id_user')
             ->select(
-                'p_pengabdian.id_pengabdian',
                 'profile_user.nama_lengkap as nama_user',
                 'p_pengabdian.judul_pengabdian',
                 'p_pengabdian.skema',
@@ -585,51 +584,49 @@ class PPengabdianController extends Controller
 
         // Header
         $sheet->setCellValue('A1', 'No');
-        $sheet->setCellValue('B1', 'ID Pengabdian');
-        $sheet->setCellValue('C1', 'Nama Dosen');
-        $sheet->setCellValue('D1', 'Judul Pengabdian');
-        $sheet->setCellValue('E1', 'Tahun');
-        $sheet->setCellValue('F1', 'Dana');
-        $sheet->setCellValue('G1', 'Peran');
-        $sheet->setCellValue('H1', 'Melibatkan Mahasiswa S2');
-        $sheet->setCellValue('I1', 'Status');
-        $sheet->setCellValue('J1', 'Sumber Data');
-        $sheet->setCellValue('K1', 'Bukti');
-        $sheet->setCellValue('L1', 'Created At');
-        $sheet->setCellValue('M1', 'Updated At');
+        $sheet->setCellValue('B1', 'Nama Dosen');
+        $sheet->setCellValue('C1', 'Judul Pengabdian');
+        $sheet->setCellValue('D1', 'Tahun');
+        $sheet->setCellValue('E1', 'Dana');
+        $sheet->setCellValue('F1', 'Peran');
+        $sheet->setCellValue('G1', 'Melibatkan Mahasiswa S2');
+        $sheet->setCellValue('H1', 'Status');
+        $sheet->setCellValue('I1', 'Sumber Data');
+        $sheet->setCellValue('J1', 'Bukti');
+        $sheet->setCellValue('K1', 'Created At');
+        $sheet->setCellValue('L1', 'Updated At');
 
-        $sheet->getStyle('A1:K1')->getFont()->setBold(true);
+        $sheet->getStyle('A1:L1')->getFont()->setBold(true);
 
         $no = 1;
         $row = 2;
         foreach ($pengabdian as $data) {
             $sheet->setCellValue('A' . $row, $no);
-            $sheet->setCellValue('B' . $row, $data->id_pengabdian);
-            $sheet->setCellValue('C' . $row, $data->nama_user);
-            $sheet->setCellValue('D' . $row, $data->judul_pengabdian);
-            $sheet->setCellValue('E' . $row, $data->tahun);
-            $sheet->setCellValue('F' . $row, $data->dana);
-            $sheet->setCellValue('G' . $row, $data->peran);
-            $sheet->setCellValue('H' . $row, $data->melibatkan_mahasiswa_s2 ? 'Ya' : 'Tidak');
-            $sheet->setCellValue('I' . $row, $data->status);
-            $sheet->setCellValue('J' . $row, $data->sumber_data);
+            $sheet->setCellValue('B' . $row, $data->nama_user);
+            $sheet->setCellValue('C' . $row, $data->judul_pengabdian);
+            $sheet->setCellValue('D' . $row, $data->tahun);
+            $sheet->setCellValue('E' . $row, $data->dana);
+            $sheet->setCellValue('F' . $row, $data->peran);
+            $sheet->setCellValue('G' . $row, $data->melibatkan_mahasiswa_s2 ? 'Ya' : 'Tidak');
+            $sheet->setCellValue('H' . $row, $data->status);
+            $sheet->setCellValue('I' . $row, $data->sumber_data);
 
             if ($data->bukti) {
                 $url = url('storage/portofolio/pengabdian/' . $data->bukti);
-                $sheet->setCellValue('K' . $row, 'Lihat File');
-                $sheet->getCell('K' . $row)->getHyperlink()->setUrl($url);
+                $sheet->setCellValue('J' . $row, 'Lihat File');
+                $sheet->getCell('J' . $row)->getHyperlink()->setUrl($url);
             } else {
-                $sheet->setCellValue('K' . $row, 'Tidak ada file');
+                $sheet->setCellValue('J' . $row, 'Tidak ada file');
             }
 
-            $sheet->setCellValue('L' . $row, $data->created_at);
-            $sheet->setCellValue('M' . $row, $data->updated_at);
+            $sheet->setCellValue('K' . $row, $data->created_at);
+            $sheet->setCellValue('L' . $row, $data->updated_at);
 
             $row++;
             $no++;
         }
 
-        foreach (range('A', 'M') as $columnID) {
+        foreach (range('A', 'L') as $columnID) {
             $sheet->getColumnDimension($columnID)->setAutoSize(true);
         }
 

@@ -1,13 +1,13 @@
 @extends('layouts.app')
 
 @section('title', 'Welcome To Akresa')
-@section('subtitle', 'Analysist')
+@section('subtitle', 'Dashboard')
 
 @section('content_header')
 <div class="container-fluid">
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ url('/') }}">Beranda</a></li>
+            <li class="breadcrumb-item"><a href="{{ url('/dashboard') }}">Beranda</a></li>
         </ol>
     </nav>
 </div>
