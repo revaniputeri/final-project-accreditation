@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Welcome To Akresa')
-@section('subtitle', 'Analysist')
+@section('subtitle', 'Dashboard')
 
 @section('content_header')
 <div class="container-fluid">
