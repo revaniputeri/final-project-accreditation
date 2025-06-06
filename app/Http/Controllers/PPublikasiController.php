@@ -532,7 +532,6 @@ class PPublikasiController extends Controller
         $query = PPublikasiModel::join('user', 'p_publikasi.id_user', '=', 'user.id_user')
             ->join('profile_user', 'user.id_user', '=', 'profile_user.id_user')
             ->select(
-                'p_publikasi.id_publikasi',
                 'profile_user.nama_lengkap as nama_user',
                 'p_publikasi.judul',
                 'p_publikasi.tempat_publikasi',
@@ -567,49 +566,47 @@ class PPublikasiController extends Controller
         $sheet = $spreadsheet->getActiveSheet();
 
         $sheet->setCellValue('A1', 'No');
-        $sheet->setCellValue('B1', 'ID Publikasi');
-        $sheet->setCellValue('C1', 'Nama Dosen');
-        $sheet->setCellValue('D1', 'Judul');
-        $sheet->setCellValue('E1', 'Tempat Publikasi');
-        $sheet->setCellValue('F1', 'Tahun Publikasi');
-        $sheet->setCellValue('G1', 'Jenis Publikasi');
-        $sheet->setCellValue('H1', 'Dana');
-        $sheet->setCellValue('I1', 'Status');
-        $sheet->setCellValue('J1', 'Sumber Data');
-        $sheet->setCellValue('K1', 'Bukti');
-        $sheet->setCellValue('L1', 'Created At');
-        $sheet->setCellValue('M1', 'Updated At');
+        $sheet->setCellValue('B1', 'Nama Dosen');
+        $sheet->setCellValue('C1', 'Judul');
+        $sheet->setCellValue('D1', 'Tempat Publikasi');
+        $sheet->setCellValue('E1', 'Tahun Publikasi');
+        $sheet->setCellValue('F1', 'Jenis Publikasi');
+        $sheet->setCellValue('G1', 'Dana');
+        $sheet->setCellValue('H1', 'Status');
+        $sheet->setCellValue('I1', 'Sumber Data');
+        $sheet->setCellValue('J1', 'Bukti');
+        $sheet->setCellValue('K1', 'Created At');
+        $sheet->setCellValue('L1', 'Updated At');
 
-        $sheet->getStyle('A1:M1')->getFont()->setBold(true);
+        $sheet->getStyle('A1:L1')->getFont()->setBold(true);
 
         $no = 1;
         $row = 2;
         foreach ($publikasi as $data) {
             $sheet->setCellValue('A' . $row, $no);
-            $sheet->setCellValue('B' . $row, $data->id_publikasi);
-            $sheet->setCellValue('C' . $row, $data->nama_user);
-            $sheet->setCellValue('D' . $row, $data->judul);
-            $sheet->setCellValue('E' . $row, $data->tempat_publikasi);
-            $sheet->setCellValue('F' . $row, $data->tahun_publikasi);
-            $sheet->setCellValue('G' . $row, ucfirst($data->jenis_publikasi));
-            $sheet->setCellValue('H' . $row, $data->dana);
-            $sheet->setCellValue('I' . $row, $data->status);
-            $sheet->setCellValue('J' . $row, $data->sumber_data);
+            $sheet->setCellValue('B' . $row, $data->nama_user);
+            $sheet->setCellValue('C' . $row, $data->judul);
+            $sheet->setCellValue('D' . $row, $data->tempat_publikasi);
+            $sheet->setCellValue('E' . $row, $data->tahun_publikasi);
+            $sheet->setCellValue('F' . $row, ucfirst($data->jenis_publikasi));
+            $sheet->setCellValue('G' . $row, $data->dana);
+            $sheet->setCellValue('H' . $row, $data->status);
+            $sheet->setCellValue('I' . $row, $data->sumber_data);
             if ($data->bukti) {
                 $url = url('storage/portofolio/publikasi/' . $data->bukti);
-                $sheet->setCellValue('K' . $row, 'Lihat File');
-                $sheet->getCell('K' . $row)->getHyperlink()->setUrl($url);
+                $sheet->setCellValue('J' . $row, 'Lihat File');
+                $sheet->getCell('J' . $row)->getHyperlink()->setUrl($url);
             } else {
-                $sheet->setCellValue('K' . $row, 'Tidak ada file');
+                $sheet->setCellValue('J' . $row, 'Tidak ada file');
             }
-            $sheet->setCellValue('L' . $row, $data->created_at);
-            $sheet->setCellValue('M' . $row, $data->updated_at);
+            $sheet->setCellValue('K' . $row, $data->created_at);
+            $sheet->setCellValue('L' . $row, $data->updated_at);
 
             $row++;
             $no++;
         }
 
-        foreach (range('A', 'M') as $columnID) {
+        foreach (range('A', 'L') as $columnID) {
             $sheet->getColumnDimension($columnID)->setAutoSize(true);
         }
 
