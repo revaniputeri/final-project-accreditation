@@ -27,8 +27,8 @@
             <input type="number" class="form-control" id="tahun" name="tahun" min="2000" max="{{ date('Y') + 5 }}" required>
             <div class="invalid-feedback" id="error_tahun"></div>
         </div>
-        <div class="mb-3">
-            <label for="dana" class="form-label">Dana (Rp)</label>
+        <div <label for="dana" class="form-label">Dana (Rp)</label>
+            <label for="dana" class="form-label" style="color: red;">Pastikan inputan tidak memiliki tanda titik (.) atau koma (,)</label>
             <input type="number" class="form-control" id="dana" name="dana" min="0" required>
             <div class="invalid-feedback" id="error_dana"></div>
         </div>
