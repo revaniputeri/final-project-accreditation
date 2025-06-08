@@ -42,4 +42,9 @@ class KriteriaModel extends Model
     {
         return $this->hasMany(DokumenKriteriaModel::class, 'kriteria_id');
     }
+
+    public function profile_user()
+    {
+        return $this->belongsTo(ProfileUser::class, 'id_user');
+    }
 }
