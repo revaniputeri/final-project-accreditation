@@ -28,6 +28,7 @@ class PProfesiDataTable extends DataTable
         $isAng = $user->hasRole('ANG');
 
         return (new EloquentDataTable($query))
+            ->addIndexColumn()
             ->addColumn('aksi', function ($row) use ($user, $isDos, $isAdm) {
                 $buttons = [];
                 $detailUrl = route('portofolio.profesi.detail_ajax', $row->id_profesi);
@@ -61,7 +62,13 @@ class PProfesiDataTable extends DataTable
                     '</div>';
             })
             ->addColumn('nama_lengkap', function ($row) use ($isDos) {
-                return $isDos ? '-' : ($row->user->profile->nama_lengkap ?? '-');
+                return $isDos ? '-' : ($row->nama_lengkap ?? '-');
+            })
+            ->filterColumn('nama_lengkap', function ($query, $keyword) {
+                $query->where('profile_user.nama_lengkap', 'like', "%{$keyword}%");
+            })
+            ->orderColumn('nama_lengkap', function ($query, $order) {
+                $query->orderBy('profile_user.nama_lengkap', $order);
             })
             ->editColumn('status', function ($row) {
                 $badgeClass = [
@@ -91,7 +98,10 @@ class PProfesiDataTable extends DataTable
     {
         /** @var UserModel|null $user */
         $user = Auth::user();
-        $query = $model->newQuery()->with('user.profile');
+        $query = $model->newQuery()
+            ->select('p_profesi.*', 'profile_user.nama_lengkap')
+            ->leftJoin('user', 'p_profesi.id_user', '=', 'user.id_user')
+            ->leftJoin('profile_user', 'user.id_user', '=', 'profile_user.id_user');
 
         if ($user->hasRole('DOS') && $user->id_user) {
             $query->where('id_user', $user->id_user);
@@ -162,7 +172,12 @@ class PProfesiDataTable extends DataTable
         $isDos = $user->hasRole('DOS');
 
         $columns = [
-            Column::make('id_profesi')->title('ID'),
+            Column::make('DT_RowIndex')
+                ->title('No')
+                ->searchable(false)
+                ->orderable(false)
+                ->width(30)
+                ->addClass('text-center'),
             Column::make('perguruan_tinggi')->title('Perguruan Tinggi'),
             Column::make('kurun_waktu')->title('Kurun Waktu'),
             Column::make('gelar')->title('Gelar'),
@@ -177,7 +192,7 @@ class PProfesiDataTable extends DataTable
 
         if (!$isDos) {
             array_splice($columns, 1, 0, [
-                Column::make('nama_lengkap')->title('Nama Dosen')
+                Column::make('nama_lengkap')->title('Nama Dosen')->name('profile_user.nama_lengkap')->orderable(true)->searchable(true)
             ]);
         }
 

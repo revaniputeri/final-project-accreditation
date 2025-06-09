@@ -29,6 +29,7 @@ class PPengabdianDataTable extends DataTable
         $isAng = $user->hasRole('ANG');
 
         return (new EloquentDataTable($query))
+            ->addIndexColumn()
             ->addColumn('aksi', function ($row) use ($user, $isDos, $isAdm) {
                 $buttons = [];
                 $detailUrl = route('portofolio.pengabdian.detail_ajax', $row->id_pengabdian);
@@ -62,7 +63,13 @@ class PPengabdianDataTable extends DataTable
                     '</div>';
             })
             ->addColumn('nama_lengkap', function ($row) use ($isDos) {
-                return $isDos ? '-' : ($row->user->profile->nama_lengkap ?? '-');
+                return $isDos ? '-' : ($row->nama_lengkap ?? '-');
+            })
+            ->filterColumn('nama_lengkap', function ($query, $keyword) {
+                $query->where('profile_user.nama_lengkap', 'like', "%{$keyword}%");
+            })
+            ->orderColumn('nama_lengkap', function ($query, $order) {
+                $query->orderBy('profile_user.nama_lengkap', $order);
             })
             ->editColumn('status', function ($row) {
                 $badgeClass = [
@@ -105,7 +112,10 @@ class PPengabdianDataTable extends DataTable
         $user = Auth::user();
 
         // Join ke relasi user dan profile jika perlu menampilkan nama_lengkap
-        $query = $model->newQuery()->with('user.profile');
+        $query = $model->newQuery()
+            ->select('p_pengabdian.*', 'profile_user.nama_lengkap')
+            ->leftJoin('user', 'p_pengabdian.id_user', '=', 'user.id_user')
+            ->leftJoin('profile_user', 'user.id_user', '=', 'profile_user.id_user');
 
         // Jika user adalah dosen, hanya tampilkan miliknya
         if ($user->hasRole('DOS') && $user->id_user) {
@@ -179,7 +189,12 @@ class PPengabdianDataTable extends DataTable
         $isDos = $user->hasRole('DOS');
 
         $columns = [
-            Column::make('id_pengabdian')->title('ID'),
+            Column::make('DT_RowIndex')
+                ->title('No')
+                ->searchable(false)
+                ->orderable(false)
+                ->width(30)
+                ->addClass('text-center'),
             Column::make('judul_pengabdian')->title('Judul Pengabdian'),
             Column::make('skema')->title('Skema'),
             Column::make('tahun')->title('Tahun'),
@@ -195,10 +210,9 @@ class PPengabdianDataTable extends DataTable
                 ->addClass('text-center'),
         ];
 
-        // Tambahkan kolom nama dosen jika bukan role DOSEN
         if (!$isDos) {
             array_splice($columns, 1, 0, [
-                Column::make('nama_lengkap')->title('Nama Dosen')
+                Column::make('nama_lengkap')->title('Nama Dosen')->name('profile_user.nama_lengkap')->orderable(true)->searchable(true)
             ]);
         }
 

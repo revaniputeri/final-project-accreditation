@@ -23,6 +23,7 @@ class PPenelitianDataTable extends DataTable
         $isAng = $user->hasRole('ANG');
 
         return (new EloquentDataTable($query))
+            ->addIndexColumn()
             ->addColumn('aksi', function ($row) use ($user, $isDos, $isAdm) {
                 $buttons = [];
                 $detailUrl = route('portofolio.penelitian.detail_ajax', $row->id_penelitian);
@@ -56,7 +57,13 @@ class PPenelitianDataTable extends DataTable
                     '</div>';
             })
             ->addColumn('nama_lengkap', function ($row) use ($isDos) {
-                return $isDos ? '-' : ($row->user->profile->nama_lengkap ?? '-');
+                return $isDos ? '-' : ($row->nama_lengkap ?? '-');
+            })
+            ->filterColumn('nama_lengkap', function ($query, $keyword) {
+                $query->where('profile_user.nama_lengkap', 'like', "%{$keyword}%");
+            })
+            ->orderColumn('nama_lengkap', function ($query, $order) {
+                $query->orderBy('profile_user.nama_lengkap', $order);
             })
             ->editColumn('status', function ($row) {
                 $badgeClass = [
@@ -91,7 +98,10 @@ class PPenelitianDataTable extends DataTable
     {
         /** @var UserModel|null $user */
         $user = Auth::user();
-        $query = $model->newQuery()->with('user.profile');
+        $query = $model->newQuery()
+            ->select('p_penelitian.*', 'profile_user.nama_lengkap')
+            ->leftJoin('user', 'p_penelitian.id_user', '=', 'user.id_user')
+            ->leftJoin('profile_user', 'user.id_user', '=', 'profile_user.id_user');
 
         if ($user->hasRole('DOS') && $user->id_user) {
             $query->where('id_user', $user->id_user);
@@ -161,7 +171,12 @@ class PPenelitianDataTable extends DataTable
         $isDos = $user->hasRole('DOS');
 
         $columns = [
-            Column::make('id_penelitian')->title('ID'),
+            Column::make('DT_RowIndex')
+                ->title('No')
+                ->searchable(false)
+                ->orderable(false)
+                ->width(30)
+                ->addClass('text-center'),
             Column::make('judul_penelitian')->title('Judul Penelitian'),
             Column::make('skema')->title('Skema'),
             Column::make('tahun')->title('Tahun'),
@@ -179,7 +194,7 @@ class PPenelitianDataTable extends DataTable
 
         if (!$isDos) {
             array_splice($columns, 1, 0, [
-                Column::make('nama_lengkap')->title('Nama Dosen')
+                Column::make('nama_lengkap')->title('Nama Dosen')->name('profile_user.nama_lengkap')->orderable(true)->searchable(true)
             ]);
         }
 

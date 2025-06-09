@@ -23,6 +23,7 @@ class PKegiatanDataTable extends DataTable
         $isAng = $user->hasRole('ANG');
 
         return (new EloquentDataTable($query))
+            ->addIndexColumn()
             ->addColumn('aksi', function ($row) use ($user, $isDos, $isAdm) {
                 $buttons = [];
                 $detailUrl = route('portofolio.kegiatan.detail_ajax', $row->id_kegiatan);
@@ -55,12 +56,18 @@ class PKegiatanDataTable extends DataTable
                     implode('', $buttons) .
                     '</div>';
             })
-        ->addColumn('nama_dosen', function ($row) {
-            return $row->user->profile->nama_lengkap ?? '-';
-        })
-        ->addColumn('waktu', function ($row) {
-            return $row->waktu ? date('d-m-Y', strtotime($row->waktu)) : '-';
-        })
+            ->addColumn('nama_lengkap', function ($row) use ($isDos) {
+                return $isDos ? '-' : ($row->nama_lengkap ?? '-');
+            })
+            ->filterColumn('nama_lengkap', function ($query, $keyword) {
+                $query->where('profile_user.nama_lengkap', 'like', "%{$keyword}%");
+            })
+            ->orderColumn('nama_lengkap', function ($query, $order) {
+                $query->orderBy('profile_user.nama_lengkap', $order);
+            })
+            ->addColumn('waktu', function ($row) {
+                return $row->waktu ? date('d-m-Y', strtotime($row->waktu)) : '-';
+            })
             ->editColumn('status', function ($row) {
                 $badgeClass = [
                     'tervalidasi' => 'badge-success',
@@ -86,7 +93,10 @@ class PKegiatanDataTable extends DataTable
     {
         /** @var UserModel|null $user */
         $user = Auth::user();
-        $query = $model->newQuery()->with('user.profile');
+        $query = $model->newQuery()
+            ->select('p_kegiatan.*', 'profile_user.nama_lengkap')
+            ->leftJoin('user', 'p_kegiatan.id_user', '=', 'user.id_user')
+            ->leftJoin('profile_user', 'user.id_user', '=', 'profile_user.id_user');
 
         if ($user->hasRole('DOS') && $user->id_user) {
             $query->where('id_user', $user->id_user);
@@ -152,8 +162,12 @@ class PKegiatanDataTable extends DataTable
         $isDos = $user->hasRole('DOS');
 
         $columns = [
-            Column::make('id_kegiatan')->title('ID'),
-            Column::make('nama_dosen')->title('Nama Dosen'),
+            Column::make('DT_RowIndex')
+                ->title('No')
+                ->searchable(false)
+                ->orderable(false)
+                ->width(30)
+                ->addClass('text-center'),
             Column::make('jenis_kegiatan')->title('Jenis Kegiatan'),
             Column::make('tempat')->title('Tempat'),
             Column::make('waktu')->title('Waktu'),
@@ -162,6 +176,12 @@ class PKegiatanDataTable extends DataTable
             Column::make('sumber_data')->title('Sumber Data')->addClass('text-center'),
             Column::computed('aksi')->title('Aksi')->addClass('text-center'),
         ];
+
+        if (!$isDos) {
+            array_splice($columns, 1, 0, [
+                Column::make('nama_lengkap')->title('Nama Dosen')->name('profile_user.nama_lengkap')->orderable(true)->searchable(true)
+            ]);
+        }
 
         return $columns;
     }

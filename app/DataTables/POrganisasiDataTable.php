@@ -23,6 +23,7 @@ class POrganisasiDataTable extends DataTable
         $isAng = $user->hasRole('ANG');
 
         return (new EloquentDataTable($query))
+            ->addIndexColumn()
             ->addColumn('aksi', function ($row) use ($user, $isDos, $isAdm) {
                 $buttons = [];
                 $detailUrl = route('portofolio.organisasi.detail_ajax', $row->id_organisasi);
@@ -55,8 +56,14 @@ class POrganisasiDataTable extends DataTable
                     implode('', $buttons) .
                     '</div>';
             })
-            ->addColumn('nama_dosen', function ($row) use ($isDos) {
-                return $isDos ? '-' : ($row->user->profile->nama_lengkap ?? '-');
+            ->addColumn('nama_lengkap', function ($row) use ($isDos) {
+                return $isDos ? '-' : ($row->nama_lengkap ?? '-');
+            })
+            ->filterColumn('nama_lengkap', function ($query, $keyword) {
+                $query->where('profile_user.nama_lengkap', 'like', "%{$keyword}%");
+            })
+            ->orderColumn('nama_lengkap', function ($query, $order) {
+                $query->orderBy('profile_user.nama_lengkap', $order);
             })
             ->editColumn('status', function ($row) {
                 $badgeClass = [
@@ -83,7 +90,10 @@ class POrganisasiDataTable extends DataTable
     {
         /** @var UserModel|null $user */
         $user = Auth::user();
-        $query = $model->newQuery()->with('user.profile');
+        $query = $model->newQuery()
+            ->select('p_organisasi.*', 'profile_user.nama_lengkap')
+            ->leftJoin('user', 'p_organisasi.id_user', '=', 'user.id_user')
+            ->leftJoin('profile_user', 'user.id_user', '=', 'profile_user.id_user');
 
         if ($user->hasRole('DOS') && $user->id_user) {
             $query->where('id_user', $user->id_user);
@@ -149,8 +159,12 @@ class POrganisasiDataTable extends DataTable
         $isDos = $user->hasRole('DOS');
 
         $columns = [
-            Column::make('id_organisasi')->title('ID'),
-            Column::computed('nama_dosen')->title('Nama Dosen')->exportable(false)->printable(false)->orderable(false)->searchable(false),
+            Column::make('DT_RowIndex')
+                ->title('No')
+                ->searchable(false)
+                ->orderable(false)
+                ->width(30)
+                ->addClass('text-center'),
             Column::make('nama_organisasi')->title('Nama Organisasi'),
             Column::make('kurun_waktu')->title('Kurun Waktu'),
             Column::make('tingkat')->title('Tingkat'),
@@ -159,13 +173,10 @@ class POrganisasiDataTable extends DataTable
             Column::computed('aksi')->title('Aksi')->exportable(false)->printable(false)->width(60)->addClass('text-center'),
         ];
 
-        // If user is DOS, hide the nama_dosen column since they only see their own data
-        if ($isDos) {
-            $columns = array_filter($columns, function($column) {
-                return $column->name !== 'nama_dosen';
-            });
-            // Re-index the array
-            $columns = array_values($columns);
+        if (!$isDos) {
+            array_splice($columns, 1, 0, [
+                Column::make('nama_lengkap')->title('Nama Dosen')->name('profile_user.nama_lengkap')->orderable(true)->searchable(true)
+            ]);
         }
 
         return $columns;
