@@ -17,16 +17,24 @@
 @section('content')
     <div class="container-fluid">
 
+        <!-- Profesi -->
+        <div class="callout callout-primary shadow-sm">
+            <h5>Profesi</h5>
+            <p>Peningkatan kemampuan dosen melalui program profesi untuk mendukung kompetensi keilmuan.</p>
+        </div>
+
         {{-- DataTable --}}
         <div class="card shadow-sm">
             <div class="card-header bg-primary border-bottom">
                 <div class="d-flex justify-content-between align-items-center">
                     <h3 class="card-title mb-0 text-white">Daftar Profesi</h3>
                     <div class="card-tools">
-                        <a id="exportPdfBtn" class="btn btn-custom-blue me-2" href="{{ route('portofolio.profesi.export_pdf') }}">
+                        <a id="exportPdfBtn" class="btn btn-custom-blue me-2"
+                            href="{{ route('portofolio.profesi.export_pdf') }}">
                             <i class="fa-solid fa-file-pdf me-2"></i> Export PDF
                         </a>
-                        <a id="exportExcelBtn" class="btn btn-custom-blue me-2" href="{{ route('portofolio.profesi.export_excel') }}">
+                        <a id="exportExcelBtn" class="btn btn-custom-blue me-2"
+                            href="{{ route('portofolio.profesi.export_excel') }}">
                             <i class="fas fa-file-excel me-2"></i> Export Excel
                         </a>
                         @if ($isAdm || $isDos)

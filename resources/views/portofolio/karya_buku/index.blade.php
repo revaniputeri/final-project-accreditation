@@ -17,16 +17,24 @@
 @section('content')
     <div class="container-fluid">
 
+        <!-- Karya Buku -->
+        <div class="callout callout-primary shadow-sm">
+            <h5>Karya Buku</h5>
+            <p>Buku yang diterbitkan oleh dosen sebagai hasil karya keilmuan.</p>
+        </div>
+
         {{-- DataTable --}}
         <div class="card shadow-sm">
             <div class="card-header bg-primary border-bottom">
                 <div class="d-flex justify-content-between align-items-center">
                     <h3 class="card-title mb-0 text-white">Daftar Karya Buku</h3>
                     <div class="card-tools">
-                        <a id="exportPdfBtn" class="btn btn-custom-blue me-2" href="{{ route('portofolio.karya_buku.export_pdf') }}">
+                        <a id="exportPdfBtn" class="btn btn-custom-blue me-2"
+                            href="{{ route('portofolio.karya_buku.export_pdf') }}">
                             <i class="fa-solid fa-file-pdf me-2"></i> Export PDF
                         </a>
-                        <a id="exportExcelBtn" class="btn btn-custom-blue me-2" href="{{ route('portofolio.karya_buku.export_excel') }}">
+                        <a id="exportExcelBtn" class="btn btn-custom-blue me-2"
+                            href="{{ route('portofolio.karya_buku.export_excel') }}">
                             <i class="fas fa-file-excel me-2"></i> Export Excel
                         </a>
                         @if ($isAdm || $isDos)

@@ -17,20 +17,29 @@
 @section('content')
     <div class="container-fluid">
 
+        <!-- HKI -->
+        <div class="callout callout-primary shadow-sm">
+            <h5>HKI</h5>
+            <p>Penelitian dalam bidang infokom yang mendapatkan pengakuan dalam bentuk Hak Kekayaan Intelektual (HKI).</p>
+        </div>
+
         {{-- DataTable --}}
         <div class="card shadow-sm">
             <div class="card-header bg-primary border-bottom">
                 <div class="d-flex justify-content-between align-items-center">
                     <h3 class="card-title mb-0 text-white">Daftar HKI</h3>
                     <div class="card-tools">
-                        <a id="exportPdfBtn" class="btn btn-custom-blue me-2" href="{{ route('portofolio.hki.export_pdf') }}">
+                        <a id="exportPdfBtn" class="btn btn-custom-blue me-2"
+                            href="{{ route('portofolio.hki.export_pdf') }}">
                             <i class="fa-solid fa-file-pdf me-2"></i> Export PDF
                         </a>
-                        <a id="exportExcelBtn" class="btn btn-custom-blue me-2" href="{{ route('portofolio.hki.export_excel') }}">
+                        <a id="exportExcelBtn" class="btn btn-custom-blue me-2"
+                            href="{{ route('portofolio.hki.export_excel') }}">
                             <i class="fas fa-file-excel me-2"></i> Export Excel
                         </a>
                         @if ($isAdm || $isDos)
-                            <button class="btn btn-custom-blue me-2" onclick="modalAction('{{ route('portofolio.hki.import') }}')">
+                            <button class="btn btn-custom-blue me-2"
+                                onclick="modalAction('{{ route('portofolio.hki.import') }}')">
                                 <i class="fa-solid fa-file-arrow-up me-2"></i> Import Data
                             </button>
                             <button onclick="modalAction('{{ route('portofolio.hki.create_ajax') }}')"

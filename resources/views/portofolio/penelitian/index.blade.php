@@ -16,16 +16,25 @@
 
 @section('content')
     <div class="container-fluid">
+
+        <!-- Penelitian -->
+        <div class="callout callout-primary shadow-sm">
+            <h5>Penelitian</h5>
+            <p>Penelitian yang dilakukan dosen tetap sesuai bidang keahlian Program Studi dalam tiga tahun terakhir.</p>
+        </div>
+
         {{-- DataTable --}}
         <div class="card shadow-sm">
             <div class="card-header bg-primary border-bottom">
                 <div class="d-flex justify-content-between align-items-center">
                     <h3 class="card-title mb-0 text-white">Daftar Penelitian</h3>
                     <div class="card-tools">
-                        <a id="exportPdfBtn" class="btn btn-custom-blue me-2" href="{{ route('portofolio.penelitian.export_pdf') }}">
+                        <a id="exportPdfBtn" class="btn btn-custom-blue me-2"
+                            href="{{ route('portofolio.penelitian.export_pdf') }}">
                             <i class="fa-solid fa-file-pdf me-2"></i> Export PDF
                         </a>
-                        <a id="exportExcelBtn" class="btn btn-custom-blue me-2" href="{{ route('portofolio.penelitian.export_excel') }}">
+                        <a id="exportExcelBtn" class="btn btn-custom-blue me-2"
+                            href="{{ route('portofolio.penelitian.export_excel') }}">
                             <i class="fas fa-file-excel me-2"></i> Export Excel
                         </a>
                         @if ($isAdm || $isDos)
@@ -121,7 +130,8 @@
                                 }
                             },
                             error: function(xhr) {
-                                if (xhr.status === 422 && xhr.responseJSON && xhr.responseJSON.msgField) {
+                                if (xhr.status === 422 && xhr.responseJSON && xhr.responseJSON
+                                    .msgField) {
                                     var errors = xhr.responseJSON.msgField;
                                     $.each(errors, function(field, messages) {
                                         var input = form.find('[name="' + field + '"]');
@@ -133,7 +143,8 @@
                                     Swal.fire({
                                         icon: 'error',
                                         title: 'Error',
-                                        text: xhr.responseJSON?.message || 'Gagal menyimpan data'
+                                        text: xhr.responseJSON?.message ||
+                                            'Gagal menyimpan data'
                                     });
                                 }
                             }
@@ -147,7 +158,8 @@
                         var formData = new FormData(form[0]);
                         var submitBtn = form.find('button[type="submit"]');
 
-                        submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i> Memproses...');
+                        submitBtn.prop('disabled', true).html(
+                            '<i class="fas fa-spinner fa-spin me-2"></i> Memproses...');
 
                         $.ajax({
                             url: form.attr('action'),
@@ -159,23 +171,27 @@
                                 $('#myModal').modal('hide');
                                 Swal.fire({
                                     icon: response.alert,
-                                    title: response.alert === 'success' ? 'Sukses' : 'Error',
+                                    title: response.alert === 'success' ? 'Sukses' :
+                                        'Error',
                                     text: response.message,
                                     timer: 2000,
                                     showConfirmButton: false
                                 }).then(() => {
-                                    window.LaravelDataTables["p_penelitian-table"].ajax.reload();
+                                    window.LaravelDataTables["p_penelitian-table"].ajax
+                                        .reload();
                                 });
                             },
                             error: function(xhr) {
                                 Swal.fire({
                                     icon: 'error',
                                     title: 'Error',
-                                    text: xhr.responseJSON?.message || 'Gagal mengimpor data'
+                                    text: xhr.responseJSON?.message ||
+                                        'Gagal mengimpor data'
                                 });
                             },
                             complete: function() {
-                                submitBtn.prop('disabled', false).html('<i class="fas fa-upload me-2"></i> Upload');
+                                submitBtn.prop('disabled', false).html(
+                                    '<i class="fas fa-upload me-2"></i> Upload');
                             }
                         });
                     });
