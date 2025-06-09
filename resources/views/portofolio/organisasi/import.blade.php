@@ -12,7 +12,7 @@
         <div class="mb-3">
             <label class="form-label">Download Template</label>
             <div>
-                <a href="{{ asset('template/template_organisasi.xlsx') }}" class="btn btn-success btn-sm" download>
+                <a href="{{ asset('template/template_p_organisasi.xlsx') }}" class="btn btn-success btn-sm" download>
                     <i class="fas fa-file-excel me-1"></i> Download Template
                 </a>
             </div>

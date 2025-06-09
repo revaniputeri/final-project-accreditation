@@ -101,7 +101,7 @@
         <thead>
             <tr>
                 <th>No</th>
-                <th>ID Sertifikasi</th>
+                {{-- <th>ID Sertifikasi</th> --}}
                 <th>Nama Dosen</th>
                 <th>Tahun Diperoleh</th>
                 <th>Penerbit</th>
@@ -119,7 +119,7 @@
             @foreach ($sertifikasi as $key => $item)
                 <tr>
                     <td class="text-center">{{ $key + 1 }}</td>
-                    <td>{{ $item['id_sertifikasi'] }}</td>
+                    {{-- <td>{{ $item['id_sertifikasi'] }}</td> --}}
                     <td>{{ $item['nama_dosen'] }}</td>
                     <td>{{ $item['tahun_diperoleh'] }}</td>
                     <td>{{ $item['penerbit'] }}</td>

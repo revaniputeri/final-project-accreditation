@@ -22,9 +22,9 @@ class KriteriaDataTable extends DataTable
         return (new EloquentDataTable($query))
             ->addIndexColumn()
             ->addColumn('aksi', function ($row) {
-                $detailUrl = route('kriteria.detail_ajax', ['no_kriteria' => $row->no_kriteria, 'id_user' => $row->id_user]);
-                $editUrl = route('kriteria.edit_ajax', ['no_kriteria' => $row->no_kriteria, 'id_user' => $row->id_user]);
-                $deleteUrl = route('kriteria.confirm_ajax', ['no_kriteria' => $row->no_kriteria, 'id_user' => $row->id_user]);
+                $detailUrl = route('kriteria.detail_ajax', ['no_kriteria' => $row->no_kriteria, 'id_user' => $row->id_user ?? '']);
+                $editUrl = route('kriteria.edit_ajax', ['no_kriteria' => $row->no_kriteria, 'id_user' => $row->id_user ?? '']);
+                $deleteUrl = route('kriteria.confirm_ajax', ['no_kriteria' => $row->no_kriteria, 'id_user' => $row->id_user ?? '']);
 
                 return '
                     <div class="d-flex justify-content-center gap-2" style="white-space: nowrap;">
@@ -41,7 +41,7 @@ class KriteriaDataTable extends DataTable
                 ';
             })
             ->editColumn('no_kriteria', function ($row) {
-                return '<strong>' . $row->no_kriteria . '</strong>';
+                return '<strong>' . 'Kriteria ' . $row->no_kriteria . '</strong>';
             })
             ->rawColumns(['aksi', 'no_kriteria'])
             ->setRowId('no_kriteria');
@@ -53,8 +53,11 @@ class KriteriaDataTable extends DataTable
     public function query(KriteriaModel $model): QueryBuilder
     {
         return $model->newQuery()
-            ->with(['user'])
-            ->withCount('dokumenKriteria');
+            ->selectRaw('kriteria.no_kriteria, MIN(kriteria.id_user) as id_user, COUNT(DISTINCT dokumen_pendukung.id_dokumen_pendukung) as jumlah_dokumen')
+            ->leftJoin('user', 'kriteria.id_user', '=', 'user.id_user')
+            ->leftJoin('dokumen_pendukung', 'kriteria.no_kriteria', '=', 'dokumen_pendukung.no_kriteria')
+            ->groupBy('kriteria.no_kriteria')
+            ->orderBy('kriteria.no_kriteria', 'asc');
     }
 
     /**
@@ -87,8 +90,7 @@ class KriteriaDataTable extends DataTable
         return [
             Column::make('DT_RowIndex')->title('No')->orderable(false)->searchable(false),
             Column::make('no_kriteria')->title('No Kriteria'),
-            Column::make('user.username')->title('Nama User'),
-            Column::make('dokumen_kriteria_count')->title('Jumlah Dokumen'),
+            Column::make('jumlah_dokumen')->title('Jumlah Dokumen'),
             Column::computed('aksi')
                 ->exportable(false)
                 ->printable(false)

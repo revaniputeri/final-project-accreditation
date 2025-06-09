@@ -31,7 +31,8 @@
             <div class="invalid-feedback" id="error_jenis_publikasi"></div>
         </div>
         <div class="mb-3">
-            <label for="dana" class="form-label">Dana</label>
+            <label for="dana" class="form-label">Dana (Rp)</label>
+            <label for="dana" class="form-label" style="color: red;">Pastikan inputan tidak memiliki tanda titik (.) atau koma (,)</label>
             <input type="number" class="form-control" id="dana" name="dana" value="{{ $publikasi->dana }}" required>
             <div class="invalid-feedback" id="error_dana"></div>
         </div>
