@@ -2,7 +2,8 @@
     <div class="container position-relative d-flex align-items-center">
 
         <a href="{{ url('/') }}" class="logo d-flex align-items-center me-auto">
-            <img src="{{ asset('assets/img/logo.png') }}" alt="">
+            <img src="{{ asset('assets/img/akresa-logo.svg') }}" alt="">
+            <h1 class="sitename">Akresa</h1>
         </a>
 
         <nav id="navmenu" class="navmenu">
