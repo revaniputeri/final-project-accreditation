@@ -26,7 +26,82 @@ class PPenelitianController extends Controller
         $isDos = $user->hasRole('DOS');
         $isAng = $user->hasRole('ANG');
 
-        return $dataTable->render('portofolio.penelitian.index', compact('isAdm', 'isAng', 'isDos'));
+        // Distribusi Skema Penelitian (pie chart)
+        $skemaDistribution = PPenelitianModel::select('skema', DB::raw('count(*) as total'))
+            ->groupBy('skema')
+            ->orderBy('total', 'desc')
+            ->get();
+
+        // Tren Penelitian per Tahun (line chart)
+        $trenPerTahun = PPenelitianModel::select('tahun', DB::raw('count(*) as total'))
+            ->groupBy('tahun')
+            ->orderBy('tahun')
+            ->get();
+
+        // Peran Dosen dalam Penelitian (doughnut chart)
+        $peranDistribution = PPenelitianModel::select('peran', DB::raw('count(*) as total'))
+            ->groupBy('peran')
+            ->orderBy('total', 'desc')
+            ->get();
+
+        // Keterlibatan Mahasiswa S2 (bar chart)
+        $mahasiswaS2Distribution = PPenelitianModel::select('melibatkan_mahasiswa_s2', DB::raw('count(*) as total'))
+            ->groupBy('melibatkan_mahasiswa_s2')
+            ->orderBy('melibatkan_mahasiswa_s2')
+            ->get();
+
+        // Tren dana untuk penelitian per tahun per skema (multi-line chart)
+        $trenDanaPerTahunPerSkema = PPenelitianModel::select('tahun', 'skema', DB::raw('sum(dana) as total_dana'))
+            ->groupBy('tahun', 'skema')
+            ->orderBy('tahun')
+            ->orderBy('skema')
+            ->get();
+
+        // Prepare data arrays for charts
+        $skemaLabels = $skemaDistribution->pluck('skema');
+        $skemaData = $skemaDistribution->pluck('total');
+
+        $trenLabels = $trenPerTahun->pluck('tahun');
+        $trenData = $trenPerTahun->pluck('total');
+
+        $peranLabels = $peranDistribution->pluck('peran');
+        $peranData = $peranDistribution->pluck('total');
+
+        $mahasiswaS2Labels = $mahasiswaS2Distribution->map(function ($item) {
+            return $item->melibatkan_mahasiswa_s2 ? 'Ya' : 'Tidak';
+        });
+        $mahasiswaS2Data = $mahasiswaS2Distribution->pluck('total');
+
+        // Prepare multi-line chart data
+        $skemaList = $skemaLabels->toArray();
+        $years = $trenLabels->toArray();
+
+        $multiLineDataSets = [];
+        foreach ($skemaList as $skema) {
+            $dataPerYear = [];
+            foreach ($years as $year) {
+                $found = $trenDanaPerTahunPerSkema->firstWhere(function ($item) use ($year, $skema) {
+                    return $item->tahun == $year && $item->skema == $skema;
+                });
+                $dataPerYear[] = $found ? (float) $found->total_dana : 0;
+            }
+            $multiLineDataSets[] = [
+                'label' => $skema,
+                'data' => $dataPerYear,
+                'fill' => false,
+                'borderColor' => null, // will be set in JS
+                'tension' => 0.3,
+            ];
+        }
+
+        return $dataTable->render('portofolio.penelitian.index', compact(
+            'isAdm', 'isAng', 'isDos',
+            'skemaLabels', 'skemaData',
+            'trenLabels', 'trenData',
+            'peranLabels', 'peranData',
+            'mahasiswaS2Labels', 'mahasiswaS2Data',
+            'multiLineDataSets'
+        ));
     }
 
     private function generateUniqueFilename($directory, $filename)

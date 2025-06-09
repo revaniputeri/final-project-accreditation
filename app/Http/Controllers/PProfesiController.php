@@ -27,7 +27,30 @@ class PProfesiController extends Controller
         $isDos = $user->hasRole('DOS');
         $isAng = $user->hasRole('ANG');
 
-        return $dataTable->render('portofolio.profesi.index', compact('isAdm', 'isAng', 'isDos'));
+        // Distribution of Gelar Akademik (overall)
+        $gelarDistribution = PProfesiModel::select('gelar', DB::raw('count(*) as total'))
+            ->groupBy('gelar')
+            ->orderBy('total', 'desc')
+            ->get();
+
+        // Distribution of Perguruan Tinggi (for bar chart)
+        $perguruanTinggiDistribution = PProfesiModel::select('perguruan_tinggi', DB::raw('count(*) as total'))
+            ->groupBy('perguruan_tinggi')
+            ->orderBy('total', 'desc')
+            ->get();
+
+        // Prepare data arrays for charts
+        $gelarLabels = $gelarDistribution->pluck('gelar');
+        $gelarData = $gelarDistribution->pluck('total');
+
+        $perguruanTinggiLabels = $perguruanTinggiDistribution->pluck('perguruan_tinggi');
+        $perguruanTinggiData = $perguruanTinggiDistribution->pluck('total');
+
+        return $dataTable->render('portofolio.profesi.index', compact(
+            'isAdm', 'isAng', 'isDos',
+            'gelarLabels', 'gelarData',
+            'perguruanTinggiLabels', 'perguruanTinggiData'
+        ));
     }
 
     private function generateUniqueFilename($directory, $filename)

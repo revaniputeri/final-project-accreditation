@@ -26,7 +26,52 @@ class PPengabdianController extends Controller
         $isDos = $user->hasRole('DOS');
         $isAng = $user->hasRole('ANG');
 
-        return $dataTable->render('portofolio.pengabdian.index', compact('isAdm', 'isAng', 'isDos'));
+        // Distribusi Skema Pengabdian (pie chart)
+        $skemaDistribution = PPengabdianModel::select('skema', DB::raw('count(*) as total'))
+            ->groupBy('skema')
+            ->orderBy('total', 'desc')
+            ->get();
+
+        // Tren Pengabdian Masyarakat Per Tahun (line chart)
+        $trenPerTahun = PPengabdianModel::select('tahun', DB::raw('count(*) as total'))
+            ->groupBy('tahun')
+            ->orderBy('tahun')
+            ->get();
+
+        // Peran Dosen dalam Pengabdian (doughnut chart)
+        $peranDistribution = PPengabdianModel::select('peran', DB::raw('count(*) as total'))
+            ->groupBy('peran')
+            ->orderBy('total', 'desc')
+            ->get();
+
+        // Keterlibatan Mahasiswa S2 (bar chart)
+        $mahasiswaS2Distribution = PPengabdianModel::select('melibatkan_mahasiswa_s2', DB::raw('count(*) as total'))
+            ->groupBy('melibatkan_mahasiswa_s2')
+            ->orderBy('melibatkan_mahasiswa_s2')
+            ->get();
+
+        // Prepare data arrays for charts
+        $skemaLabels = $skemaDistribution->pluck('skema');
+        $skemaData = $skemaDistribution->pluck('total');
+
+        $trenLabels = $trenPerTahun->pluck('tahun');
+        $trenData = $trenPerTahun->pluck('total');
+
+        $peranLabels = $peranDistribution->pluck('peran');
+        $peranData = $peranDistribution->pluck('total');
+
+        $mahasiswaS2Labels = $mahasiswaS2Distribution->map(function ($item) {
+            return $item->melibatkan_mahasiswa_s2 ? 'Ya' : 'Tidak';
+        });
+        $mahasiswaS2Data = $mahasiswaS2Distribution->pluck('total');
+
+        return $dataTable->render('portofolio.pengabdian.index', compact(
+            'isAdm', 'isAng', 'isDos',
+            'skemaLabels', 'skemaData',
+            'trenLabels', 'trenData',
+            'peranLabels', 'peranData',
+            'mahasiswaS2Labels', 'mahasiswaS2Data'
+        ));
     }
 
     private function generateUniqueFilename($directory, $filename)

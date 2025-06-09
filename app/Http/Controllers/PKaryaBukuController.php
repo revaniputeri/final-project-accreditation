@@ -27,7 +27,30 @@ class PKaryaBukuController extends Controller
         $isDos = $user->hasRole('DOS');
         $isAng = $user->hasRole('ANG');
 
-        return $dataTable->render('portofolio.karya_buku.index', compact('isAdm', 'isAng', 'isDos'));
+        // Distribusi penerbit buku (pie chart)
+        $penerbitDistribution = PKaryaBukuModel::select('penerbit', DB::raw('count(*) as total'))
+            ->groupBy('penerbit')
+            ->orderBy('total', 'desc')
+            ->get();
+
+        // Tren Publikasi Buku per Tahun (line chart)
+        $trenPerTahun = PKaryaBukuModel::select('tahun', DB::raw('count(*) as total'))
+            ->groupBy('tahun')
+            ->orderBy('tahun')
+            ->get();
+
+        // Prepare data arrays for charts
+        $penerbitLabels = $penerbitDistribution->pluck('penerbit');
+        $penerbitData = $penerbitDistribution->pluck('total');
+
+        $trenLabels = $trenPerTahun->pluck('tahun');
+        $trenData = $trenPerTahun->pluck('total');
+
+        return $dataTable->render('portofolio.karya_buku.index', compact(
+            'isAdm', 'isAng', 'isDos',
+            'penerbitLabels', 'penerbitData',
+            'trenLabels', 'trenData'
+        ));
     }
 
     private function generateUniqueFilename($directory, $filename)
