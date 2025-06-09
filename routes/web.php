@@ -119,6 +119,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/import', [KriteriaController::class, 'import'])->name('kriteria.import');
         Route::post('/import_ajax', [KriteriaController::class, 'import_ajax'])->name('kriteria.import_ajax');
         Route::get('/get-last-number', [KriteriaController::class, 'getLastNumber'])->name('kriteria.get_last_number');
+        Route::get('/get-users', [KriteriaController::class, 'getUsers'])->name('kriteria.get_users');
     });
 
     // Route untuk validasi

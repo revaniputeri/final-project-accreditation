@@ -14,6 +14,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Auth;
 use App\Models\DokumenKriteriaModel;
 use App\Models\DokumenPendukungModel;
+use App\Models\ProfileUser;
 
 class KriteriaController extends Controller
 {
@@ -46,64 +47,88 @@ class KriteriaController extends Controller
 
     public function create_ajax()
     {
-        return view('kriteria.create_ajax');
+        $users = ProfileUser::select('id_profile', 'nama_lengkap')->get();
+        return view('kriteria.create_ajax', compact('users'));
     }
 
     public function store_ajax(Request $request)
     {
-        Log::info('store_ajax called', $request->all());
+        $rules = [
+            'no_kriteria' => 'required|string|max:10',
+            'selected_users' => 'required|array|min:1',
+            'selected_users.*' => 'exists:user,id_user',
+        ];
+        $validator = Validator::make($request->all(), $rules);
 
-        if ($request->ajax() || $request->wantsJson()) {
-            $rules = [
-                'no_kriteria' => 'required|string|max:10',
-                'id_user' => 'required|exists:user,id_user',
-            ];
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'alert' => 'error',
+                'message' => 'Validasi Gagal',
+                'msgField' => $validator->errors(),
+            ]);
+        }
 
-            $validator = Validator::make($request->all(), $rules);
+        $no_kriteria = $request->no_kriteria;
+        if (is_string($no_kriteria)) {
+            preg_match('/\d+$/', $no_kriteria, $matches);
+            $no_kriteria = $matches ? (int)$matches[0] : 1;
+        }
 
-            if ($validator->fails()) {
-                Log::error('Validation failed', $validator->errors()->toArray());
-                return response()->json([
-                    'status' => false,
-                    'alert' => 'error',
-                    'message' => 'Validasi Gagal',
-                    'msgField' => $validator->errors(),
-                ]);
-            }
+        $users = $request->selected_users; // array
+        $failedUsers = [];
+        $failedUserNames = [];
+        $successUsers = [];
 
-            try {
-                $kriteria = KriteriaModel::create([
-                    'no_kriteria' => $request->no_kriteria,
-                    'id_user' => $request->id_user,
-                ]);
-
-                return response()->json([
-                    'status' => true,
-                    'alert' => 'success',
-                    'message' => 'Data kriteria berhasil disimpan'
-                ]);
-            } catch (\Exception $e) {
-                Log::error('Exception in store ajax: ' . $e->getMessage());
-                return response()->json([
-                    'status' => false,
-                    'alert' => 'error',
-                    'message' => 'Gagal menyimpan data kriteria',
-                ]);
+        // Cek dulu, jika ada user yang sudah punya kriteria, langsung gagal semua
+        foreach ($users as $userId) {
+            $user = ProfileUser::where('id_user', $userId)->first();
+            $namaLengkap = $user ? $user->nama_lengkap : 'User';
+            $exists = KriteriaModel::where('id_user', $userId)->exists();
+            if ($exists) {
+                $failedUsers[] = $userId;
+                $failedUserNames[] = $namaLengkap;
             }
         }
 
-        return response()->json([
-            'status' => false,
-            'alert' => 'error',
-            'message' => 'Request tidak valid',
-        ], 400);
+        if (count($failedUsers) > 0) {
+            return response()->json([
+                'status' => false,
+                'alert' => 'error',
+                'message' => 'Gagal menambah kriteria karena user berikut sudah memiliki kriteria: ' . implode(', ', $failedUserNames),
+            ]);
+        }
+
+        // Jika semua lolos, baru lakukan insert
+        try {
+            foreach ($users as $userId) {
+                $user = ProfileUser::where('id_user', $userId)->first();
+                $namaLengkap = $user ? $user->nama_lengkap : 'User';
+                $kriteria = KriteriaModel::create([
+                    'no_kriteria' => $no_kriteria,
+                    'id_user' => $userId,
+                ]);
+                $successUsers[] = $namaLengkap;
+            }
+            return response()->json([
+                'status' => true,
+                'alert' => 'success',
+                'message' => 'Berhasil menambah kriteria untuk: ' . implode(', ', $successUsers),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'alert' => 'error',
+                'message' => 'Gagal menyimpan data kriteria: ' . $e->getMessage(),
+            ]);
+        }
     }
 
     public function edit_ajax($no_kriteria, $id_user)
     {
         $kriteria = KriteriaModel::where('no_kriteria', $no_kriteria)
-                                ->where('id_user', $id_user)
-                                ->first();
+            ->where('id_user', $id_user)
+            ->first();
         $users = UserModel::all();
         return view('kriteria.edit_ajax', ['kriteria' => $kriteria, 'users' => $users]);
     }
@@ -118,8 +143,8 @@ class KriteriaController extends Controller
 
             try {
                 $kriteria = KriteriaModel::where('no_kriteria', $no_kriteria)
-                                       ->where('id_user', $id_user)
-                                       ->firstOrFail();
+                    ->where('id_user', $id_user)
+                    ->firstOrFail();
 
                 $validator = Validator::make($request->all(), $rules);
                 if ($validator->fails()) {
@@ -157,16 +182,16 @@ class KriteriaController extends Controller
     public function confirm_ajax($no_kriteria, $id_user)
     {
         $kriteria = KriteriaModel::where('no_kriteria', $no_kriteria)
-                                ->where('id_user', $id_user)
-                                ->first();
+            ->where('id_user', $id_user)
+            ->first();
         return view('kriteria.confirm_ajax', ['kriteria' => $kriteria]);
     }
 
     public function delete_ajax(Request $request, $no_kriteria, $id_user)
     {
         $kriteria = KriteriaModel::where('no_kriteria', $no_kriteria)
-                                ->where('id_user', $id_user)
-                                ->first();
+            ->where('id_user', $id_user)
+            ->first();
         if ($kriteria) {
             $kriteria->delete();
             return response()->json([
@@ -184,9 +209,9 @@ class KriteriaController extends Controller
     public function detail_ajax($no_kriteria, $id_user)
     {
         $kriteria = KriteriaModel::with(['user', 'dokumenKriteria', 'dokumenPendukung'])
-                                ->where('no_kriteria', $no_kriteria)
-                                ->where('id_user', $id_user)
-                                ->first();
+            ->where('no_kriteria', $no_kriteria)
+            ->where('id_user', $id_user)
+            ->first();
         return view('kriteria.detail_ajax', ['kriteria' => $kriteria]);
     }
 
@@ -264,5 +289,23 @@ class KriteriaController extends Controller
         }
 
         return response()->json(['last_number' => null]);
+    }
+
+    public function getUsers()
+    {
+        try {
+            $users = ProfileUser::select(
+                'profile_user.id_profile',
+                'profile_user.nama_lengkap',
+                'profile_user.id_user'
+            )
+                ->join('user', 'profile_user.id_user', '=', 'user.id_user')
+                ->where('user.id_level', 2)
+                ->orderBy('profile_user.nama_lengkap', 'asc')
+                ->get();
+            return response()->json($users);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 }
