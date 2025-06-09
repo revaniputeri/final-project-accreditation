@@ -23,7 +23,7 @@
             <div class="input-group-prepend">
                 <label for="file_p_profesi" class="btn btn-info">Choose File</label>
             </div>
-            <input type="file" class="form-control d-none" id="file_p_profesi" name="file_p_sertifikasi" required
+            <input type="file" class="form-control d-none" id="file_p_profesi" name="file_p_profesi" required
                 accept=".xlsx,.xls"
                 onchange="document.getElementById('file_p_profesi_text').value = this.files[0]?.name || 'No file chosen'">
             <input type="text" class="form-control" id="file_p_profesi_text" placeholder="No file chosen" readonly>
