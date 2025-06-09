@@ -22,7 +22,7 @@ class PProfesiSeeder extends Seeder
                 'id_user' => $user->id_user,
                 'perguruan_tinggi' => 'Universitas ' . $user->id_user,
                 'kurun_waktu' => (rand(2000, 2005)) . '-' . (rand(2006, 2010)),
-                'gelar' => 'Sarjana',
+                'gelar' => 'Doktor',
                 'status' => 'tervalidasi',
 
                 // Status sertifikasi tergantung pada sumber data
@@ -37,7 +37,7 @@ class PProfesiSeeder extends Seeder
                 'id_user' => $user->id_user,
                 'perguruan_tinggi' => 'Institut ' . $user->id_user,
                 'kurun_waktu' => (rand(2005, 2010)) . '-' . (rand(2011, 2015)),
-                'gelar' => 'Magister',
+                'gelar' => 'Profesor',
                 'status' => 'tervalidasi',
 
                 // Status sertifikasi tergantung pada sumber data
