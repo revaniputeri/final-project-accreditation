@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\DokumenKriteriaModel;
 use App\Models\DokumenPendukungModel;
 use App\Models\ProfileUser;
+use Illuminate\Support\Facades\DB;
 
 class KriteriaController extends Controller
 {
@@ -192,12 +193,15 @@ class KriteriaController extends Controller
 
     public function delete_ajax(Request $request, $no_kriteria, $id_user)
     {
+        $dokumen_pendukung = DokumenPendukungModel::where('no_kriteria', $no_kriteria);
+        $dokumen_kriteria = DokumenKriteriaModel::where('no_kriteria', $no_kriteria);
         $kriteria = KriteriaModel::where('no_kriteria', $no_kriteria)
             ->where('id_user', $id_user)
             ->first();
-        if ($kriteria) {
-            $kriteria->deleted_at = now();
-            $kriteria->save();
+        $kriteria->delete();
+        $dokumen_pendukung->delete();
+        $dokumen_kriteria->delete();
+        if ($kriteria && $dokumen_pendukung && $dokumen_kriteria) {
             return response()->json([
                 'status' => true,
                 'message' => 'Data berhasil dihapus'
@@ -212,11 +216,41 @@ class KriteriaController extends Controller
 
     public function detail_ajax($no_kriteria, $id_user)
     {
-        $kriteria = KriteriaModel::with(['user', 'dokumenKriteria', 'dokumenPendukung'])
-            ->where('no_kriteria', $no_kriteria)
-            ->where('id_user', $id_user)
-            ->first();
-        return view('kriteria.detail_ajax', ['kriteria' => $kriteria]);
+        try {
+            $users = KriteriaModel::join('profile_user', 'kriteria.id_user', '=', 'profile_user.id_user')
+                ->where('kriteria.no_kriteria', $no_kriteria)
+                ->pluck('profile_user.nama_lengkap')
+                ->toArray();
+
+            $kriteria = KriteriaModel::select('kriteria.*', DB::raw('COUNT(DISTINCT dokumen_pendukung.id_dokumen_pendukung) as jumlah_dokumen'))
+                ->leftJoin('dokumen_pendukung', function($join) {
+                    $join->on('kriteria.no_kriteria', '=', 'dokumen_pendukung.no_kriteria')
+                         ->whereNull('dokumen_pendukung.deleted_at');
+                })
+                ->where('kriteria.no_kriteria', $no_kriteria)
+                ->where('kriteria.id_user', $id_user)
+                ->whereNull('kriteria.deleted_at')
+                ->groupBy('kriteria.no_kriteria', 'kriteria.id_user')
+                ->first();
+
+            if (!$kriteria) {
+                return response()->view('kriteria.detail_ajax', [
+                    'kriteria' => null,
+                    'user_list' => $users
+                ]);
+            }
+
+            return view('kriteria.detail_ajax', [
+                'kriteria' => $kriteria,
+                'user_list' => $users
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('Error in detail_ajax: ' . $e->getMessage());
+            return response()->json([
+                'status' => false,
+                'message' => 'Terjadi kesalahan saat mengambil detail kriteria'
+            ], 500);
+        }
     }
 
     public function export_excel()
