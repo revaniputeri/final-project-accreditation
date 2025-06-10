@@ -195,13 +195,13 @@ class KriteriaController extends Controller
     {
         $dokumen_pendukung = DokumenPendukungModel::where('no_kriteria', $no_kriteria);
         $dokumen_kriteria = DokumenKriteriaModel::where('no_kriteria', $no_kriteria);
-        $kriteria = KriteriaModel::where('no_kriteria', $no_kriteria)
-            ->where('id_user', $id_user)
-            ->first();
-        $kriteria->delete();
-        $dokumen_pendukung->delete();
-        $dokumen_kriteria->delete();
-        if ($kriteria && $dokumen_pendukung && $dokumen_kriteria) {
+        $kriteria = KriteriaModel::where('no_kriteria', $no_kriteria);
+        if ($kriteria) {
+            $kriteria->delete();
+            $dokumen_pendukung->delete();
+            $dokumen_kriteria->delete();
+        }
+        if ($kriteria || $dokumen_pendukung || $dokumen_kriteria) {
             return response()->json([
                 'status' => true,
                 'message' => 'Data berhasil dihapus'
