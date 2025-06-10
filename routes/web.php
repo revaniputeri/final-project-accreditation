@@ -34,7 +34,14 @@ use App\Http\Controllers\DokumenAkhirController;
 |
 */
 
-// routes/web.php
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
+
+Route::get('/', function () {
+    return view('landing_page.index');
+});
+
+Route::get('/kriteria/{no_kriteria}', [KriteriaController::class, 'showDokumenPendukung'])->name('kriteria.showDokumenPendukung');
 
 Route::middleware('guest')->group(function () {
     Route::get('login', [AuthController::class, 'login'])->name('login');
@@ -46,7 +53,7 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
-    Route::get('/', [DashboardController::class, 'index']);
+    Route::get('/dashboard', [DashboardController::class, 'index']);
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 
     // Route untuk manage-level
@@ -68,8 +75,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/export_excel', [LevelController::class, 'export_excel'])->name('export_excel');
         Route::get('/export_pdf', [LevelController::class, 'export_pdf'])->name('export_pdf');
     });
-  
-    Route::prefix('manage-profile')->name('profile.')->middleware('authorize:ADM,VAL,ANG')->group(function () {
+
+    Route::prefix('manage-profile')->name('profile.')->middleware('auth')->group(function () {
         Route::get('/pageProfile', [UserController::class, 'pageProfile'])->name('pageProfile');
         Route::get('/{id}/editProfile_ajax', [UserController::class, 'editProfile_ajax'])->name('editProfile_ajax');
         Route::PUT('/{id}/updateProfile_ajax', [UserController::class, 'updateProfile_ajax'])->name('updateProfile_ajax');
@@ -100,6 +107,8 @@ Route::middleware('auth')->group(function () {
     // Route untuk manage-kriteria
     Route::prefix('manage-kriteria')->group(function () {
         Route::get('/', [KriteriaController::class, 'index'])->name('kriteria.index');
+        
+        // CRUD routes
         Route::get('/create_ajax', [KriteriaController::class, 'create_ajax'])->name('kriteria.create_ajax');
         Route::post('/store_ajax', [KriteriaController::class, 'store_ajax'])->name('kriteria.store_ajax');
         Route::get('/edit_ajax/{no_kriteria}/{id_user}', [KriteriaController::class, 'edit_ajax'])->name('kriteria.edit_ajax');
@@ -107,15 +116,20 @@ Route::middleware('auth')->group(function () {
         Route::get('/detail_ajax/{no_kriteria}/{id_user}', [KriteriaController::class, 'detail_ajax'])->name('kriteria.detail_ajax');
         Route::get('/confirm_ajax/{no_kriteria}/{id_user}', [KriteriaController::class, 'confirm_ajax'])->name('kriteria.confirm_ajax');
         Route::delete('/delete_ajax/{no_kriteria}/{id_user}', [KriteriaController::class, 'delete_ajax'])->name('kriteria.delete_ajax');
+
+        // Import and Export routes
         Route::get('/export_excel', [KriteriaController::class, 'export_excel'])->name('kriteria.export_excel');
         Route::get('/export_pdf', [KriteriaController::class, 'export_pdf'])->name('kriteria.export_pdf');
         Route::get('/import', [KriteriaController::class, 'import'])->name('kriteria.import');
         Route::post('/import_ajax', [KriteriaController::class, 'import_ajax'])->name('kriteria.import_ajax');
+
+        // Get last number and users
         Route::get('/get-last-number', [KriteriaController::class, 'getLastNumber'])->name('kriteria.get_last_number');
+        Route::get('/get-users', [KriteriaController::class, 'getUsers'])->name('kriteria.get_users');
     });
 
     // Route untuk validasi
-    Route::prefix('validasi')->name('validasi.')->middleware('authorize:ADM,VAL')->group(function () {
+    Route::prefix('validasi')->name('validasi.')->middleware('authorize:VAL')->group(function () {
         Route::GET('/', [ValidasiController::class, 'index'])->name('index');
         Route::POST('/showFile', [ValidasiController::class, 'showFile'])->name('showFile');
         Route::PUT('/valid', [ValidasiController::class, 'valid'])->name('valid');
@@ -374,11 +388,11 @@ Route::middleware('auth')->group(function () {
     Route::prefix('chart')->name('chart.')->middleware('authorize:ADM,VAL,ANG')->group(function () {
         Route::get('/', [DashboardController::class, 'index'])->name('index');
         Route::get('/more-info', [DashboardController::class, 'moreInfo'])->name('moreInfo');
+
     });
 
-
     // Route untuk dokumen akhir
-    Route::prefix('dokumen-akhir')->name('dokumen_akhir.')->middleware('authorize:VAL,DIR,ADM')->group(function () {
+    Route::prefix('dokumen-akhir')->name('dokumen_akhir.')->middleware('authorize:VAL,DIR')->group(function () {
         Route::get('/', [DokumenAkhirController::class, 'index'])->name('index');
     });
 });

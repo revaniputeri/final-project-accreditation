@@ -7,7 +7,7 @@
     <div class="container-fluid">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ url('/') }}">Beranda</a></li>
+                <li class="breadcrumb-item"><a href="{{ url('/dashboard') }}">Beranda</a></li>
                 <li class="breadcrumb-item active">Karya Buku</li>
             </ol>
         </nav>
@@ -17,16 +17,24 @@
 @section('content')
     <div class="container-fluid">
 
+        <!-- Karya Buku -->
+        <div class="callout callout-primary shadow-sm">
+            <h5>Karya Buku</h5>
+            <p>Buku yang diterbitkan oleh dosen sebagai hasil karya keilmuan.</p>
+        </div>
+
         {{-- DataTable --}}
         <div class="card shadow-sm">
             <div class="card-header bg-primary border-bottom">
                 <div class="d-flex justify-content-between align-items-center">
                     <h3 class="card-title mb-0 text-white">Daftar Karya Buku</h3>
                     <div class="card-tools">
-                        <a id="exportPdfBtn" class="btn btn-custom-blue me-2" href="{{ route('portofolio.karya_buku.export_pdf') }}">
+                        <a id="exportPdfBtn" class="btn btn-custom-blue me-2"
+                            href="{{ route('portofolio.karya_buku.export_pdf') }}">
                             <i class="fa-solid fa-file-pdf me-2"></i> Export PDF
                         </a>
-                        <a id="exportExcelBtn" class="btn btn-custom-blue me-2" href="{{ route('portofolio.karya_buku.export_excel') }}">
+                        <a id="exportExcelBtn" class="btn btn-custom-blue me-2"
+                            href="{{ route('portofolio.karya_buku.export_excel') }}">
                             <i class="fas fa-file-excel me-2"></i> Export Excel
                         </a>
                         @if ($isAdm || $isDos)
@@ -82,11 +90,57 @@
                 </div>
             </div>
         </div>
+
+        @if ($isAdm || $isAng)
+            <!-- Karya Buku Charts -->
+            <div class="callout callout-primary shadow-sm">
+                <h5>Chart</h5>
+                <p>Chart berikut menampilkan distribusi penerbit buku dan tren publikasi buku per tahun.</p>
+            </div>
+
+            <div class="container-fluid mt-3">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-primary border-bottom">
+                                <h5 class="card-title mb-0 text-white">Distribusi Penerbit Buku</h5>
+                                <div class="card-tools">
+                                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body collapse">
+                                <canvas id="pieChartPenerbit"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-primary border-bottom">
+                                <h5 class="card-title mb-0 text-white">Tren Publikasi Buku Per Tahun</h5>
+                                <div class="card-tools">
+                                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body collapse">
+                                <canvas id="lineChartTrenBuku"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
     </div>
 @endsection
 
 @push('scripts')
     {!! $dataTable->scripts() !!}
+
+    {{-- Modal --}}
     <script>
         function modalAction(url) {
             $.get(url)
@@ -294,6 +348,79 @@
                 updateExportPdfLink();
                 updateExportExcelLink();
             });
+        });
+    </script>
+
+    {{-- Chart.js --}}
+    <script>
+        // Prepare chart data from PHP variables
+        const penerbitLabels = @json($penerbitLabels);
+        const penerbitData = @json($penerbitData);
+        const trenLabels = @json($trenLabels);
+        const trenData = @json($trenData);
+
+        const chartColors = [
+            '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+            '#FF9F40', '#E7E9ED', '#76A346', '#D9534F', '#5BC0DE'
+        ];
+
+        // Pie Chart - Distribusi Penerbit Buku
+        const ctxPiePenerbit = document.getElementById('pieChartPenerbit').getContext('2d');
+        const pieChartPenerbit = new Chart(ctxPiePenerbit, {
+            type: 'pie',
+            data: {
+                labels: penerbitLabels,
+                datasets: [{
+                    data: penerbitData,
+                    backgroundColor: chartColors,
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                    },
+                    title: {
+                        display: false,
+                    }
+                }
+            }
+        });
+
+        // Line Chart - Tren Publikasi Buku Per Tahun
+        const ctxLineTrenBuku = document.getElementById('lineChartTrenBuku').getContext('2d');
+        const lineChartTrenBuku = new Chart(ctxLineTrenBuku, {
+            type: 'line',
+            data: {
+                labels: trenLabels,
+                datasets: [{
+                    label: 'Jumlah Publikasi',
+                    data: trenData,
+                    borderColor: '#36A2EB',
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    fill: true,
+                    tension: 0.3,
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        precision: 0,
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                    },
+                    title: {
+                        display: false,
+                    }
+                }
+            }
         });
     </script>
 @endpush

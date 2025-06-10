@@ -27,7 +27,7 @@
             <tr>
             <tr>
                 <th>Peran</th>
-                <td>{{ $pengabdian->peran }}</td>
+                <td>{{ ucfirst($pengabdian->peran) }}</td>
             <tr>
             <tr>
                 <th>Dana</th>

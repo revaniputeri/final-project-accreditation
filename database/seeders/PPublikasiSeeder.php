@@ -10,7 +10,7 @@ class PPublikasiSeeder extends Seeder
     public function run()
     {
         $publikasis = [];
-        $jenis_publikasi = ['jurnal', 'prosiding', 'poster'];
+        $jenis_publikasi = ['artikel ilmiah', 'karya ilmiah', 'karya seni', 'lainnya'];
 
         $dosenUsers = DB::table('user')
             ->join('level', 'user.id_level', '=', 'level.id_level')

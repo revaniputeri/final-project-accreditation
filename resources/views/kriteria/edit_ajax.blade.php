@@ -1,4 +1,4 @@
-<form id="form-edit" method="POST">
+<form id="form-edit" method="POST" action="{{ route('kriteria.update_ajax', ['no_kriteria' => $kriteria->no_kriteria, 'id_user' => $kriteria->id_user]) }}">
     @csrf
     @method('PUT')
     <div class="form-group">

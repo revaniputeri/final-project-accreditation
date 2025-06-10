@@ -26,7 +26,82 @@ class PPenelitianController extends Controller
         $isDos = $user->hasRole('DOS');
         $isAng = $user->hasRole('ANG');
 
-        return $dataTable->render('portofolio.penelitian.index', compact('isAdm', 'isAng', 'isDos'));
+        // Distribusi Skema Penelitian (pie chart)
+        $skemaDistribution = PPenelitianModel::select('skema', DB::raw('count(*) as total'))
+            ->groupBy('skema')
+            ->orderBy('total', 'desc')
+            ->get();
+
+        // Tren Penelitian per Tahun (line chart)
+        $trenPerTahun = PPenelitianModel::select('tahun', DB::raw('count(*) as total'))
+            ->groupBy('tahun')
+            ->orderBy('tahun')
+            ->get();
+
+        // Peran Dosen dalam Penelitian (doughnut chart)
+        $peranDistribution = PPenelitianModel::select('peran', DB::raw('count(*) as total'))
+            ->groupBy('peran')
+            ->orderBy('total', 'desc')
+            ->get();
+
+        // Keterlibatan Mahasiswa S2 (bar chart)
+        $mahasiswaS2Distribution = PPenelitianModel::select('melibatkan_mahasiswa_s2', DB::raw('count(*) as total'))
+            ->groupBy('melibatkan_mahasiswa_s2')
+            ->orderBy('melibatkan_mahasiswa_s2')
+            ->get();
+
+        // Tren dana untuk penelitian per tahun per skema (multi-line chart)
+        $trenDanaPerTahunPerSkema = PPenelitianModel::select('tahun', 'skema', DB::raw('sum(dana) as total_dana'))
+            ->groupBy('tahun', 'skema')
+            ->orderBy('tahun')
+            ->orderBy('skema')
+            ->get();
+
+        // Prepare data arrays for charts
+        $skemaLabels = $skemaDistribution->pluck('skema');
+        $skemaData = $skemaDistribution->pluck('total');
+
+        $trenLabels = $trenPerTahun->pluck('tahun');
+        $trenData = $trenPerTahun->pluck('total');
+
+        $peranLabels = $peranDistribution->pluck('peran');
+        $peranData = $peranDistribution->pluck('total');
+
+        $mahasiswaS2Labels = $mahasiswaS2Distribution->map(function ($item) {
+            return $item->melibatkan_mahasiswa_s2 ? 'Ya' : 'Tidak';
+        });
+        $mahasiswaS2Data = $mahasiswaS2Distribution->pluck('total');
+
+        // Prepare multi-line chart data
+        $skemaList = $skemaLabels->toArray();
+        $years = $trenLabels->toArray();
+
+        $multiLineDataSets = [];
+        foreach ($skemaList as $skema) {
+            $dataPerYear = [];
+            foreach ($years as $year) {
+                $found = $trenDanaPerTahunPerSkema->firstWhere(function ($item) use ($year, $skema) {
+                    return $item->tahun == $year && $item->skema == $skema;
+                });
+                $dataPerYear[] = $found ? (float) $found->total_dana : 0;
+            }
+            $multiLineDataSets[] = [
+                'label' => $skema,
+                'data' => $dataPerYear,
+                'fill' => false,
+                'borderColor' => null, // will be set in JS
+                'tension' => 0.3,
+            ];
+        }
+
+        return $dataTable->render('portofolio.penelitian.index', compact(
+            'isAdm', 'isAng', 'isDos',
+            'skemaLabels', 'skemaData',
+            'trenLabels', 'trenData',
+            'peranLabels', 'peranData',
+            'mahasiswaS2Labels', 'mahasiswaS2Data',
+            'multiLineDataSets'
+        ));
     }
 
     private function generateUniqueFilename($directory, $filename)
@@ -214,106 +289,107 @@ class PPenelitianController extends Controller
         $role = $user ? $user->getRole() : null;
 
         if ($request->ajax() || $request->wantsJson()) {
-            $rules = [
-                'judul_penelitian' => 'required|string|max:255',
-                'skema' => 'required|string|max:100',
-                'tahun' => 'required|integer|min:1900|max:' . (date('Y') + 5),
-                'dana' => 'required|numeric|min:0',
-                'peran' => 'required|in:ketua,anggota',
-                'melibatkan_mahasiswa_s2' => 'required|boolean',
-                'bukti' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
-            ];
+                $rules = [
+                    'judul_penelitian' => 'required|string|max:255',
+                    'skema' => 'required|string|max:100',
+                    'tahun' => 'required|integer|min:1900|max:' . (date('Y') + 5),
+                    'dana' => 'required|numeric|min:0',
+                    'peran' => 'required|in:ketua,anggota',
+                    'melibatkan_mahasiswa_s2' => 'required|boolean',
+                    'bukti' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+                ];
 
-            if ($role === 'ADM') {
-                $rules['nidn'] = 'required|string|exists:profile_user,nidn';
-            }
-
-            $validator = Validator::make($request->all(), $rules);
-
-            if ($validator->fails()) {
-                return response()->json([
-                    'status' => false,
-                    'alert' => 'error',
-                    'message' => 'Validasi Gagal',
-                    'msgField' => $validator->errors(),
-                ]);
-            }
-
-            $penelitian = PPenelitianModel::findOrFail($id);
-
-            try {
                 if ($role === 'ADM') {
-                    $nidn = $request->input('nidn');
-                    $profileUser = DB::table('profile_user')->where('nidn', $nidn)->first();
+                    $rules['nidn'] = 'required|string|exists:profile_user,nidn';
+                }
 
-                    if (!$profileUser) {
+                $validator = Validator::make($request->all(), $rules);
+
+                if ($validator->fails()) {
+                    Log::error('Validation failed', $validator->errors()->toArray());
+                    return response()->json([
+                        'status' => false,
+                        'alert' => 'error',
+                        'message' => 'Validasi Gagal',
+                        'msgField' => $validator->errors(),
+                    ]);
+                }
+
+                $penelitian = PPenelitianModel::findOrFail($id);
+
+                try {
+                    if ($role === 'ADM') {
+                        $nidn = $request->input('nidn');
+                        $profileUser = DB::table('profile_user')->where('nidn', $nidn)->first();
+
+                        if (!$profileUser) {
+                            return response()->json([
+                                'status' => false,
+                                'alert' => 'error',
+                                'message' => 'NIDN tidak ditemukan di data profil user',
+                            ]);
+                        }
+
+                        $id_user = $profileUser->id_user;
+                    } elseif ($role === 'DOS') {
+                        $id_user = $user->id_user;
+                    } else {
+                        $id_user = $user->id_user;
+                    }
+
+                    if (!$id_user) {
                         return response()->json([
                             'status' => false,
                             'alert' => 'error',
-                            'message' => 'NIDN tidak ditemukan di data profil user',
+                            'message' => 'ID user tidak ditemukan. Pastikan akun user terkait.',
                         ]);
                     }
 
-                    $id_user = $profileUser->id_user;
-                } elseif ($role === 'DOS') {
-                    $id_user = $user->id_user;
-                } else {
-                    $id_user = $user->id_user;
-                }
+                    // Custom duplicate check for id_user and judul_penelitian excluding current record
+                    $exists = PPenelitianModel::where('id_user', $id_user)
+                        ->where('judul_penelitian', $request->input('judul_penelitian'))
+                        ->where('tahun', $request->input('tahun'))
+                        ->where('id_penelitian', '!=', $id)
+                        ->exists();
 
-                if (!$id_user) {
-                    return response()->json([
-                        'status' => false,
-                        'alert' => 'error',
-                        'message' => 'ID user tidak ditemukan. Pastikan akun user terkait.',
-                    ]);
-                }
-
-                // Custom duplicate check for id_user and judul_penelitian excluding current record
-                $exists = PPenelitianModel::where('id_user', $id_user)
-                    ->where('judul_penelitian', $request->input('judul_penelitian'))
-                    ->where('tahun', $request->input('tahun'))
-                    ->where('id_penelitian', '!=', $id)
-                    ->exists();
-
-                if ($exists) {
-                    return response()->json([
-                        'status' => false,
-                        'alert' => 'error',
-                        'message' => 'Data dengan NIDN dan Judul Penelitian yang sama pada tahun yang sama sudah ada.',
-                    ]);
-                }
-
-                $data = $request->only([
-                    'judul_penelitian',
-                    'skema',
-                    'tahun',
-                    'dana',
-                    'peran',
-                    'melibatkan_mahasiswa_s2',
-                ]);
-
-                if ($role === 'ADM') {
-                    $data['status'] = 'perlu validasi';
-                }
-
-                if ($request->hasFile('bukti')) {
-                    if ($penelitian->bukti && Storage::exists('public/portofolio/penelitian/' . $penelitian->bukti)) {
-                        Storage::delete('public/portofolio/penelitian/' . $penelitian->bukti);
+                    if ($exists) {
+                        return response()->json([
+                            'status' => false,
+                            'alert' => 'error',
+                            'message' => 'Data dengan NIDN dan Judul Penelitian yang sama pada tahun yang sama sudah ada.',
+                        ]);
                     }
-                    $file = $request->file('bukti');
-                    $nidnPrefix = '';
-                    if ($penelitian->user && $penelitian->user->profile) {
-                        $nidnPrefix = $penelitian->user->profile->nidn ? $penelitian->user->profile->nidn . '_' : '';
-                    }
-                    $originalName = $file->getClientOriginalName();
-                    $filename = $nidnPrefix . $originalName;
-                    $filename = $this->generateUniqueFilename('public/portofolio/penelitian', $filename);
-                    $path = $file->storeAs('public/portofolio/penelitian', $filename);
-                    $data['bukti'] = $filename;
-                }
 
-                $penelitian->update($data);
+                    $data = $request->only([
+                        'judul_penelitian',
+                        'skema',
+                        'tahun',
+                        'dana',
+                        'peran',
+                        'melibatkan_mahasiswa_s2',
+                    ]);
+
+                    if ($role === 'ADM') {
+                        $data['status'] = 'perlu validasi';
+                    }
+
+                    if ($request->hasFile('bukti')) {
+                        if ($penelitian->bukti && Storage::exists('public/portofolio/penelitian/' . $penelitian->bukti)) {
+                            Storage::delete('public/portofolio/penelitian/' . $penelitian->bukti);
+                        }
+                        $file = $request->file('bukti');
+                        $nidnPrefix = '';
+                        if ($penelitian->user && $penelitian->user->profile) {
+                            $nidnPrefix = $penelitian->user->profile->nidn ? $penelitian->user->profile->nidn . '_' : '';
+                        }
+                        $originalName = $file->getClientOriginalName();
+                        $filename = $nidnPrefix . $originalName;
+                        $filename = $this->generateUniqueFilename('public/portofolio/penelitian', $filename);
+                        $path = $file->storeAs('public/portofolio/penelitian', $filename);
+                        $data['bukti'] = $filename;
+                    }
+
+                    $penelitian->update($data);
 
                 return response()->json([
                     'status' => true,
@@ -425,6 +501,10 @@ class PPenelitianController extends Controller
                 $nidn = trim($values['A']);
                 $judulPenelitian = trim($values['B']);
                 $tahun = trim($values['D']);
+                $skema = strtolower(trim($values['C']));
+                $dana = trim($values['E']);
+                $peran = strtolower(trim($values['F']));
+                $melibatkanMhsS2 = strtolower(trim($values['G']));
 
                 if ($role === 'DOS' && $nidn !== $userNidn) {
                     $errors[] = "Baris $row: Anda hanya dapat mengimpor data dengan NIDN milik Anda ($userNidn).";
@@ -450,11 +530,11 @@ class PPenelitianController extends Controller
                 $validator = Validator::make([
                     'id_user' => $user->id_user,
                     'judul_penelitian' => $judulPenelitian,
-                    'skema' => $values['C'],
+                    'skema' => $skema,
                     'tahun' => $tahun,
-                    'dana' => $values['E'],
-                    'peran' => $values['F'],
-                    'melibatkan_mahasiswa_s2' => $values['G'],
+                    'dana' => $dana,
+                    'peran' => $peran,
+                    'melibatkan_mahasiswa_s2' => in_array($melibatkanMhsS2, ['true', '1', 'yes', 'ya']) ? true : false,
                 ], [
                     'id_user' => 'required|integer|exists:user,id_user',
                     'judul_penelitian' => 'required|string|max:255',
@@ -473,11 +553,11 @@ class PPenelitianController extends Controller
                 $insertData[] = [
                     'id_user' => $user->id_user,
                     'judul_penelitian' => $judulPenelitian,
-                    'skema' => $values['C'],
+                    'skema' => $skema,
                     'tahun' => $tahun,
-                    'dana' => $values['E'],
-                    'peran' => $values['F'],
-                    'melibatkan_mahasiswa_s2' => $values['G'],
+                    'dana' => $dana,
+                    'peran' => $peran,
+                    'melibatkan_mahasiswa_s2' => in_array($melibatkanMhsS2, ['true', '1', 'yes', 'ya']) ? true : false,
                     'status' => $role === 'DOS' ? 'tervalidasi' : 'perlu validasi',
                     'sumber_data' => $role === 'DOS' ? 'dosen' : 'p3m',
                     'created_at' => now(),
@@ -526,7 +606,6 @@ class PPenelitianController extends Controller
         $query = PPenelitianModel::join('user', 'p_penelitian.id_user', '=', 'user.id_user')
             ->join('profile_user', 'user.id_user', '=', 'profile_user.id_user')
             ->select(
-                'p_penelitian.id_penelitian',
                 'profile_user.nama_lengkap as nama_user',
                 'p_penelitian.judul_penelitian',
                 'p_penelitian.skema',
@@ -566,52 +645,50 @@ class PPenelitianController extends Controller
         $sheet = $spreadsheet->getActiveSheet();
 
         $sheet->setCellValue('A1', 'No');
-        $sheet->setCellValue('B1', 'ID Penelitian');
-        $sheet->setCellValue('C1', 'Nama Dosen');
-        $sheet->setCellValue('D1', 'Judul Penelitian');
-        $sheet->setCellValue('E1', 'Skema');
-        $sheet->setCellValue('F1', 'Tahun');
-        $sheet->setCellValue('G1', 'Dana');
-        $sheet->setCellValue('H1', 'Peran');
-        $sheet->setCellValue('I1', 'Melibatkan Mahasiswa S2');
-        $sheet->setCellValue('J1', 'Status');
-        $sheet->setCellValue('K1', 'Sumber Data');
-        $sheet->setCellValue('L1', 'Bukti');
-        $sheet->setCellValue('M1', 'Created At');
-        $sheet->setCellValue('N1', 'Updated At');
+        $sheet->setCellValue('B1', 'Nama Dosen');
+        $sheet->setCellValue('C1', 'Judul Penelitian');
+        $sheet->setCellValue('D1', 'Skema');
+        $sheet->setCellValue('E1', 'Tahun');
+        $sheet->setCellValue('F1', 'Dana');
+        $sheet->setCellValue('G1', 'Peran');
+        $sheet->setCellValue('H1', 'Melibatkan Mahasiswa S2');
+        $sheet->setCellValue('I1', 'Status');
+        $sheet->setCellValue('J1', 'Sumber Data');
+        $sheet->setCellValue('K1', 'Bukti');
+        $sheet->setCellValue('L1', 'Created At');
+        $sheet->setCellValue('M1', 'Updated At');
 
-        $sheet->getStyle('A1:N1')->getFont()->setBold(true);
+        $sheet->getStyle('A1:M1')->getFont()->setBold(true);
 
         $no = 1;
         $row = 2;
         foreach ($penelitian as $data) {
             $sheet->setCellValue('A' . $row, $no);
-            $sheet->setCellValue('B' . $row, $data->id_penelitian);
-            $sheet->setCellValue('C' . $row, $data->nama_user);
-            $sheet->setCellValue('D' . $row, $data->judul_penelitian);
-            $sheet->setCellValue('E' . $row, $data->skema);
-            $sheet->setCellValue('F' . $row, $data->tahun);
-            $sheet->setCellValue('G' . $row, $data->dana);
-            $sheet->setCellValue('H' . $row, $data->peran);
-            $sheet->setCellValue('I' . $row, $data->melibatkan_mahasiswa_s2 ? 'Ya' : 'Tidak');
-            $sheet->setCellValue('J' . $row, $data->status);
-            $sheet->setCellValue('K' . $row, $data->sumber_data);
+            $sheet->setCellValue('B' . $row, $data->nama_user);
+            $sheet->setCellValue('C' . $row, $data->judul_penelitian);
+            $sheet->setCellValue('D' . $row, $data->skema);
+            $sheet->setCellValue('E' . $row, $data->tahun);
+            $sheet->setCellValue('F' . $row, $data->dana);
+            $sheet->setCellValue('G' . $row, $data->peran);
+            $sheet->setCellValue('H' . $row, $data->melibatkan_mahasiswa_s2 ? 'Ya' : 'Tidak');
+            $sheet->setCellValue('I' . $row, $data->status);
+            $sheet->setCellValue('J' . $row, $data->sumber_data);
             // Tambahkan link ke file bukti
             if ($data->bukti) {
                 $url = url('storage/portofolio/penelitian/' . $data->bukti);
-                $sheet->setCellValue('L' . $row, 'Lihat File');
-                $sheet->getCell('L' . $row)->getHyperlink()->setUrl($url);
+                $sheet->setCellValue('K' . $row, 'Lihat File');
+                $sheet->getCell('K' . $row)->getHyperlink()->setUrl($url);
             } else {
-                $sheet->setCellValue('L' . $row, 'Tidak ada file');
+                $sheet->setCellValue('K' . $row, 'Tidak ada file');
             }
-            $sheet->setCellValue('M' . $row, $data->created_at);
-            $sheet->setCellValue('N' . $row, $data->updated_at);
+            $sheet->setCellValue('L' . $row, $data->created_at);
+            $sheet->setCellValue('M' . $row, $data->updated_at);
 
             $row++;
             $no++;
         }
 
-        foreach (range('A', 'N') as $columnID) {
+        foreach (range('A', 'M') as $columnID) {
             $sheet->getColumnDimension($columnID)->setAutoSize(true);
         }
 

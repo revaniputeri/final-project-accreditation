@@ -12,7 +12,7 @@
             <div class="mb-3">
                 <label for="nidn" class="form-label">NIDN</label>
                 <input type="text" class="form-control" id="nidn" name="nidn"
-                    value="{{ $pengabdian->nidn ?? '' }}" required>
+                    value="{{ optional($pengabdian->user->profile)->nidn }}" required>
                 <div class="invalid-feedback" id="error_nidn"></div>
             </div>
         @endif
@@ -68,6 +68,11 @@
                     value="{{ $pengabdian->nama_file ?? 'No file chosen' }}" readonly>
                 <div id="error_bukti" class="invalid-feedback"></div>
             </div>
+            @if ($pengabdian->bukti)
+                <small class="form-text text-muted mt-1">File saat ini:
+                    <a href="{{ asset('storage/portofolio/pengabdian/' . $pengabdian->bukti) }}" target="_blank">{{ $pengabdian->bukti }}</a>
+                </small>
+            @endif
         </div>
     </div>
     <div class="modal-footer">

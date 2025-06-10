@@ -120,7 +120,6 @@ class UserController extends Controller
         return view('user.edit_ajax', ['user' => $user, 'level' => $level]);
     }
 
-
     public function update_ajax(Request $request, $id)
     {
         if ($request->ajax() || $request->wantsJson()) {
@@ -204,15 +203,11 @@ class UserController extends Controller
         return redirect('/');
     }
 
-
-
-
     public function confirm_ajax(string $id)
     {
         $user = ProfileUser::find($id);
         return view('user.confirm_ajax', ['user' => $user]);
     }
-
 
     public function delete_ajax(Request $request, string $id)
     {
@@ -238,7 +233,6 @@ class UserController extends Controller
         $user = ProfileUser::with(['user.level'])->find($id);
         return view('user.detail_ajax', ['user' => $user]);
     }
-
 
     public function import()
     {
@@ -347,7 +341,6 @@ class UserController extends Controller
         }
     }
 
-
     public function export_excel(Request $request)
     {
         $query = ProfileUser::with(['user.level'])->
@@ -442,6 +435,7 @@ class UserController extends Controller
         $level = LevelModel::where('id_level', $user->user->id_level)->first();
         return view('user.pageProfile', ['user' => $user, 'level' => $level]);
     }
+
     public function editProfile_ajax($id)
     {
         $user = ProfileUser::with('user')->find($id);
@@ -453,6 +447,7 @@ class UserController extends Controller
         }
         return view('user.editProfile_ajax', ['user' => $user]);
     }
+
     public function updateProfile_ajax(Request $request, $id)
     {
         if ($request->ajax() || $request->wantsJson()) {
@@ -544,12 +539,16 @@ class UserController extends Controller
 
         // Simpan ke database jika perlu
         // $user->avatar = $filename;
-        $user->save();
+        $profile = ProfileUser::where('id_user', $user->id_user)->first();
+        if ($profile) {
+            // $profile->avatar = $filename; // jika ada kolom avatar
+            $profile->updated_at = now();
+            $profile->save();
+        }
 
         return response()->json([
             'status' => true,
             'message' => 'Foto berhasil diperbarui'
         ]);
     }
-
 }

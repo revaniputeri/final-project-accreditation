@@ -1,6 +1,6 @@
 <aside class="main-sidebar sidebar-dark-primary elevation-4">
-    <a href="#" class="brand-link">
-        <span class="brand-text font-weight-light">Sistem Akreditasi</span>
+    <a href="#" class="brand-link d-flex align-items-center justify-content-center">
+        <img src="{{ asset('img/akresa-logo-text-horizontal.svg') }}" alt="AKRESA Logo" class="brand-image img-fluid mx-auto d-block">
     </a>
     <div class="sidebar">
         <!-- Sidebar Search Form -->
@@ -29,7 +29,7 @@
 
                 <!-- Dashboard -->
                 <li class="nav-item">
-                    <a href="{{ url('/') }}" class="nav-link {{ request()->is('/') ? 'active' : '' }}">
+                    <a href="{{ url('/dashboard') }}" class="nav-link {{ request()->is('/') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-home"></i>
                         <p>Dashboard</p>
                     </a>
@@ -159,7 +159,7 @@
                 @endif
 
                 <!-- VAL: Validasi -->
-                @if ($isAdm || $isVal)
+                @if ($isVal)
                     <div class="dropdown-divider"></div>
                     <!-- Header Validasi Kriteria -->
                     <li class="nav-header">Validasi Kriteria</li>
@@ -174,7 +174,7 @@
                 @endif
 
                 <!-- DIR: Dokumen Akhir -->
-                @if ($isDir || $isVal || $isAdm)
+                @if ($isDir || $isVal)
                     <div class="dropdown-divider"></div>
                     <li class="nav-header">Dokumen Akhir</li>
 

@@ -50,6 +50,11 @@
                 <input type="text" class="form-control" id="bukti_text" placeholder="No file chosen" readonly>
                 <div id="error_bukti" class="invalid-feedback"></div>
             </div>
+            @if ($prestasi->bukti)
+                <small class="form-text text-muted mt-1">File saat ini:
+                    <a href="{{ asset('storage/portofolio/prestasi/' . $prestasi->bukti) }}" target="_blank">{{ $prestasi->bukti }}</a>
+                </small>
+            @endif
         </div>
     </div>
     <div class="modal-footer">

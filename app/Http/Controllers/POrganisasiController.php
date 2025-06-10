@@ -69,7 +69,7 @@ class POrganisasiController extends Controller
             $rules = [
                 'nama_organisasi' => 'required|string|max:255',
                 'kurun_waktu' => 'required|string|max:100',
-                'tingkat' => 'required|in:Nasional,Internasional',
+                'tingkat' => 'required|in:Lokal,Nasional,Internasional',
                 'bukti' => $role === 'DOS' ? 'required|file|mimes:pdf,jpg,jpeg,png|max:2048' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             ];
 
@@ -212,7 +212,7 @@ class POrganisasiController extends Controller
             $rules = [
                 'nama_organisasi' => 'required|string|max:255',
                 'kurun_waktu' => 'required|string|max:100',
-                'tingkat' => 'required|in:Nasional,Internasional',
+                'tingkat' => 'required|in:Lokal,Nasional,Internasional',
                 'bukti' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             ];
 
@@ -458,7 +458,7 @@ class POrganisasiController extends Controller
                     'id_user' => 'required|integer|exists:user,id_user',
                     'nama_organisasi' => 'required|string|max:255',
                     'kurun_waktu' => 'required|string|max:100',
-                    'tingkat' => 'required|in:Nasional,Internasional',
+                    'tingkat' => 'required|in:Lokal,Nasional,Internasional',
                 ]);
 
                 if ($validator->fails()) {
@@ -528,7 +528,6 @@ class POrganisasiController extends Controller
         $query = POrganisasiModel::join('user', 'p_organisasi.id_user', '=', 'user.id_user')
             ->join('profile_user', 'user.id_user', '=', 'profile_user.id_user')
             ->select(
-                'p_organisasi.id_organisasi',
                 'profile_user.nama_lengkap as nama_user',
                 'p_organisasi.nama_organisasi',
                 'p_organisasi.kurun_waktu',
@@ -561,46 +560,43 @@ class POrganisasiController extends Controller
         $sheet = $spreadsheet->getActiveSheet();
 
         $sheet->setCellValue('A1', 'No');
-        $sheet->setCellValue('B1', 'ID Organisasi');
-        $sheet->setCellValue('C1', 'Nama Dosen');
-        $sheet->setCellValue('D1', 'Nama Organisasi');
-        $sheet->setCellValue('E1', 'Kurun Waktu');
-        $sheet->setCellValue('F1', 'Tingkat');
-        $sheet->setCellValue('G1', 'Status');
-        $sheet->setCellValue('H1', 'Sumber Data');
-        $sheet->setCellValue('I1', 'Bukti');
-        $sheet->setCellValue('J1', 'Created At');
-        $sheet->setCellValue('K1', 'Updated At');
+        $sheet->setCellValue('B1', 'Nama Dosen');
+        $sheet->setCellValue('C1', 'Nama Organisasi');
+        $sheet->setCellValue('D1', 'Kurun Waktu');
+        $sheet->setCellValue('E1', 'Tingkat');
+        $sheet->setCellValue('F1', 'Status');
+        $sheet->setCellValue('G1', 'Sumber Data');
+        $sheet->setCellValue('H1', 'Bukti');
+        $sheet->setCellValue('I1', 'Created At');
+        $sheet->setCellValue('J1', 'Updated At');
 
-        $sheet->getStyle('A1:K1')->getFont()->setBold(true);
+        $sheet->getStyle('A1:J1')->getFont()->setBold(true);
 
         $no = 1;
         $row = 2;
         foreach ($organisasi as $data) {
             $sheet->setCellValue('A' . $row, $no);
-            $sheet->setCellValue('B' . $row, $data->id_organisasi);
-            $sheet->setCellValue('C' . $row, $data->nama_user);
-            $sheet->setCellValue('D' . $row, $data->nama_organisasi);
-            $sheet->setCellValue('E' . $row, $data->kurun_waktu);
-            $sheet->setCellValue('F' . $row, $data->tingkat);
-            $sheet->setCellValue('G' . $row, $data->status);
-            $sheet->setCellValue('H' . $row, $data->sumber_data);
-            // Tambahkan link ke file bukti
+            $sheet->setCellValue('B' . $row, $data->nama_user);
+            $sheet->setCellValue('C' . $row, $data->nama_organisasi);
+            $sheet->setCellValue('D' . $row, $data->kurun_waktu);
+            $sheet->setCellValue('E' . $row, $data->tingkat);
+            $sheet->setCellValue('F' . $row, $data->status);
+            $sheet->setCellValue('G' . $row, $data->sumber_data);
             if ($data->bukti) {
                 $url = url('storage/portofolio/organisasi/' . $data->bukti);
-                $sheet->setCellValue('I' . $row, 'Lihat File');
-                $sheet->getCell('I' . $row)->getHyperlink()->setUrl($url);
+                $sheet->setCellValue('H' . $row, 'Lihat File');
+                $sheet->getCell('H' . $row)->getHyperlink()->setUrl($url);
             } else {
-                $sheet->setCellValue('I' . $row, 'Tidak ada file');
+                $sheet->setCellValue('H' . $row, 'Tidak ada file');
             }
-            $sheet->setCellValue('J' . $row, $data->created_at);
-            $sheet->setCellValue('K' . $row, $data->updated_at);
+            $sheet->setCellValue('I' . $row, $data->created_at);
+            $sheet->setCellValue('J' . $row, $data->updated_at);
 
             $row++;
             $no++;
         }
 
-        foreach (range('A', 'K') as $columnID) {
+        foreach (range('A', 'J') as $columnID) {
             $sheet->getColumnDimension($columnID)->setAutoSize(true);
         }
 

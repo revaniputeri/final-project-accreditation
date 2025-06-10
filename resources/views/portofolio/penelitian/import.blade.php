@@ -2,11 +2,21 @@
     <h5 class="modal-title">Import Data Penelitian</h5>
     <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
 </div>
-<form id="form-import-penelitian" action="{{ route('portofolio.penelitian.import_ajax') }}" method="POST" enctype="multipart/form-data">
+<form id="form-import-penelitian" action="{{ route('portofolio.penelitian.import_ajax') }}" method="POST"
+    enctype="multipart/form-data">
     @csrf
     <div class="modal-body">
         <div class="alert alert-info">
-            <i class="fas fa-info-circle"></i> Pastikan file Excel mengikuti format template.
+            <i class="fas fa-info-circle"></i> Pastikan file Excel mengikuti format template. Perhatikan bahwa kolom
+            kolom <b>Peran</b> harus mengikuti pilihan berikut:
+            <div class="mt-2">
+                <strong>Peran:</strong>
+                <ul class="mb-1">
+                    <li>Ketua</li>
+                    <li>Anggota</li>
+                </ul>
+            </div>
+            Dan kolom <b>Melibatkan Mahasiswa S2</b> hanya boleh diisi dengan 'Ya' atau 'Tidak'.
         </div>
 
         <div class="mb-3">
@@ -26,7 +36,8 @@
             <input type="file" class="form-control d-none" id="file_p_penelitian" name="file_p_penelitian" required
                 accept=".xlsx,.xls"
                 onchange="document.getElementById('file_p_penelitian_text').value = this.files[0]?.name || 'No file chosen'">
-            <input type="text" class="form-control" id="file_p_penelitian_text" placeholder="No file chosen" readonly>
+            <input type="text" class="form-control" id="file_p_penelitian_text" placeholder="No file chosen"
+                readonly>
             <div id="error-file_p_penelitian" class="invalid-feedback"></div>
         </div>
     </div>

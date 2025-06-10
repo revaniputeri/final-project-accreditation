@@ -20,13 +20,59 @@ class PPengabdianController extends Controller
 {
     public function index(PPengabdianDataTable $dataTable)
     {
-        /** @var \App\Models\UserModel|null $user */
+        /** @var UserModel|null $user */
         $user = Auth::user();
-        $isAdm = $user->hasRole('ADM');
-        $isDos = $user->hasRole('DOS');
-        $isAng = $user->hasRole('ANG');
+        $role = $user->getRole();
+        $isAdm = $role === 'ADM';
+        $isDos = $role === 'DOS';
+        $isAng = $role === 'ANG';
 
-        return $dataTable->render('portofolio.pengabdian.index', compact('isAdm', 'isAng', 'isDos'));
+        // Distribusi Skema Pengabdian (pie chart)
+        $skemaDistribution = PPengabdianModel::select('skema', DB::raw('count(*) as total'))
+            ->groupBy('skema')
+            ->orderBy('total', 'desc')
+            ->get();
+
+        // Tren Pengabdian Masyarakat Per Tahun (line chart)
+        $trenPerTahun = PPengabdianModel::select('tahun', DB::raw('count(*) as total'))
+            ->groupBy('tahun')
+            ->orderBy('tahun')
+            ->get();
+
+        // Peran Dosen dalam Pengabdian (doughnut chart)
+        $peranDistribution = PPengabdianModel::select('peran', DB::raw('count(*) as total'))
+            ->groupBy('peran')
+            ->orderBy('total', 'desc')
+            ->get();
+
+        // Keterlibatan Mahasiswa S2 (bar chart)
+        $mahasiswaS2Distribution = PPengabdianModel::select('melibatkan_mahasiswa_s2', DB::raw('count(*) as total'))
+            ->groupBy('melibatkan_mahasiswa_s2')
+            ->orderBy('melibatkan_mahasiswa_s2')
+            ->get();
+
+        // Prepare data arrays for charts
+        $skemaLabels = $skemaDistribution->pluck('skema');
+        $skemaData = $skemaDistribution->pluck('total');
+
+        $trenLabels = $trenPerTahun->pluck('tahun');
+        $trenData = $trenPerTahun->pluck('total');
+
+        $peranLabels = $peranDistribution->pluck('peran');
+        $peranData = $peranDistribution->pluck('total');
+
+        $mahasiswaS2Labels = $mahasiswaS2Distribution->map(function ($item) {
+            return $item->melibatkan_mahasiswa_s2 ? 'Ya' : 'Tidak';
+        });
+        $mahasiswaS2Data = $mahasiswaS2Distribution->pluck('total');
+
+        return $dataTable->render('portofolio.pengabdian.index', compact(
+            'isAdm', 'isAng', 'isDos',
+            'skemaLabels', 'skemaData',
+            'trenLabels', 'trenData',
+            'peranLabels', 'peranData',
+            'mahasiswaS2Labels', 'mahasiswaS2Data'
+        ));
     }
 
     private function generateUniqueFilename($directory, $filename)
@@ -46,14 +92,13 @@ class PPengabdianController extends Controller
     }
     public function create_ajax()
     {
-        // Ambil daftar dosen (user dengan level kode 'DOS')
         $dosens = UserModel::whereHas('level', function ($query) {
             $query->where('kode_level', 'DOS');
         })->get();
 
         /** @var UserModel|null $user */
         $user = Auth::user();
-        $role = $user ? $user->role : null;
+        $role = $user ? $user->getRole() : null;
 
         return view('portofolio.pengabdian.create_ajax', compact('dosens', 'role'));
     }
@@ -63,7 +108,7 @@ class PPengabdianController extends Controller
         if ($request->ajax() || $request->wantsJson()) {
             /** @var UserModel|null $user */
             $user = Auth::user();
-            $role = $user ? $user->role : null;
+            $role = $user ? $user->getRole() : null;
 
             $rules = [
                 'judul_pengabdian' => 'required|string|max:255',
@@ -71,7 +116,8 @@ class PPengabdianController extends Controller
                 'tahun' => 'required|digits:4|integer',
                 'dana' => 'required|numeric|min:0',
                 'peran' => 'required|in:ketua,anggota',
-                'melibatkan_mahasiswa_s2' => 'required|boolean',
+                'melibatkan_mahasiswa_s2' => 'nullable|boolean',
+                'bukti' => $role === 'DOS' ? 'required|file|mimes:pdf,jpg,jpeg,png|max:2048' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             ];
 
             if ($role === 'ADM') {
@@ -103,8 +149,6 @@ class PPengabdianController extends Controller
                     }
 
                     $id_user = $profileUser->id_user;
-                } elseif ($role === 'DOS') {
-                    $id_user = $user->id_user;
                 } else {
                     $id_user = $user->id_user;
                 }
@@ -113,11 +157,11 @@ class PPengabdianController extends Controller
                     return response()->json([
                         'status' => false,
                         'alert' => 'error',
-                        'message' => 'ID user tidak ditemukan. Pastikan akun user terkait.',
+                        'message' => 'ID user tidak ditemukan.'
                     ]);
                 }
 
-                // Custom duplicate check for id_user and judul_pengabdian
+                // Cek duplikasi judul
                 $exists = PPengabdianModel::where('id_user', $id_user)
                     ->where('judul_pengabdian', $request->input('judul_pengabdian'))
                     ->exists();
@@ -126,7 +170,7 @@ class PPengabdianController extends Controller
                     return response()->json([
                         'status' => false,
                         'alert' => 'error',
-                        'message' => 'Data dengan NIDN dan Judul Pengabdian yang sama sudah ada.',
+                        'message' => 'Data dengan judul pengabdian yang sama sudah ada untuk user ini.',
                     ]);
                 }
 
@@ -136,32 +180,36 @@ class PPengabdianController extends Controller
                     'tahun',
                     'dana',
                     'peran',
-                    'melibatkan_mahasiswa_s2'
+                    'melibatkan_mahasiswa_s2',
                 ]);
-
                 $data['id_user'] = $id_user;
 
                 if ($role === 'DOS') {
                     $data['status'] = 'Tervalidasi';
                     $data['sumber_data'] = 'dosen';
-                } else {
+                } elseif ($role === 'ADM') {
                     $data['status'] = 'perlu validasi';
                     $data['sumber_data'] = 'p3m';
+                } else {
+                    $data['status'] = $request->input('status', 'perlu validasi');
+                    $data['sumber_data'] = $request->input('sumber_data', 'p3m');
                 }
 
                 if ($request->hasFile('bukti')) {
                     $file = $request->file('bukti');
                     $nidnPrefix = '';
+
                     if ($role === 'ADM' && isset($nidn)) {
                         $nidnPrefix = $nidn . '_';
                     } elseif ($role === 'DOS') {
-                        $profileUser = DB::table('profile_user')->where('id_user', $user->id_user)->first();
-                        $nidnPrefix = $profileUser && $profileUser->nidn ? $profileUser->nidn . '_' : '';
+                        $profile = $user->profile;
+                        $nidnPrefix = $profile && $profile->nidn ? $profile->nidn . '_' : '';
                     }
+
                     $originalName = $file->getClientOriginalName();
                     $filename = $nidnPrefix . $originalName;
                     $filename = $this->generateUniqueFilename('public/portofolio/pengabdian', $filename);
-                    $path = $file->storeAs('public/portofolio/pengabdian', $filename);
+                    $file->storeAs('public/portofolio/pengabdian', $filename);
                     $data['bukti'] = $filename;
                 }
 
@@ -173,7 +221,7 @@ class PPengabdianController extends Controller
                     'message' => 'Data pengabdian berhasil disimpan'
                 ]);
             } catch (\Exception $e) {
-                Log::error('Exception in store_ajax: ' . $e->getMessage());
+                Log::error('Exception in store_ajax (Pengabdian): ' . $e->getMessage());
                 return response()->json([
                     'status' => false,
                     'alert' => 'error',
@@ -197,7 +245,7 @@ class PPengabdianController extends Controller
 
         /** @var UserModel|null $user */
         $user = Auth::user();
-        $role = $user ? $user->role : null;
+        $role = $user ? $user->getRole() : null;
 
         $pengabdian = PPengabdianModel::findOrFail($id);
         return view('portofolio.pengabdian.edit_ajax', compact('pengabdian', 'dosens', 'role'));
@@ -207,7 +255,7 @@ class PPengabdianController extends Controller
     {
         /** @var UserModel|null $user */
         $user = Auth::user();
-        $role = $user ? $user->role : null;
+        $role = $user ? $user->getRole() : null;
 
         if ($request->ajax() || $request->wantsJson()) {
             $rules = [
@@ -356,21 +404,28 @@ class PPengabdianController extends Controller
         $pengabdian = PPengabdianModel::findOrFail($id);
 
         try {
+            // Hapus file bukti jika ada
             if ($pengabdian->bukti && Storage::exists('public/portofolio/pengabdian/' . $pengabdian->bukti)) {
                 Storage::delete('public/portofolio/pengabdian/' . $pengabdian->bukti);
             }
 
-            $pengabdian->delete();
+            // Cek apakah model menggunakan SoftDeletes
+            if (method_exists($pengabdian, 'forceDelete')) {
+                $pengabdian->forceDelete(); // Hapus permanen jika tersedia
+            } else {
+                $pengabdian->delete();
+            }
 
             return response()->json([
                 'status' => true,
-                'message' => 'Data berhasil dihapus'
+                'message' => 'Data pengabdian berhasil dihapus'
             ]);
         } catch (\Exception $e) {
-            Log::error('Exception in delete_ajax (PPengabdian): ' . $e->getMessage());
+            Log::error('Exception in delete_ajax PPengabdian: ' . $e->getMessage());
+
             return response()->json([
                 'status' => false,
-                'message' => 'Gagal menghapus data'
+                'message' => 'Gagal menghapus data pengabdian'
             ]);
         }
     }
@@ -421,7 +476,6 @@ class PPengabdianController extends Controller
 
             $insertData = [];
             $updateCount = 0;
-            $skippedData = [];
             $errors = [];
 
             $user = Auth::user();
@@ -432,9 +486,14 @@ class PPengabdianController extends Controller
                 if ($row == 1) continue; // Skip header
 
                 $nidn = trim($values['A']);
-                $judul = trim($values['C']);
+                $judul = trim($values['B']); // Judul Pengabdian
+                $skema = trim($values['C']);
+                $tahun = trim($values['D']);
+                $dana = trim($values['E']);
+                $peran = trim($values['F']);
+                $melibatkan_mahasiswa_s2 = strtolower(trim($values['G'])) === 'ya' ? 1 : 0;
 
-                // Cek hak akses NIDN jika DOSEN
+                // Cek hak akses DOSEN
                 if ($role === 'DOS' && $nidn !== $userNidn) {
                     $errors[] = "Baris $row: Anda hanya dapat mengimpor data dengan NIDN milik Anda ($userNidn).";
                     continue;
@@ -448,16 +507,18 @@ class PPengabdianController extends Controller
 
                 $validated = Validator::make([
                     'id_user' => $userProfile->id_user,
-                    'tahun_pengabdian' => $values['B'],
+                    'tahun' => $tahun,
                     'judul_pengabdian' => $judul,
-                    'sumber_dana' => $values['D'],
-                    'jumlah_dana' => $values['E'],
+                    'skema' => $skema,
+                    'dana' => $dana,
+                    'peran' => $peran,
                 ], [
                     'id_user' => 'required|integer|exists:user,id_user',
-                    'tahun_pengabdian' => 'required|integer|min:1900|max:' . (date('Y') + 5),
+                    'tahun' => 'required|integer|min:1900|max:' . (date('Y') + 5),
                     'judul_pengabdian' => 'required|string|max:255',
-                    'sumber_dana' => 'required|string|max:255',
-                    'jumlah_dana' => 'required|numeric|min:0',
+                    'skema' => 'required|string|max:255',
+                    'dana' => 'required|numeric|min:0',
+                    'peran' => 'required|string|max:255',
                 ]);
 
                 if ($validated->fails()) {
@@ -465,57 +526,46 @@ class PPengabdianController extends Controller
                     continue;
                 }
 
-                // Status dan sumber data berdasarkan role
-                $status = $role === 'DOS' ? 'Tervalidasi' : 'perlu validasi';
-                $sumber_data = $role === 'DOS' ? 'dosen' : 'p3m';
-
-                // Cek apakah data sudah ada untuk update
                 $existing = PPengabdianModel::where('id_user', $userProfile->id_user)
                     ->where('judul_pengabdian', $judul)
                     ->first();
 
                 if ($existing) {
-                    // Update record jika ditemukan
                     $existing->update([
-                        'tahun_pengabdian' => $values['B'],
-                        'sumber_dana' => $values['D'],
-                        'jumlah_dana' => $values['E'],
-                        'status' => $status,
-                        'sumber_data' => $sumber_data,
-                        'updated_at' => now(),
+                        'skema' => $skema,
+                        'tahun' => $tahun,
+                        'dana' => $dana,
+                        'peran' => $peran,
+                        'melibatkan_mahasiswa_s2' => $melibatkan_mahasiswa_s2,
                     ]);
                     $updateCount++;
                     continue;
                 }
 
-                // Tambahkan ke array untuk insert massal
                 $insertData[] = [
                     'id_user' => $userProfile->id_user,
-                    'tahun_pengabdian' => $values['B'],
                     'judul_pengabdian' => $judul,
-                    'sumber_dana' => $values['D'],
-                    'jumlah_dana' => $values['E'],
-                    'status' => $status,
-                    'sumber_data' => $sumber_data,
+                    'skema' => $skema,
+                    'tahun' => $tahun,
+                    'dana' => $dana,
+                    'peran' => $peran,
+                    'melibatkan_mahasiswa_s2' => $melibatkan_mahasiswa_s2,
+                    'status' => $role === 'DOS' ? 'Tervalidasi' : 'perlu validasi',
+                    'sumber_data' => $role === 'DOS' ? 'dosen' : 'p3m',
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];
             }
 
-            $allMessages = array_merge($skippedData, $errors);
-
             if (empty($insertData) && $updateCount === 0) {
                 return response()->json([
                     'status' => false,
                     'alert' => 'error',
-                    'message' => 'Tidak ada data baru yang valid untuk diimport:' .
-                        "\n" . implode("\n", array_slice($allMessages, 0, 1)) .
-                        (count($allMessages) > 3 ? "\n...dan " . (count($allMessages) - 3) . " lainnya." : ''),
+                    'message' => 'Tidak ada data valid untuk diimpor.' . (count($errors) > 0 ? "\n" . $errors[0] : ''),
                     'showConfirmButton' => true
                 ], 422);
             }
 
-            // Simpan data baru (insert)
             if (!empty($insertData)) {
                 PPengabdianModel::insert($insertData);
             }
@@ -526,13 +576,12 @@ class PPengabdianController extends Controller
                 'message' => 'Import data berhasil.',
                 'inserted_count' => count($insertData),
                 'updated_count' => $updateCount,
-                'skipped_count' => count($skippedData),
                 'error_count' => count($errors),
-                'info' => $allMessages
+                'info' => $errors
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Import Pengabdian error: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
+            Log::error('Import Pengabdian error: ' . $e->getMessage());
             return response()->json([
                 'status' => false,
                 'alert' => 'error',
@@ -548,7 +597,6 @@ class PPengabdianController extends Controller
         $query = PPengabdianModel::join('user', 'p_pengabdian.id_user', '=', 'user.id_user')
             ->join('profile_user', 'user.id_user', '=', 'profile_user.id_user')
             ->select(
-                'p_pengabdian.id_pengabdian',
                 'profile_user.nama_lengkap as nama_user',
                 'p_pengabdian.judul_pengabdian',
                 'p_pengabdian.skema',
@@ -585,51 +633,49 @@ class PPengabdianController extends Controller
 
         // Header
         $sheet->setCellValue('A1', 'No');
-        $sheet->setCellValue('B1', 'ID Pengabdian');
-        $sheet->setCellValue('C1', 'Nama Dosen');
-        $sheet->setCellValue('D1', 'Judul Pengabdian');
-        $sheet->setCellValue('E1', 'Tahun');
-        $sheet->setCellValue('F1', 'Dana');
-        $sheet->setCellValue('G1', 'Peran');
-        $sheet->setCellValue('H1', 'Melibatkan Mahasiswa S2');
-        $sheet->setCellValue('I1', 'Status');
-        $sheet->setCellValue('J1', 'Sumber Data');
-        $sheet->setCellValue('K1', 'Bukti');
-        $sheet->setCellValue('L1', 'Created At');
-        $sheet->setCellValue('M1', 'Updated At');
+        $sheet->setCellValue('B1', 'Nama Dosen');
+        $sheet->setCellValue('C1', 'Judul Pengabdian');
+        $sheet->setCellValue('D1', 'Tahun');
+        $sheet->setCellValue('E1', 'Dana');
+        $sheet->setCellValue('F1', 'Peran');
+        $sheet->setCellValue('G1', 'Melibatkan Mahasiswa S2');
+        $sheet->setCellValue('H1', 'Status');
+        $sheet->setCellValue('I1', 'Sumber Data');
+        $sheet->setCellValue('J1', 'Bukti');
+        $sheet->setCellValue('K1', 'Created At');
+        $sheet->setCellValue('L1', 'Updated At');
 
-        $sheet->getStyle('A1:K1')->getFont()->setBold(true);
+        $sheet->getStyle('A1:L1')->getFont()->setBold(true);
 
         $no = 1;
         $row = 2;
         foreach ($pengabdian as $data) {
             $sheet->setCellValue('A' . $row, $no);
-            $sheet->setCellValue('B' . $row, $data->id_pengabdian);
-            $sheet->setCellValue('C' . $row, $data->nama_user);
-            $sheet->setCellValue('D' . $row, $data->judul_pengabdian);
-            $sheet->setCellValue('E' . $row, $data->tahun);
-            $sheet->setCellValue('F' . $row, $data->dana);
-            $sheet->setCellValue('G' . $row, $data->peran);
-            $sheet->setCellValue('H' . $row, $data->melibatkan_mahasiswa_s2 ? 'Ya' : 'Tidak');
-            $sheet->setCellValue('I' . $row, $data->status);
-            $sheet->setCellValue('J' . $row, $data->sumber_data);
+            $sheet->setCellValue('B' . $row, $data->nama_user);
+            $sheet->setCellValue('C' . $row, $data->judul_pengabdian);
+            $sheet->setCellValue('D' . $row, $data->tahun);
+            $sheet->setCellValue('E' . $row, $data->dana);
+            $sheet->setCellValue('F' . $row, $data->peran);
+            $sheet->setCellValue('G' . $row, $data->melibatkan_mahasiswa_s2 ? 'Ya' : 'Tidak');
+            $sheet->setCellValue('H' . $row, $data->status);
+            $sheet->setCellValue('I' . $row, $data->sumber_data);
 
             if ($data->bukti) {
                 $url = url('storage/portofolio/pengabdian/' . $data->bukti);
-                $sheet->setCellValue('K' . $row, 'Lihat File');
-                $sheet->getCell('K' . $row)->getHyperlink()->setUrl($url);
+                $sheet->setCellValue('J' . $row, 'Lihat File');
+                $sheet->getCell('J' . $row)->getHyperlink()->setUrl($url);
             } else {
-                $sheet->setCellValue('K' . $row, 'Tidak ada file');
+                $sheet->setCellValue('J' . $row, 'Tidak ada file');
             }
 
-            $sheet->setCellValue('L' . $row, $data->created_at);
-            $sheet->setCellValue('M' . $row, $data->updated_at);
+            $sheet->setCellValue('K' . $row, $data->created_at);
+            $sheet->setCellValue('L' . $row, $data->updated_at);
 
             $row++;
             $no++;
         }
 
-        foreach (range('A', 'M') as $columnID) {
+        foreach (range('A', 'L') as $columnID) {
             $sheet->getColumnDimension($columnID)->setAutoSize(true);
         }
 

@@ -1,5 +1,4 @@
-<form id="formCreatePengabdian" method="POST" action="{{ route('portofolio.pengabdian.store_ajax') }}"
-    enctype="multipart/form-data">
+<form id="formCreatePengabdian" method="POST" action="{{ route('portofolio.pengabdian.store_ajax') }}" enctype="multipart/form-data">
     @csrf
     <div class="modal-header bg-primary text-white">
         <h5 class="modal-title">Tambah Data Pengabdian</h5>
@@ -7,9 +6,9 @@
     </div>
     <div class="modal-body">
         @if ($role === 'ADM')
-            <div class="mb-3">
-                <label for="nidn" class="form-label">NIDN</label>
-                <input type="text" class="form-control" id="nidn" name="nidn" required>
+            <div class="form-group">
+                <label for="nidn">NIDN</label>
+                <input type="text" name="nidn" id="nidn" class="form-control" required>
                 <div class="invalid-feedback" id="error_nidn"></div>
             </div>
         @endif
@@ -19,23 +18,29 @@
             <div class="invalid-feedback" id="error_judul_pengabdian"></div>
         </div>
         <div class="mb-3">
-            <label for="skema" class="form-label ">Skema</label>
+            <label for="skema" class="form-label">Skema</label>
             <input type="text" class="form-control" id="skema" name="skema" required>
             <div class="invalid-feedback" id="error_skema"></div>
         </div>
         <div class="mb-3">
             <label for="tahun" class="form-label">Tahun</label>
-            <input type="tahun" class="form-control" id="tahun" name="tahun" required>
+            <input type="number" class="form-control" id="tahun" name="tahun" required min="1900" max="2100" step="1">
             <div class="invalid-feedback" id="error_tahun"></div>
         </div>
         <div class="mb-3">
-            <label for="dana" class="form-label">Dana</label>
-            <input type="text" class="form-control" id="dana" name="dana" required>
+            <label for="dana" class="form-label">Dana (Rp)</label>
+            <label for="dana" class="form-label" style="color: red;">Pastikan inputan tidak memiliki tanda titik (.)
+                atau koma (,)</label>
+            <input type="number" class="form-control" id="dana" name="dana" required min="0" step="0.01">
             <div class="invalid-feedback" id="error_dana"></div>
         </div>
         <div class="mb-3">
             <label for="peran" class="form-label">Peran</label>
-            <input type="text" class="form-control" id="peran" name="peran" required>
+            <select class="form-control" id="peran" name="peran" required>
+                <option value="">-- Pilih Peran --</option>
+                <option value="ketua">Ketua</option>
+                <option value="anggota">Anggota</option>
+            </select>
             <div class="invalid-feedback" id="error_peran"></div>
         </div>
         <div class="mb-3">
@@ -53,8 +58,7 @@
                 <div class="input-group-prepend">
                     <label for="bukti" class="btn btn-info mb-0">Choose File</label>
                 </div>
-                <input type="file" class="form-control d-none" id="bukti" name="bukti"
-                    accept=".pdf,.jpg,.jpeg,.png"
+                <input type="file" class="form-control d-none" id="bukti" name="bukti" accept=".pdf,.jpg,.jpeg,.png"
                     onchange="document.getElementById('bukti_text').value = this.files[0]?.name || 'No file chosen'">
                 <input type="text" class="form-control" id="bukti_text" placeholder="No file chosen" readonly>
                 <div id="error_bukti" class="invalid-feedback"></div>

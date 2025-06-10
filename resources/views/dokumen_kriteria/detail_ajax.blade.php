@@ -14,6 +14,10 @@
                 <td>{{ $dokumen_pendukung->no_kriteria }}</td>
             </tr>
             <tr>
+                <th>Kategori</th>
+                <td>{{ $dokumen_pendukung->kategori }}</td>
+            </tr>
+            <tr>
                 <th>Diunggah Oleh</th>
                 <td>{{ $dokumen_pendukung->user && $dokumen_pendukung->user->profile ? $dokumen_pendukung->user->profile->nama_lengkap : '-' }}</td>
             </tr>

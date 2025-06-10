@@ -9,52 +9,80 @@ class ProfileUserSeeder extends Seeder
 {
     public function run()
     {
-        // Admin profile
+        // Ambil ID dan username (nidn) dari user level ADM, VAL, DIR
+        $admin = DB::table('user')
+            ->join('level', 'user.id_level', '=', 'level.id_level')
+            ->where('kode_level', 'ADM')
+            ->first();
+
+        $validator = DB::table('user')
+            ->join('level', 'user.id_level', '=', 'level.id_level')
+            ->where('kode_level', 'VAL')
+            ->first();
+
+        $director = DB::table('user')
+            ->join('level', 'user.id_level', '=', 'level.id_level')
+            ->where('kode_level', 'DIR')
+            ->first();
+
+        $cities = [
+            'Jakarta', 'Bandung', 'Surabaya', 'Semarang', 'Yogyakarta',
+            'Medan', 'Palembang', 'Makassar', 'Denpasar', 'Malang',
+            'Bogor', 'Bekasi', 'Tangerang', 'Surakarta', 'Pontianak',
+            'Balikpapan', 'Manado', 'Padang', 'Pekanbaru', 'Banjarmasin'
+        ];
+
+        $months = [
+            'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+            'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+        ];
+
+        // Admin profile (dummy)
         DB::table('profile_user')->insert([
-            'id_user' => DB::table('user')->where('username', 'admin')->first()->id_user,
-            'nama_lengkap' => 'Admin Sistem',
-            'tempat_tanggal_lahir' => 'Jakarta, 1 Januari 1980',
-            'nidn' => '0000000000',
-            'nip' => '198001011234567890',
+            'id_user' => $admin->id_user,
+            'nama_lengkap' => 'Rina Oktaviani',
+            'tempat_tanggal_lahir' => $cities[array_rand($cities)] . ', ' . rand(1, 28) . ' ' . $months[array_rand($months)] . ' ' . rand(1980, 1990),
+            'nidn' => $admin->username,
+            'nip' => '198808081234567800',
             'jabatan_fungsional' => 'Administrator',
             'pendidikan_terakhir' => 'S2',
             'pangkat' => '-',
-            'no_telp' => '081234567890',
-            'alamat' => 'Jl. Admin No. 1',
+            'no_telp' => '081234567800',
+            'alamat' => 'Jl. Melati No. 12, Jakarta',
             'created_at' => now(),
             'updated_at' => now(),
         ]);
 
-        // Validator profile
+        // Validator profile (dummy)
         DB::table('profile_user')->insert([
-            'id_user' => DB::table('user')->where('username', 'validator')->first()->id_user,
-            'nama_lengkap' => 'Tim Validator',
-            'tempat_tanggal_lahir' => 'Bandung, 15 Februari 1985',
-            'nidn' => '0000000001',
-            'nip' => '198502151234567891',
-            'jabatan_fungsional' => 'Validator',
+            'id_user' => $validator->id_user,
+            'nama_lengkap' => 'Ahmad Fajar Pratama',
+            'tempat_tanggal_lahir' => $cities[array_rand($cities)] . ', ' . rand(1, 28) . ' ' . $months[array_rand($months)] . ' ' . rand(1980, 1990),
+            'nidn' => $validator->username,
+            'nip' => '198512121234567801',
+            'jabatan_fungsional' => 'Dosen Validator',
             'pendidikan_terakhir' => 'S2',
-            'pangkat' => 'III/c',
-            'no_telp' => '081234567891',
-            'alamat' => 'Jl. Validator No. 1',
+            'pangkat' => 'III/b',
+            'no_telp' => '081234567801',
+            'alamat' => 'Jl. Teratai No. 9, Bandung',
             'created_at' => now(),
             'updated_at' => now(),
         ]);
 
-        // Director profile
+        // Director profile (dummy)
         DB::table('profile_user')->insert([
-            'id_user' => DB::table('user')->where('username', 'direktur')->first()->id_user,
-            'nama_lengkap' => 'Dr. Bambang S.T., M.T.',
-            'tempat_tanggal_lahir' => 'Surabaya, 10 Maret 1975',
-            'nidn' => '0000000002',
-            'nip' => '197503101234567892',
-            'gelar_depan' => 'Dr.',
-            'gelar_belakang' => 'S.T., M.T.',
+            'id_user' => $director->id_user,
+            'nama_lengkap' => 'Prof. Dr. Surya Wijaya',
+            'tempat_tanggal_lahir' => $cities[array_rand($cities)] . ', ' . rand(1, 28) . ' ' . $months[array_rand($months)] . ' ' . rand(1970, 1980),
+            'nidn' => $director->username,
+            'nip' => '197005201234567802',
+            'gelar_depan' => 'Prof. Dr.',
+            'gelar_belakang' => '',
             'jabatan_fungsional' => 'Direktur',
             'pendidikan_terakhir' => 'S3',
-            'pangkat' => 'IV/a',
-            'no_telp' => '081234567892',
-            'alamat' => 'Jl. Direktur No. 1',
+            'pangkat' => 'IV/c',
+            'no_telp' => '081234567802',
+            'alamat' => 'Jl. Cendana No. 1, Surabaya',
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -83,7 +111,7 @@ class ProfileUserSeeder extends Seeder
             DB::table('profile_user')->insert([
                 'id_user' => DB::table('user')->where('username', $nidn)->first()->id_user,
                 'nama_lengkap' => $dummyNamesStaff[$i],
-                'tempat_tanggal_lahir' => 'Kota, ' . rand(1, 28) . ' ' . ['Januari', 'Februari', 'Maret'][rand(0, 2)] . ' ' . rand(1980, 1990),
+                'tempat_tanggal_lahir' => $cities[array_rand($cities)] . ', ' . rand(1, 28) . ' ' . $months[array_rand($months)] . ' ' . rand(1980, 1990),
                 'nidn' => $nidn,
                 'nip' => '199' . rand(0, 9) . rand(0, 9) . rand(0, 9) . '0101' . rand(1000, 9999),
                 'jabatan_fungsional' => 'Staff Akademik',
@@ -125,7 +153,7 @@ class ProfileUserSeeder extends Seeder
             DB::table('profile_user')->insert([
                 'id_user' => DB::table('user')->where('username', $nidn)->first()->id_user,
                 'nama_lengkap' => $dummyNamesDosen[$i] . ' ' . $gelar[array_rand($gelar)],
-                'tempat_tanggal_lahir' => 'Kota, ' . rand(1, 28) . ' ' . ['Januari', 'Februari', 'Maret'][rand(0, 2)] . ' ' . rand(1970, 1985),
+                'tempat_tanggal_lahir' => $cities[array_rand($cities)] . ', ' . rand(1, 28) . ' ' . $months[array_rand($months)] . ' ' . rand(1970, 1995),
                 'nidn' => $nidn,
                 'nip' => '19' . rand(70, 85) . rand(0, 9) . rand(0, 9) . '0101' . rand(1000, 9999),
                 'gelar_depan' => (rand(0, 3) == 0 ? 'Dr.' : null),

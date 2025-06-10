@@ -14,13 +14,14 @@ return new class extends Migration
             $table->string('judul', 255);
             $table->string('tempat_publikasi', 100);
             $table->year('tahun_publikasi');
-            $table->enum('jenis_publikasi', ['jurnal', 'prosiding', 'poster']);
+            $table->enum('jenis_publikasi', ['artikel ilmiah', 'karya ilmiah', 'karya seni', 'lainnya']);
             $table->decimal('dana', 15, 2);
             $table->boolean('melibatkan_mahasiswa_s2');
             $table->enum('status', ['tervalidasi', 'perlu validasi', 'tidak valid'])->default('tervalidasi');
             $table->enum('sumber_data', ['p3m', 'dosen'])->default('dosen');
             $table->string('bukti')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

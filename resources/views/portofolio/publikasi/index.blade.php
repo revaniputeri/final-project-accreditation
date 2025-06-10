@@ -7,7 +7,7 @@
     <div class="container-fluid">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ url('/') }}">Beranda</a></li>
+                <li class="breadcrumb-item"><a href="{{ url('/dashboard') }}">Beranda</a></li>
                 <li class="breadcrumb-item active">Publikasi</li>
             </ol>
         </nav>
@@ -17,16 +17,25 @@
 @section('content')
     <div class="container-fluid">
 
+        <!-- Publikasi -->
+        <div class="callout callout-primary shadow-sm">
+            <h5>Publikasi</h5>
+            <p>Hasil publikasi artikel ilmiah, karya ilmiah, atau karya seni yang dipublikasikan dosen tetap sesuai bidang keilmuan dalam tiga tahun
+                terakhir.</p>
+        </div>
+
         {{-- DataTable --}}
         <div class="card shadow-sm">
             <div class="card-header bg-primary border-bottom">
                 <div class="d-flex justify-content-between align-items-center">
                     <h3 class="card-title mb-0 text-white">Daftar Publikasi</h3>
                     <div class="card-tools">
-                        <a id="exportPdfBtn" class="btn btn-custom-blue me-2" href="{{ route('portofolio.publikasi.export_pdf') }}">
+                        <a id="exportPdfBtn" class="btn btn-custom-blue me-2"
+                            href="{{ route('portofolio.publikasi.export_pdf') }}">
                             <i class="fa-solid fa-file-pdf me-2"></i> Export PDF
                         </a>
-                        <a id="exportExcelBtn" class="btn btn-custom-blue me-2" href="{{ route('portofolio.publikasi.export_excel') }}">
+                        <a id="exportExcelBtn" class="btn btn-custom-blue me-2"
+                            href="{{ route('portofolio.publikasi.export_excel') }}">
                             <i class="fas fa-file-excel me-2"></i> Export Excel
                         </a>
                         @if ($isAdm || $isDos)
@@ -128,7 +137,8 @@
                                 }
                             },
                             error: function(xhr) {
-                                if (xhr.status === 422 && xhr.responseJSON && xhr.responseJSON.msgField) {
+                                if (xhr.status === 422 && xhr.responseJSON && xhr.responseJSON
+                                    .msgField) {
                                     var errors = xhr.responseJSON.msgField;
                                     $.each(errors, function(field, messages) {
                                         var input = form.find('[name="' + field + '"]');
@@ -138,10 +148,12 @@
                                 } else {
                                     $('#myModal').modal('hide');
                                     window.LaravelDataTables["p_publikasi-table"].ajax.reload();
-                                    if (xhr.responseJSON && xhr.responseJSON.alert && xhr.responseJSON.message) {
+                                    if (xhr.responseJSON && xhr.responseJSON.alert && xhr
+                                        .responseJSON.message) {
                                         Swal.fire({
                                             icon: xhr.responseJSON.alert,
-                                            title: xhr.responseJSON.alert === 'success' ? 'Sukses' : 'Error',
+                                            title: xhr.responseJSON.alert === 'success' ?
+                                                'Sukses' : 'Error',
                                             text: xhr.responseJSON.message,
                                             timer: 2000,
                                             showConfirmButton: false
@@ -176,21 +188,25 @@
                                 if (response.alert && response.message) {
                                     Swal.fire({
                                         icon: response.alert,
-                                        title: response.alert === 'success' ? 'Sukses' : 'Error',
+                                        title: response.alert === 'success' ? 'Sukses' :
+                                            'Error',
                                         text: response.message,
                                         timer: 2000,
                                         showConfirmButton: false
                                     }).then(() => {
-                                        window.LaravelDataTables["p_publikasi-table"].ajax.reload();
+                                        window.LaravelDataTables["p_publikasi-table"].ajax
+                                            .reload();
                                     });
                                 }
                             },
                             error: function(xhr) {
                                 $('#myModal').modal('hide');
-                                if (xhr.responseJSON && xhr.responseJSON.alert && xhr.responseJSON.message) {
+                                if (xhr.responseJSON && xhr.responseJSON.alert && xhr.responseJSON
+                                    .message) {
                                     Swal.fire({
                                         icon: xhr.responseJSON.alert,
-                                        title: xhr.responseJSON.alert === 'success' ? 'Sukses' : 'Error',
+                                        title: xhr.responseJSON.alert === 'success' ?
+                                            'Sukses' : 'Error',
                                         text: xhr.responseJSON.message,
                                         showConfirmButton: true
                                     });
@@ -198,7 +214,8 @@
                                     Swal.fire({
                                         icon: 'error',
                                         title: 'Error',
-                                        text: xhr.responseJSON ? xhr.responseJSON.message : 'Terjadi kesalahan.'
+                                        text: xhr.responseJSON ? xhr.responseJSON.message :
+                                            'Terjadi kesalahan.'
                                     });
                                 }
                             },

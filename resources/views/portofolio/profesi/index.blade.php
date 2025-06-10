@@ -7,7 +7,7 @@
     <div class="container-fluid">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ url('/') }}">Beranda</a></li>
+                <li class="breadcrumb-item"><a href="{{ url('/dashboard') }}">Beranda</a></li>
                 <li class="breadcrumb-item active">Profesi</li>
             </ol>
         </nav>
@@ -17,16 +17,24 @@
 @section('content')
     <div class="container-fluid">
 
+        <!-- Profesi -->
+        <div class="callout callout-primary shadow-sm">
+            <h5>Profesi</h5>
+            <p>Peningkatan kemampuan dosen melalui program profesi untuk mendukung kompetensi keilmuan.</p>
+        </div>
+
         {{-- DataTable --}}
         <div class="card shadow-sm">
             <div class="card-header bg-primary border-bottom">
                 <div class="d-flex justify-content-between align-items-center">
                     <h3 class="card-title mb-0 text-white">Daftar Profesi</h3>
                     <div class="card-tools">
-                        <a id="exportPdfBtn" class="btn btn-custom-blue me-2" href="{{ route('portofolio.profesi.export_pdf') }}">
+                        <a id="exportPdfBtn" class="btn btn-custom-blue me-2"
+                            href="{{ route('portofolio.profesi.export_pdf') }}">
                             <i class="fa-solid fa-file-pdf me-2"></i> Export PDF
                         </a>
-                        <a id="exportExcelBtn" class="btn btn-custom-blue me-2" href="{{ route('portofolio.profesi.export_excel') }}">
+                        <a id="exportExcelBtn" class="btn btn-custom-blue me-2"
+                            href="{{ route('portofolio.profesi.export_excel') }}">
                             <i class="fas fa-file-excel me-2"></i> Export Excel
                         </a>
                         @if ($isAdm || $isDos)
@@ -44,6 +52,7 @@
             </div>
 
             <div class="card-body">
+
                 <div class="row mb-3">
                     <div class="col-6 form-group">
                         <label for="filterSumberData">Filter Sumber Data:</label>
@@ -74,7 +83,6 @@
             </div>
         </div>
 
-
         {{-- Modal --}}
         <div id="myModal" class="modal fade" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-lg">
@@ -83,11 +91,66 @@
                 </div>
             </div>
         </div>
+
+        @if ($isAdm || $isAng)
+            <!-- Profesi -->
+            <div class="callout callout-primary shadow-sm">
+                <h5>Chart</h5>
+                <p>Chart berikut menampilkan distribusi gelar akademik dan asal perguruan tinggi dari data profesi dosen.
+                </p>
+            </div>
+
+            <div class="container-fluid mt-3">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-primary border-bottom">
+                                <h5 class="card-title mb-0 text-white">Distribusi Gelar Akademik</h5>
+                                <div class="card-tools">
+                                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body collapse">
+                                <div class="row mb-4">
+                                    <div class="col-md-12">
+                                        <canvas id="pieChartGelar1"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-primary border-bottom">
+                                <h5 class="card-title mb-0 text-white">Distribusi Asal Perguruan Tinggi</h5>
+                                <div class="card-tools">
+                                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body collapse">
+                                <div class="row mb-4">
+                                    <div class="col-md-12">
+                                        <canvas id="barChartPerguruanTinggi"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
+
     </div>
 @endsection
 
 @push('scripts')
     {!! $dataTable->scripts() !!}
+
+    {{-- Modal --}}
     <script>
         function modalAction(url) {
             $.get(url)
@@ -301,6 +364,83 @@
                 updateExportPdfLink();
                 updateExportExcelLink();
             });
+        });
+    </script>
+
+    {{-- Chart.js --}}
+    <script>
+        // Prepare chart data from PHP variables
+        const gelarLabels = @json($gelarLabels);
+        const gelarData = @json($gelarData);
+        const perguruanTinggiLabels = @json($perguruanTinggiLabels);
+        const perguruanTinggiData = @json($perguruanTinggiData);
+
+        // Colors for charts
+        const chartColors = [
+            '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+            '#FF9F40', '#E7E9ED', '#76A346', '#D9534F', '#5BC0DE'
+        ];
+
+        // Pie Chart 1 - Distribusi Gelar Akademik
+        const ctxPie1 = document.getElementById('pieChartGelar1').getContext('2d');
+        const pieChartGelar1 = new Chart(ctxPie1, {
+            type: 'pie',
+            data: {
+                labels: gelarLabels,
+                datasets: [{
+                    data: gelarData,
+                    backgroundColor: chartColors,
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                    },
+                    title: {
+                        display: false,
+                    }
+                }
+            }
+        });
+
+        // Bar Chart - Asal Perguruan Tinggi
+        const ctxBar = document.getElementById('barChartPerguruanTinggi').getContext('2d');
+        const barChartPerguruanTinggi = new Chart(ctxBar, {
+            type: 'bar',
+            data: {
+                labels: perguruanTinggiLabels,
+                datasets: [{
+                    label: 'Jumlah',
+                    data: perguruanTinggiData,
+                    backgroundColor: chartColors,
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        ticks: {
+                            autoSkip: false,
+                            maxRotation: 45,
+                            minRotation: 45,
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        precision: 0,
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false,
+                    },
+                    title: {
+                        display: false,
+                    }
+                }
+            }
         });
     </script>
 @endpush

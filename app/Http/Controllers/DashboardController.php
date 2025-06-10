@@ -26,6 +26,7 @@ class DashboardController extends Controller
             'totalTerValidasi' => 0,
             'totalPerluValidasi' => 0,
             'totalTidakValid' => 0,
+            'data' => []
         ];
 
         foreach ($tables as $table) {
@@ -37,14 +38,14 @@ class DashboardController extends Controller
             $data['totalPerluValidasi'] += $perluValidasi;
             $data['totalTidakValid'] += $tidakValid;
 
-            $data[substr($table, 2)] = [
+        // Bungkus dalam data['data']
+            $data['data'][substr($table, 2)] = [
                 'Tervalidasi' => $tervalidasi,
                 'Perlu Validasi' => $perluValidasi,
                 'Tidak Valid' => $tidakValid,
             ];
         }
-
-        return view('home', compact('data'));
+        return view('dashboard', compact('data'));
     }
 
     public function moreInfo(Request $request)
@@ -85,4 +86,5 @@ class DashboardController extends Controller
         }
         return view('dashboard.index', compact('data', 'status'));
     }
+    
 }

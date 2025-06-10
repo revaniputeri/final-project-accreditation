@@ -23,6 +23,7 @@ class PSertifikasiDataTable extends DataTable
         $isAng = $user->hasRole('ANG');
 
         return (new EloquentDataTable($query))
+            ->addIndexColumn()
             ->addColumn('aksi', function ($row) use ($user, $isDos, $isAdm) {
                 $buttons = [];
                 $detailUrl = route('portofolio.sertifikasi.detail_ajax', $row->id_sertifikasi);
@@ -56,7 +57,13 @@ class PSertifikasiDataTable extends DataTable
                     '</div>';
             })
             ->addColumn('nama_lengkap', function ($row) use ($isDos) {
-                return $isDos ? '-' : ($row->user->profile->nama_lengkap ?? '-');
+                return $isDos ? '-' : ($row->nama_lengkap ?? '-');
+            })
+            ->filterColumn('nama_lengkap', function ($query, $keyword) {
+                $query->where('profile_user.nama_lengkap', 'like', "%{$keyword}%");
+            })
+            ->orderColumn('nama_lengkap', function ($query, $order) {
+                $query->orderBy('profile_user.nama_lengkap', $order);
             })
             ->editColumn('status', function ($row) {
                 $badgeClass = [
@@ -83,18 +90,21 @@ class PSertifikasiDataTable extends DataTable
     {
         /** @var UserModel|null $user */
         $user = Auth::user();
-        $query = $model->newQuery()->with('user.profile');
+        $query = $model->newQuery()
+            ->select('p_sertifikasi.*', 'profile_user.nama_lengkap')
+            ->leftJoin('user', 'p_sertifikasi.id_user', '=', 'user.id_user')
+            ->leftJoin('profile_user', 'user.id_user', '=', 'profile_user.id_user');
 
         if ($user->hasRole('DOS') && $user->id_user) {
-            $query->where('id_user', $user->id_user);
+            $query->where('p_sertifikasi.id_user', $user->id_user);
         }
 
         if ($status = request('filter_status')) {
-            $query->where('status', $status);
+            $query->where('p_sertifikasi.status', $status);
         }
 
         if ($sumber = request('filter_sumber')) {
-            $query->where('sumber_data', $sumber);
+            $query->where('p_sertifikasi.sumber_data', $sumber);
         }
 
         return $query;
@@ -149,7 +159,12 @@ class PSertifikasiDataTable extends DataTable
         $isDos = $user->hasRole('DOS');
 
         $columns = [
-            Column::make('id_sertifikasi')->title('ID'),
+            Column::make('DT_RowIndex')
+                ->title('No')
+                ->searchable(false)
+                ->orderable(false)
+                ->width(30)
+                ->addClass('text-center'),
             Column::make('tahun_diperoleh')->title('Tahun Diperoleh'),
             Column::make('penerbit')->title('Penerbit'),
             Column::make('nama_sertifikasi')->title('Nama Sertifikasi'),
@@ -166,7 +181,7 @@ class PSertifikasiDataTable extends DataTable
 
         if (!$isDos) {
             array_splice($columns, 1, 0, [
-                Column::make('nama_lengkap')->title('Nama Dosen')
+                Column::make('nama_lengkap')->title('Nama Dosen')->name('profile_user.nama_lengkap')->orderable(true)->searchable(true)
             ]);
         }
 

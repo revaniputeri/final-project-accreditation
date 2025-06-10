@@ -12,8 +12,11 @@ return new class extends Migration {
             $table->integer('no_kriteria');
             $table->foreignId('id_user')->constrained('user', 'id_user');
             $table->timestamps();
+            $table->softDeletes();
 
-            $table->unique(['no_kriteria', 'id_user']); // Ini menjaga agar tidak ada duplikat no_kriteria per user
+            $table->index(['no_kriteria', 'id_user']);
+
+            // $table->unique(['no_kriteria', 'id_user']); // Ini menjaga agar tidak ada duplikat no_kriteria per user
         });
     }
 

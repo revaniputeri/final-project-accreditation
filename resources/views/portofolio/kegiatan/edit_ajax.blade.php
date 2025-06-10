@@ -18,14 +18,22 @@
         @endif
         <div class="mb-3">
             <label for="jenis_kegiatan" class="form-label">Jenis Kegiatan</label>
-            <input type="text" class="form-control" id="jenis_kegiatan" name="jenis_kegiatan"
-                value="{{ $kegiatan->jenis_kegiatan }}" required>
+            <select class="form-control" id="jenis_kegiatan" name="jenis_kegiatan" required>
+                @php
+                    $jenis_kegiatan_options = ['Lokakarya', 'Workshop', 'Pagelaran', 'Peragaan', 'Pelatihan', 'Lain_lain'];
+                @endphp
+                @foreach ($jenis_kegiatan_options as $option)
+                    <option value="{{ $option }}" {{ $kegiatan->jenis_kegiatan === $option ? 'selected' : '' }}>
+                        {{ $option }}
+                    </option>
+                @endforeach
+            </select>
             <div class="invalid-feedback" id="error_jenis_kegiatan"></div>
         </div>
         <div class="mb-3">
             <label for="waktu" class="form-label">Waktu</label>
             <input type="date" class="form-control" id="waktu" name="waktu"
-                value="{{ $kegiatan->waktu }}" required>
+                value="{{ \Carbon\Carbon::parse($kegiatan->waktu)->format('Y-m-d') }}" required>
             <div class="invalid-feedback" id="error_waktu"></div>
         </div>
         <div class="mb-3">
@@ -36,8 +44,16 @@
         </div>
         <div class="mb-3">
             <label for="peran" class="form-label">Peran</label>
-            <input type="text" class="form-control" id="peran" name="peran"
-                value="{{ $kegiatan->peran }}" required>
+            <select class="form-control" id="peran" name="peran" required>
+                @php
+                    $peran_options = ['penyaji', 'peserta', 'lainnya'];
+                @endphp
+                @foreach ($peran_options as $option)
+                    <option value="{{ $option }}" {{ $kegiatan->peran === $option ? 'selected' : '' }}>
+                        {{ ucfirst($option) }}
+                    </option>
+                @endforeach
+            </select>
             <div class="invalid-feedback" id="error_peran"></div>
         </div>
         <div class="mb-3">
@@ -52,6 +68,11 @@
                 <input type="text" class="form-control" id="bukti_text" placeholder="No file chosen" readonly>
                 <div id="error_bukti" class="invalid-feedback"></div>
             </div>
+            @if ($kegiatan->bukti)
+                <small class="form-text text-muted mt-1">File saat ini:
+                    <a href="{{ asset('storage/portofolio/kegiatan/' . $kegiatan->bukti) }}" target="_blank">{{ $kegiatan->bukti }}</a>
+                </small>
+            @endif
         </div>
     </div>
     <div class="modal-footer">

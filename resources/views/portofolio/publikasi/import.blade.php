@@ -6,7 +6,18 @@
     @csrf
     <div class="modal-body">
         <div class="alert alert-info">
-            <i class="fas fa-info-circle"></i> Pastikan file Excel mengikuti format template.
+            <i class="fas fa-info-circle"></i> Pastikan file Excel mengikuti format template. Perhatikan bahwa kolom
+            <b>Jenis Publikasi</b> harus mengikuti pilihan berikut:
+            <div class="mt-2">
+                <strong>Jenis Publikasi:</strong>
+                <ul class="mb-1">
+                    <li>Artikel Ilmiah</li>
+                    <li>Karya Ilmiah</li>
+                    <li>Karya Seni</li>
+                    <li>Lainnya</li>
+                </ul>
+            </div>
+            Dan kolom <b>Melibatkan Mahasiswa S2</b> hanya boleh diisi dengan 'Ya' atau 'Tidak'.
         </div>
 
         <div class="mb-3">

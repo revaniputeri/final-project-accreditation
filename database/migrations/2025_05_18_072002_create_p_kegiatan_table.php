@@ -14,11 +14,12 @@ return new class extends Migration
             $table->enum('jenis_kegiatan', ['Lokakarya', 'Workshop', 'Pagelaran', 'Peragaan', 'Pelatihan', 'Lain_lain']);
             $table->string('tempat', 100);
             $table->date('waktu');
-            $table->enum('peran', ['penyaji', 'peserta', 'penyaji_dan_peserta']);
+            $table->enum('peran', ['penyaji', 'peserta', 'lainnya']);
             $table->enum('status', ['tervalidasi', 'perlu validasi', 'tidak valid'])->default('tervalidasi');
             $table->enum('sumber_data', ['p3m', 'dosen'])->default('dosen');
             $table->string('bukti')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

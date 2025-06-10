@@ -11,22 +11,22 @@ class AuthController extends Controller
 {
     public function login()
     {
-        if(Auth::check()){ // jika sudah login, maka redirect ke halaman home
-            return redirect('/');
+        if (Auth::check()) { // jika sudah login, maka redirect ke halaman dashboard
+            return redirect('/dashboard');
         }
         return view('auth.login');
     }
 
     public function postlogin(Request $request)
     {
-        if($request->ajax() || $request->wantsJson()){
+        if ($request->ajax() || $request->wantsJson()) {
             $credentials = $request->only('username', 'password');
 
             if (Auth::attempt($credentials)) {
                 return response()->json([
                     'status' => true,
                     'message' => 'Login Berhasil',
-                    'redirect' => url('/')
+                    'redirect' => url('/dashboard')
                 ]);
             }
 
@@ -45,55 +45,59 @@ class AuthController extends Controller
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect('login');
+        return redirect('/');
     }
-    public function lupaPassword(){
+    public function lupaPassword()
+    {
         return view('auth.lupaPassword');
     }
-    
-    public function verifyDataGuest(Request $request){
+
+    public function verifyDataGuest(Request $request)
+    {
         $verif = ProfileUser::where([
-         'nidn' => $request->nidn,
-        'no_telp' => $request->no_telp,
-        'tempat_tanggal_lahir' => $request->tempat_tanggal_lahir,
+            'nidn' => $request->nidn,
+            'no_telp' => $request->no_telp,
+            'tempat_tanggal_lahir' => $request->tempat_tanggal_lahir,
         ])->first();
 
-        if(!$verif){
+        if (!$verif) {
             return response()->json([
-                'status'=> false,
-                'message'=> 'Tolong Koreksi kembali Data anda'
+                'status' => false,
+                'message' => 'Tolong Koreksi kembali Data anda'
             ]);
         }
         return response()->json([
-            'status'=> true,
-            'message'=> 'Verifikasi Berhasil',
-            'url'=>route('newPassword',['id'=>$verif->id_profile]),
+            'status' => true,
+            'message' => 'Verifikasi Berhasil',
+            'url' => route('updatePassword', ['id' => $verif->id_profile]),
         ]);
     }
-    public function newPassword($id){
+    public function newPassword($id)
+    {
         $user = ProfileUser::find($id);
-        return view('auth.newPassword' ,['user'=>$user]);
+        return view('auth.newPassword', ['user' => $user]);
     }
-    public function updatePassword(Request $request, $id){
-    $request->validate([
-        'password' => 'required|min:6|confirmed', // pastikan input name password_confirmation di form
-    ]);
+    public function updatePassword(Request $request, $id)
+    {
+        $request->validate([
+            'password' => 'required|min:6|confirmed', // pastikan input name password_confirmation di form
+        ]);
 
-    $user = UserModel::find($id);
-    if(!$user){
+        $user = UserModel::find($id);
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Data User Tidak ditemukan'
+            ]);
+        }
+
+        $user->password = bcrypt($request->password);
+        $user->save();
+
         return response()->json([
-            'status'=> false,
-            'message'=> 'Data User Tidak ditemukan'
+            'status' => true,
+            'message' => 'Password berhasil diupdate',
+            'alert' => 'success',
         ]);
     }
-
-    $user->password = bcrypt($request->password);
-    $user->save();
-
-    return response()->json([
-        'status' => true,
-        'message' => 'Password berhasil diupdate',
-        'alert' => 'success',
-    ]);
-}
 }

@@ -505,7 +505,6 @@ class PPrestasiController extends Controller
         $query = PPrestasiModel::join('user', 'p_prestasi.id_user', '=', 'user.id_user')
             ->join('profile_user', 'user.id_user', '=', 'profile_user.id_user')
             ->select(
-                'p_prestasi.id_prestasi',
                 'profile_user.nama_lengkap as nama_user',
                 'p_prestasi.prestasi_yang_dicapai',
                 'p_prestasi.waktu_pencapaian',
@@ -538,45 +537,43 @@ class PPrestasiController extends Controller
         $sheet = $spreadsheet->getActiveSheet();
 
         $sheet->setCellValue('A1', 'No');
-        $sheet->setCellValue('B1', 'ID Prestasi');
-        $sheet->setCellValue('C1', 'Nama Dosen');
-        $sheet->setCellValue('D1', 'Prestasi Yang Dicapai');
-        $sheet->setCellValue('E1', 'Waktu Pencapaian');
-        $sheet->setCellValue('F1', 'Tingkat');
-        $sheet->setCellValue('G1', 'Status');
-        $sheet->setCellValue('H1', 'Sumber Data');
-        $sheet->setCellValue('I1', 'Bukti');
-        $sheet->setCellValue('J1', 'Created At');
-        $sheet->setCellValue('K1', 'Updated At');
+        $sheet->setCellValue('B1', 'Nama Dosen');
+        $sheet->setCellValue('C1', 'Prestasi Yang Dicapai');
+        $sheet->setCellValue('D1', 'Waktu Pencapaian');
+        $sheet->setCellValue('E1', 'Tingkat');
+        $sheet->setCellValue('F1', 'Status');
+        $sheet->setCellValue('G1', 'Sumber Data');
+        $sheet->setCellValue('H1', 'Bukti');
+        $sheet->setCellValue('I1', 'Created At');
+        $sheet->setCellValue('J1', 'Updated At');
 
-        $sheet->getStyle('A1:K1')->getFont()->setBold(true);
+        $sheet->getStyle('A1:J1')->getFont()->setBold(true);
 
         $no = 1;
         $row = 2;
         foreach ($prestasi as $data) {
             $sheet->setCellValue('A' . $row, $no);
-            $sheet->setCellValue('B' . $row, $data->id_prestasi);
-            $sheet->setCellValue('C' . $row, $data->nama_user);
-            $sheet->setCellValue('D' . $row, $data->prestasi_yang_dicapai);
-            $sheet->setCellValue('E' . $row, date('d-m-Y', strtotime($data->waktu_pencapaian)));
-            $sheet->setCellValue('F' . $row, $data->tingkat);
-            $sheet->setCellValue('G' . $row, $data->status);
-            $sheet->setCellValue('H' . $row, $data->sumber_data);
+            $sheet->setCellValue('B' . $row, $data->nama_user);
+            $sheet->setCellValue('C' . $row, $data->prestasi_yang_dicapai);
+            $sheet->setCellValue('D' . $row, date('d-m-Y', strtotime($data->waktu_pencapaian)));
+            $sheet->setCellValue('E' . $row, $data->tingkat);
+            $sheet->setCellValue('F' . $row, $data->status);
+            $sheet->setCellValue('G' . $row, $data->sumber_data);
             if ($data->bukti) {
                 $url = url('storage/portofolio/prestasi/' . $data->bukti);
-                $sheet->setCellValue('I' . $row, 'Lihat File');
-                $sheet->getCell('I' . $row)->getHyperlink()->setUrl($url);
+                $sheet->setCellValue('H' . $row, 'Lihat File');
+                $sheet->getCell('H' . $row)->getHyperlink()->setUrl($url);
             } else {
-                $sheet->setCellValue('I' . $row, 'Tidak ada file');
+                $sheet->setCellValue('H' . $row, 'Tidak ada file');
             }
-            $sheet->setCellValue('J' . $row, $data->created_at);
-            $sheet->setCellValue('K' . $row, $data->updated_at);
+            $sheet->setCellValue('I' . $row, $data->created_at);
+            $sheet->setCellValue('J' . $row, $data->updated_at);
 
             $row++;
             $no++;
         }
 
-        foreach (range('A', 'K') as $columnID) {
+        foreach (range('A', 'J') as $columnID) {
             $sheet->getColumnDimension($columnID)->setAutoSize(true);
         }
 

@@ -82,3 +82,13 @@
 .filter-row .form-group {
   margin-bottom: 0;
 }
+
+/* Fixed sidebar styles */
+.main-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  overflow-y: auto;
+  z-index: 1030;
+}

@@ -70,7 +70,7 @@ class PPublikasiController extends Controller
                 'judul' => 'required|string|max:255',
                 'tempat_publikasi' => 'required|string|max:100',
                 'tahun_publikasi' => 'required|integer',
-                'jenis_publikasi' => 'required|in:jurnal,prosiding,poster',
+                'jenis_publikasi' => 'required|in:artikel ilmiah,karya ilmiah,karya seni,lainnya',
                 'dana' => 'required|numeric',
                 'melibatkan_mahasiswa_s2' => 'required|boolean',
                 'bukti' => $role === 'DOS' ? 'required|file|mimes:pdf,jpg,jpeg,png|max:2048' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
@@ -215,11 +215,25 @@ class PPublikasiController extends Controller
         $role = $user ? $user->getRole() : null;
 
         if ($request->ajax() || $request->wantsJson()) {
+
+            // Log input data for debugging
+            Log::info('update_ajax input data', [
+                'id' => $id,
+                'judul' => $request->input('judul'),
+                'tempat_publikasi' => $request->input('tempat_publikasi'),
+                'tahun_publikasi' => $request->input('tahun_publikasi'),
+                'jenis_publikasi' => $request->input('jenis_publikasi'),
+                'dana' => $request->input('dana'),
+                'melibatkan_mahasiswa_s2' => $request->input('melibatkan_mahasiswa_s2'),
+                'id_user' => $user ? $user->id_user : null,
+                'role' => $role,
+            ]);
+
             $rules = [
                 'judul' => 'required|string|max:255',
                 'tempat_publikasi' => 'required|string|max:100',
                 'tahun_publikasi' => 'required|integer',
-                'jenis_publikasi' => 'required|in:jurnal,prosiding,poster',
+                'jenis_publikasi' => 'required|in:artikel ilmiah,karya ilmiah,karya seni,lainnya',
                 'dana' => 'required|numeric',
                 'melibatkan_mahasiswa_s2' => 'required|boolean',
                 'bukti' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
@@ -232,6 +246,12 @@ class PPublikasiController extends Controller
             $validator = Validator::make($request->all(), $rules);
 
             if ($validator->fails()) {
+                Log::error('Validation failed in update_ajax', [
+                    'user_id' => $user ? $user->id_user : null,
+                    'role' => $role,
+                    'errors' => $validator->errors()->toArray(),
+                    'input' => $request->all(),
+                ]);
                 return response()->json([
                     'status' => false,
                     'alert' => 'error',
@@ -460,13 +480,13 @@ class PPublikasiController extends Controller
                     'tahun_publikasi' => $tahunPublikasi,
                     'jenis_publikasi' => $jenisPublikasi,
                     'dana' => $dana,
-                    'melibatkan_mahasiswa_s2' => in_array($melibatkanMhsS2, ['true', '1', 'yes']) ? true : false,
+                    'melibatkan_mahasiswa_s2' => in_array($melibatkanMhsS2, ['true', '1', 'yes', 'ya']) ? true : false,
                 ], [
                     'id_user' => 'required|integer|exists:user,id_user',
                     'judul' => 'required|string|max:255',
                     'tempat_publikasi' => 'required|string|max:100',
                     'tahun_publikasi' => 'required|integer|min:1900|max:' . (date('Y') + 5),
-                    'jenis_publikasi' => 'required|in:jurnal,prosiding,poster',
+                    'jenis_publikasi' => 'required|in:artikel ilmiah,karya ilmiah,karya seni,lainnya',
                     'dana' => 'required|numeric',
                     'melibatkan_mahasiswa_s2' => 'required|boolean',
                 ]);
@@ -483,7 +503,7 @@ class PPublikasiController extends Controller
                     'tahun_publikasi' => $tahunPublikasi,
                     'jenis_publikasi' => $jenisPublikasi,
                     'dana' => $dana,
-                    'melibatkan_mahasiswa_s2' => in_array($melibatkanMhsS2, ['true', '1', 'yes']) ? true : false,
+                    'melibatkan_mahasiswa_s2' => in_array($melibatkanMhsS2, ['true', '1', 'yes', 'ya']) ? true : false,
                     'status' => $role === 'DOS' ? 'tervalidasi' : 'perlu validasi',
                     'sumber_data' => $role === 'DOS' ? 'dosen' : 'p3m',
                     'created_at' => now(),
@@ -532,7 +552,6 @@ class PPublikasiController extends Controller
         $query = PPublikasiModel::join('user', 'p_publikasi.id_user', '=', 'user.id_user')
             ->join('profile_user', 'user.id_user', '=', 'profile_user.id_user')
             ->select(
-                'p_publikasi.id_publikasi',
                 'profile_user.nama_lengkap as nama_user',
                 'p_publikasi.judul',
                 'p_publikasi.tempat_publikasi',
@@ -567,49 +586,47 @@ class PPublikasiController extends Controller
         $sheet = $spreadsheet->getActiveSheet();
 
         $sheet->setCellValue('A1', 'No');
-        $sheet->setCellValue('B1', 'ID Publikasi');
-        $sheet->setCellValue('C1', 'Nama Dosen');
-        $sheet->setCellValue('D1', 'Judul');
-        $sheet->setCellValue('E1', 'Tempat Publikasi');
-        $sheet->setCellValue('F1', 'Tahun Publikasi');
-        $sheet->setCellValue('G1', 'Jenis Publikasi');
-        $sheet->setCellValue('H1', 'Dana');
-        $sheet->setCellValue('I1', 'Status');
-        $sheet->setCellValue('J1', 'Sumber Data');
-        $sheet->setCellValue('K1', 'Bukti');
-        $sheet->setCellValue('L1', 'Created At');
-        $sheet->setCellValue('M1', 'Updated At');
+        $sheet->setCellValue('B1', 'Nama Dosen');
+        $sheet->setCellValue('C1', 'Judul');
+        $sheet->setCellValue('D1', 'Tempat Publikasi');
+        $sheet->setCellValue('E1', 'Tahun Publikasi');
+        $sheet->setCellValue('F1', 'Jenis Publikasi');
+        $sheet->setCellValue('G1', 'Dana');
+        $sheet->setCellValue('H1', 'Status');
+        $sheet->setCellValue('I1', 'Sumber Data');
+        $sheet->setCellValue('J1', 'Bukti');
+        $sheet->setCellValue('K1', 'Created At');
+        $sheet->setCellValue('L1', 'Updated At');
 
-        $sheet->getStyle('A1:M1')->getFont()->setBold(true);
+        $sheet->getStyle('A1:L1')->getFont()->setBold(true);
 
         $no = 1;
         $row = 2;
         foreach ($publikasi as $data) {
             $sheet->setCellValue('A' . $row, $no);
-            $sheet->setCellValue('B' . $row, $data->id_publikasi);
-            $sheet->setCellValue('C' . $row, $data->nama_user);
-            $sheet->setCellValue('D' . $row, $data->judul);
-            $sheet->setCellValue('E' . $row, $data->tempat_publikasi);
-            $sheet->setCellValue('F' . $row, $data->tahun_publikasi);
-            $sheet->setCellValue('G' . $row, ucfirst($data->jenis_publikasi));
-            $sheet->setCellValue('H' . $row, $data->dana);
-            $sheet->setCellValue('I' . $row, $data->status);
-            $sheet->setCellValue('J' . $row, $data->sumber_data);
+            $sheet->setCellValue('B' . $row, $data->nama_user);
+            $sheet->setCellValue('C' . $row, $data->judul);
+            $sheet->setCellValue('D' . $row, $data->tempat_publikasi);
+            $sheet->setCellValue('E' . $row, $data->tahun_publikasi);
+            $sheet->setCellValue('F' . $row, ucfirst($data->jenis_publikasi));
+            $sheet->setCellValue('G' . $row, $data->dana);
+            $sheet->setCellValue('H' . $row, $data->status);
+            $sheet->setCellValue('I' . $row, $data->sumber_data);
             if ($data->bukti) {
                 $url = url('storage/portofolio/publikasi/' . $data->bukti);
-                $sheet->setCellValue('K' . $row, 'Lihat File');
-                $sheet->getCell('K' . $row)->getHyperlink()->setUrl($url);
+                $sheet->setCellValue('J' . $row, 'Lihat File');
+                $sheet->getCell('J' . $row)->getHyperlink()->setUrl($url);
             } else {
-                $sheet->setCellValue('K' . $row, 'Tidak ada file');
+                $sheet->setCellValue('J' . $row, 'Tidak ada file');
             }
-            $sheet->setCellValue('L' . $row, $data->created_at);
-            $sheet->setCellValue('M' . $row, $data->updated_at);
+            $sheet->setCellValue('K' . $row, $data->created_at);
+            $sheet->setCellValue('L' . $row, $data->updated_at);
 
             $row++;
             $no++;
         }
 
-        foreach (range('A', 'M') as $columnID) {
+        foreach (range('A', 'L') as $columnID) {
             $sheet->getColumnDimension($columnID)->setAutoSize(true);
         }
 
@@ -680,4 +697,3 @@ class PPublikasiController extends Controller
         return $pdf->stream('Data Publikasi ' . date('d-m-Y H:i:s') . '.pdf');
     }
 }
-

@@ -13,11 +13,12 @@ return new class extends Migration
             $table->foreignId('id_user')->constrained('user', 'id_user');
             $table->string('nama_organisasi', 255);
             $table->string('kurun_waktu', 100);
-            $table->enum('tingkat', ['Nasional', 'Internasional']);
+            $table->enum('tingkat', ['Lokal', 'Nasional', 'Internasional']);
             $table->enum('status', ['tervalidasi', 'perlu validasi', 'tidak valid'])->default('tervalidasi');
             $table->enum('sumber_data', ['p3m', 'dosen'])->default('dosen');
             $table->string('bukti')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

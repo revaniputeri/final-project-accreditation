@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class KriteriaModel extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'kriteria';
     protected $primaryKey = ['no_kriteria', 'id_user'];
@@ -40,5 +41,10 @@ class KriteriaModel extends Model
     public function dokumen()
     {
         return $this->hasMany(DokumenKriteriaModel::class, 'kriteria_id');
+    }
+
+    public function profile_user()
+    {
+        return $this->belongsTo(ProfileUser::class, 'id_user');
     }
 }

@@ -13,14 +13,10 @@ use Dompdf\Options;
 class ValidasiController extends Controller
 {
     public function index(){
-        // Get latest version for each no_kriteria
-        $subQuery = DokumenKriteriaModel::selectRaw('MAX(versi) as max_versi, no_kriteria')
-            ->groupBy('no_kriteria');
-
-        $dokumenKriteria = DokumenKriteriaModel::joinSub($subQuery, 'latest', function($join) {
-            $join->on('dokumen_kriteria.no_kriteria', '=', 'latest.no_kriteria')
-                 ->on('dokumen_kriteria.versi', '=', 'latest.max_versi');
-        })->get();
+        // Get unique no_kriteria only, ignoring versi and kategori
+        $dokumenKriteria = DokumenKriteriaModel::select('no_kriteria', 'judul')
+            ->groupBy('no_kriteria', 'judul')
+            ->get();
 
         return view('validasi.index', compact('dokumenKriteria'));
     }
@@ -29,15 +25,18 @@ class ValidasiController extends Controller
     {
         try {
             $kriteria = $request->kriteria;
+            $kategori = $request->kategori;
 
-            if (!$kriteria) {
+            if (!$kriteria || !$kategori) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Kriteria tidak boleh kosong'
+                    'message' => 'Kriteria dan kategori tidak boleh kosong'
                 ]);
             }
 
-            $dokumen = DokumenKriteriaModel::where('no_kriteria', $kriteria)->latest('versi')->first();
+            $dokumen = DokumenKriteriaModel::where('no_kriteria', $kriteria)
+                ->where('kategori', $kategori)
+                ->latest('versi')->first();
 
             if (!$dokumen) {
                 return response()->json([
@@ -92,6 +91,7 @@ class ValidasiController extends Controller
                 'success' => true,
                 'pdfUrl' => $base64Pdf,
                 'kriteria' => $kriteria,
+                'kategori' => $kategori,
                 'status' => $dokumen->status ?? null,
                 'komentar' => $dokumen->komentar ?? null,
             ]);
@@ -106,8 +106,11 @@ class ValidasiController extends Controller
         $user = Auth::user();
         $idValidator = $user->id; // Use user id for foreign key
         $kriteria = $request->kriteria;
+        $kategori = $request->kategori;
         $status = $request->status;
-        $check = DokumenKriteriaModel::where('no_kriteria', $kriteria)->latest('versi')->first();
+        $check = DokumenKriteriaModel::where('no_kriteria', $kriteria)
+            ->where('kategori', $kategori)
+            ->latest('versi')->first();
 
         if (!$check) {
             return response()->json([
@@ -133,9 +136,12 @@ class ValidasiController extends Controller
             $user = Auth::user();
             $idValidator = $user->id; // Use user id for foreign key
             $kriteria = $request->kriteria;
+            $kategori = $request->kategori;
             $status = $request->status;
             $komentar = $request->komentar;
-            $check = DokumenKriteriaModel::where('no_kriteria', $kriteria)->latest('versi')->first();
+            $check = DokumenKriteriaModel::where('no_kriteria', $kriteria)
+                ->where('kategori', $kategori)
+                ->latest('versi')->first();
             if (!$check) {
                 return response()->json([
                         'success' => false,
@@ -164,13 +170,16 @@ class ValidasiController extends Controller
     public function getDokumenInfo(Request $request)
     {
         $noKriteria = $request->no_kriteria;
-        if (!$noKriteria) {
+        $kategori = $request->kategori;
+        if (!$noKriteria || !$kategori) {
             return response()->json([
                 'success' => false,
-                'message' => 'Nomor kriteria tidak boleh kosong'
+                'message' => 'Nomor kriteria dan kategori tidak boleh kosong'
             ]);
         }
-        $dokumen = DokumenKriteriaModel::where('no_kriteria', $noKriteria)->latest('versi')->first();
+        $dokumen = DokumenKriteriaModel::where('no_kriteria', $noKriteria)
+            ->where('kategori', $kategori)
+            ->latest('versi')->first();
         if (!$dokumen) {
             return response()->json([
                 'success' => false,

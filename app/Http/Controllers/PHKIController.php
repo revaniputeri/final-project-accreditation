@@ -27,7 +27,47 @@ class PHKIController extends Controller
         $isDos = $role === 'DOS';
         $isAng = $role === 'ANG';
 
-        return $dataTable->render('portofolio.hki.index', compact('isAdm', 'isAng', 'isDos'));
+        // Distribusi jenis skema HKI (pie chart)
+        $skemaDistribution = PHKIModel::select('skema', DB::raw('count(*) as total'))
+            ->groupBy('skema')
+            ->orderBy('total', 'desc')
+            ->get();
+
+        // Keterlibatan mahasiswa S2 (bar chart)
+        $mahasiswaS2Distribution = PHKIModel::select('melibatkan_mahasiswa_s2', DB::raw('count(*) as total'))
+            ->groupBy('melibatkan_mahasiswa_s2')
+            ->orderBy('melibatkan_mahasiswa_s2')
+            ->get();
+
+        // Tren HKI per tahun (line chart)
+        $trenPerTahun = PHKIModel::select('tahun', DB::raw('count(*) as total'))
+            ->groupBy('tahun')
+            ->orderBy('tahun')
+            ->get();
+
+        // Prepare data arrays for charts
+        $skemaLabels = $skemaDistribution->pluck('skema');
+        $skemaData = $skemaDistribution->pluck('total');
+
+        $mahasiswaS2Labels = $mahasiswaS2Distribution->map(function ($item) {
+            return $item->melibatkan_mahasiswa_s2 ? 'Ya' : 'Tidak';
+        });
+        $mahasiswaS2Data = $mahasiswaS2Distribution->pluck('total');
+
+        $trenLabels = $trenPerTahun->pluck('tahun');
+        $trenData = $trenPerTahun->pluck('total');
+
+        return $dataTable->render('portofolio.hki.index', compact(
+            'isAdm',
+            'isAng',
+            'isDos',
+            'skemaLabels',
+            'skemaData',
+            'mahasiswaS2Labels',
+            'mahasiswaS2Data',
+            'trenLabels',
+            'trenData'
+        ));
     }
 
     private function generateUniqueFilename($directory, $filename)
@@ -114,7 +154,7 @@ class PHKIController extends Controller
                     return response()->json([
                         'status' => false,
                         'alert' => 'error',
-                        'message' => 'ID user tidak ditemukan. Pastikan akun user terkait.',
+                        'message' => 'ID user tidak ditemukan.'
                     ]);
                 }
 
@@ -137,9 +177,21 @@ class PHKIController extends Controller
                     'tahun',
                     'skema',
                     'nomor',
-                    'melibatkan_mahasiswa_s2',
-                    'bukti'
+                    'melibatkan_mahasiswa_s2'
                 ]);
+
+                $data['id_user'] = $id_user;
+
+                if ($role === 'DOS') {
+                    $data['status'] = 'Tervalidasi';
+                    $data['sumber_data'] = 'dosen';
+                } elseif ($role === 'ADM') {
+                    $data['status'] = 'Perlu Validasi';
+                    $data['sumber_data'] = 'p3m';
+                } else {
+                    $data['status'] = $request->input('status', 'Perlu Validasi');
+                    $data['sumber_data'] = $request->input('sumber_data', 'p3m');
+                }
 
                 if ($request->hasFile('bukti')) {
                     $file = $request->file('bukti');
@@ -274,8 +326,15 @@ class PHKIController extends Controller
                     'bukti',
                 ]);
 
-                if ($role === 'ADM') {
-                    $data['status'] = 'perlu validasi';
+                if ($role === 'DOS') {
+                    $data['status'] = 'Tervalidasi';
+                    $data['sumber_data'] = 'dosen';
+                } elseif ($role === 'ADM') {
+                    $data['status'] = 'Perlu Validasi';
+                    $data['sumber_data'] = 'p3m';
+                } else {
+                    $data['status'] = $request->input('status', 'Perlu Validasi');
+                    $data['sumber_data'] = $request->input('sumber_data', 'p3m');
                 }
 
                 if ($request->hasFile('bukti')) {
@@ -398,7 +457,6 @@ class PHKIController extends Controller
             $skippedData = [];
             $errors = [];
 
-            /** @var UserModel|null $user */
             $user = Auth::user();
             $role = $user && $user->level ? $user->level->kode_level : null;
             $userNidn = DB::table('profile_user')->where('id_user', $user->id_user)->value('nidn');
@@ -407,7 +465,12 @@ class PHKIController extends Controller
                 if ($row == 1) continue; // Skip header
 
                 $nidn = trim($values['A'] ?? '');
-                $judul = trim($values['C'] ?? '');
+                $judul = trim($values['B'] ?? '');
+                $tahun = $values['C'] ?? null;
+                $skema = $values['D'] ?? null;
+                $nomor = $values['E'] ?? null;
+                $melibatkan_mahasiswa_s2 = strtolower(trim($values['F'] ?? ''));
+
 
                 if ($role === 'DOS' && $nidn !== $userNidn) {
                     $errors[] = "Baris $row: Anda hanya dapat mengimpor data milik Anda (NIDN $userNidn).";
@@ -420,46 +483,46 @@ class PHKIController extends Controller
                     continue;
                 }
 
-                // Cek duplikat berdasarkan id_user + judul
                 $isDuplicate = PHKIModel::where('id_user', $profile->id_user)
                     ->where('judul', $judul)
                     ->exists();
 
                 if ($isDuplicate) {
-                    $skippedData[] = "Baris $row: Kombinasi NIDN $nidn dan Judul HKI '$judul' sudah ada.";
+                    $skippedData[] = "Baris $row: Kombinasi NIDN $nidn dan Judul '$judul' sudah ada.";
+                    continue;
+                }
+                if ($melibatkan_mahasiswa_s2 !== '' && !in_array($melibatkan_mahasiswa_s2, ['ya', 'tidak'])) {
+                    $errors[] = "Baris $row: Nilai kolom 'Melibatkan Mahasiswa S2' harus 'ya', 'tidak', atau kosong.";
                     continue;
                 }
 
+                $isMelibatkan = ($melibatkan_mahasiswa_s2 === 'ya') ? 1 : 0;
 
-                // Data dari Excel disesuaikan dengan field model
-                $tahun = $values['E'] ?? null;
-                $skema = $values['B'] ?? null;
-                $nomor = $values['D'] ?? null;
-                $melibatkan_mahasiswa_s2 = isset($values['F']) ? (strtolower(trim($values['F'])) === 'ya' ? true : false) : false;
-                $status_hki = $values['G'] ?? null;
 
                 $validator = Validator::make([
                     'id_user' => $profile->id_user,
-                    'judul' => $values,
+                    'judul' => $judul,
                     'tahun' => $tahun,
                     'skema' => $skema,
                     'nomor' => $nomor,
-                    'melibatkan_mahasiswa_s2' => $melibatkan_mahasiswa_s2,
-                    'status' => $status_hki,
+                    'melibatkan_mahasiswa_s2' => $melibatkan_mahasiswa_s2
                 ], [
                     'id_user' => 'required|integer|exists:user,id_user',
                     'judul' => 'required|string|max:255',
                     'tahun' => 'required|integer|min:1900|max:' . (date('Y') + 5),
                     'skema' => 'nullable|string|max:255',
                     'nomor' => 'nullable|string|max:255',
-                    'melibatkan_mahasiswa_s2' => 'boolean',
-                    'status' => 'required|string|max:100',
+                    'melibatkan_mahasiswa_s2' => 'nullable|in:ya,tidak',
                 ]);
+
 
                 if ($validator->fails()) {
                     $errors[] = "Baris $row: " . implode(', ', $validator->errors()->all());
                     continue;
                 }
+
+                $melibatkan_mahasiswa_s2 = strtolower(trim($melibatkan_mahasiswa_s2));
+                $isMelibatkan = ($melibatkan_mahasiswa_s2 === 'ya') ? 1 : 0;
 
                 $insertData[] = [
                     'id_user' => $profile->id_user,
@@ -467,12 +530,11 @@ class PHKIController extends Controller
                     'tahun' => $tahun,
                     'skema' => $skema,
                     'nomor' => $nomor,
-                    'melibatkan_mahasiswa_s2' => $melibatkan_mahasiswa_s2,
+                    'melibatkan_mahasiswa_s2' => $isMelibatkan,
                     'status' => $role === 'DOS' ? 'Tervalidasi' : 'perlu validasi',
                     'sumber_data' => $role === 'DOS' ? 'dosen' : 'p3m',
                     'created_at' => now(),
                     'updated_at' => now(),
-                    // 'bukti' => null, // Bisa ditambahkan jika ada data dari file
                 ];
             }
 
@@ -511,12 +573,12 @@ class PHKIController extends Controller
             ], 500);
         }
     }
+
     public function export_excel()
     {
         $query = PHKIModel::join('user', 'p_hki.id_user', '=', 'user.id_user')
             ->join('profile_user', 'user.id_user', '=', 'profile_user.id_user')
             ->select(
-                'p_hki.id_hki',
                 'profile_user.nama_lengkap as nama_user',
                 'p_hki.judul',
                 'p_hki.tahun',
@@ -538,7 +600,7 @@ class PHKIController extends Controller
         }
 
         if ($status = request('filter_status')) {
-            $query->where('p_hki.status_hki', $status);
+            $query->where('p_hki.status', $status);
         }
 
         if ($sumber = request('filter_sumber')) {
@@ -552,18 +614,17 @@ class PHKIController extends Controller
 
         // Header kolom
         $sheet->setCellValue('A1', 'No');
-        $sheet->setCellValue('B1', 'ID HKI');
-        $sheet->setCellValue('C1', 'Nama Dosen');
-        $sheet->setCellValue('D1', 'Judul');
-        $sheet->setCellValue('E1', 'Tahun');
-        $sheet->setCellValue('F1', 'Skema');
-        $sheet->setCellValue('G1', 'Nomor');
-        $sheet->setCellValue('H1', 'Melibatkan Mahasiswa S2');
-        $sheet->setCellValue('I1', 'Status');
-        $sheet->setCellValue('J1', 'Sumber Data');
-        $sheet->setCellValue('K1', 'Bukti');
-        $sheet->setCellValue('L1', 'Created At');
-        $sheet->setCellValue('M1', 'Updated At');
+        $sheet->setCellValue('B1', 'Nama Dosen');
+        $sheet->setCellValue('C1', 'Judul');
+        $sheet->setCellValue('D1', 'Tahun');
+        $sheet->setCellValue('E1', 'Skema');
+        $sheet->setCellValue('F1', 'Nomor');
+        $sheet->setCellValue('G1', 'Melibatkan Mahasiswa S2');
+        $sheet->setCellValue('H1', 'Status');
+        $sheet->setCellValue('I1', 'Sumber Data');
+        $sheet->setCellValue('J1', 'Bukti');
+        $sheet->setCellValue('K1', 'Created At');
+        $sheet->setCellValue('L1', 'Updated At');
 
         $sheet->getStyle('A1:L1')->getFont()->setBold(true);
 
@@ -571,35 +632,34 @@ class PHKIController extends Controller
         $row = 2;
         foreach ($hki as $data) {
             $sheet->setCellValue('A' . $row, $no);
-            $sheet->setCellValue('B' . $row, $data->id_hki);
-            $sheet->setCellValue('C' . $row, $data->nama_user);
-            $sheet->setCellValue('D' . $row, $data->judul);
-            $sheet->setCellValue('E' . $row, $data->tahun);
-            $sheet->setCellValue('F' . $row, $data->skema);
-            $sheet->setCellValue('G' . $row, $data->nomor);
-            $sheet->setCellValue('H' . $row, $data->melibatkan_mahasiswa_s2 ? 'Ya' : 'Tidak');
-            $sheet->setCellValue('I' . $row, $data->status);
-            $sheet->setCellValue('J' . $row, $data->sumber_data);
+            $sheet->setCellValue('B' . $row, $data->nama_user);
+            $sheet->setCellValue('C' . $row, $data->judul);
+            $sheet->setCellValue('D' . $row, $data->tahun);
+            $sheet->setCellValue('E' . $row, $data->skema);
+            $sheet->setCellValue('F' . $row, $data->nomor);
+            $sheet->setCellValue('G' . $row, $data->melibatkan_mahasiswa_s2 ? 'Ya' : 'Tidak');
+            $sheet->setCellValue('H' . $row, $data->status);
+            $sheet->setCellValue('I' . $row, $data->sumber_data);
 
             if ($data->bukti) {
                 $url = url('storage/portofolio/hki/' . $data->bukti);
-                $sheet->setCellValue('K' . $row, 'Lihat File');
-                $sheet->getCell('K' . $row)->getHyperlink()->setUrl($url);
-                $sheet->getStyle('K' . $row)->getFont()->getColor()->setARGB(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_BLUE);
-                $sheet->getStyle('K' . $row)->getFont()->setUnderline(true);
+                $sheet->setCellValue('J' . $row, 'Lihat File');
+                $sheet->getCell('J' . $row)->getHyperlink()->setUrl($url);
+                $sheet->getStyle('J' . $row)->getFont()->getColor()->setARGB(\PhpOffice\PhpSpreadsheet\Style\Color::COLOR_BLUE);
+                $sheet->getStyle('J' . $row)->getFont()->setUnderline(true);
             } else {
-                $sheet->setCellValue('K' . $row, 'Tidak ada file');
+                $sheet->setCellValue('J' . $row, 'Tidak ada file');
             }
 
-            $sheet->setCellValue('L' . $row, $data->created_at);
-            $sheet->setCellValue('M' . $row, $data->updated_at);
+            $sheet->setCellValue('K' . $row, $data->created_at);
+            $sheet->setCellValue('L' . $row, $data->updated_at);
 
             $row++;
             $no++;
         }
 
         // Set auto size kolom
-        foreach (range('A', 'M') as $columnID) {
+        foreach (range('A', 'L') as $columnID) {
             $sheet->getColumnDimension($columnID)->setAutoSize(true);
         }
 
@@ -632,7 +692,7 @@ class PHKIController extends Controller
         }
 
         if ($status = request('filter_status')) {
-            $query->where('status_hki', $status);
+            $query->where('status', $status);
         }
 
         if ($sumber = request('filter_sumber')) {
@@ -643,7 +703,7 @@ class PHKIController extends Controller
 
         $data = $hki->map(function ($item) {
             return [
-                'id_hki' => $item->id_hki,
+                // 'id_hki' => $item->id_hki,
                 'nama_dosen' => optional(optional($item->dosen)->profile)->nama_lengkap ?? '-',
                 'judul' => $item->judul,
                 'tahun' => $item->tahun,

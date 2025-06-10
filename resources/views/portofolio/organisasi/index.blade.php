@@ -7,7 +7,7 @@
     <div class="container-fluid">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ url('/') }}">Beranda</a></li>
+                <li class="breadcrumb-item"><a href="{{ url('/dashboard') }}">Beranda</a></li>
                 <li class="breadcrumb-item active">Organisasi</li>
             </ol>
         </nav>
@@ -16,6 +16,12 @@
 
 @section('content')
     <div class="container-fluid">
+
+        <!-- Organisasi -->
+        <div class="callout callout-primary shadow-sm">
+            <h5>Organisasi</h5>
+            <p>Keikutsertaan dosen dalam organisasi keilmuan atau profesi yang relevan.</p>
+        </div>
 
         {{-- DataTable --}}
         <div class="card shadow-sm">

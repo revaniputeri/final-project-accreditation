@@ -24,28 +24,29 @@ class DokumenPendukungDataTable extends DataTable
             ->addColumn('user_full_name', function ($row) {
                 return $row->user && $row->user->profile ? $row->user->profile->nama_lengkap : '-';
             })
-            ->addColumn('aksi', function ($row) {
-                $detailUrl = route('dokumen_kriteria.detail_ajax', $row->id_dokumen_pendukung);
-                $editUrl = route('dokumen_kriteria.edit_ajax', $row->id_dokumen_pendukung);
-                $deleteUrl = route('dokumen_kriteria.confirm_ajax', $row->id_dokumen_pendukung);
+->addColumn('aksi', function ($row) {
+    $kategori = $this->kategori ?? '';
+    $detailUrl = route('dokumen_kriteria.detail_ajax', $row->id_dokumen_pendukung);
+    $editUrl = route('dokumen_kriteria.edit_ajax', $row->id_dokumen_pendukung);
+    $deleteUrl = route('dokumen_kriteria.confirm_ajax', $row->id_dokumen_pendukung);
 
-                return '
-                    <div class="d-flex justify-content-center gap-2" style="white-space: nowrap;">
-                        <button onclick="copyPath(\'' . $row->path_file . '\')" class="btn btn-sm btn-warning" style="margin-left: 5px;">
-                            <i class="fas fa-copy"></i> Copy Path
-                        </button>
-                        <button onclick="modalAction(\'' . $detailUrl . '\')" class="btn btn-sm btn-info" style="margin-left: 5px;">
-                            <i class="fas fa-info-circle"></i> Detail
-                        </button>
-                        <button onclick="modalAction(\'' . $editUrl . '\')" class="btn btn-sm btn-primary" style="margin-left: 5px;">
-                            <i class="fas fa-edit"></i> Ubah
-                        </button>
-                        <button onclick="modalAction(\'' . $deleteUrl . '\')" class="btn btn-sm btn-danger" style="margin-left: 5px;">
-                            <i class="fas fa-trash"></i> Hapus
-                        </button>
-                    </div>
-                ';
-            })
+    return '
+        <div class="d-flex justify-content-center gap-2" style="white-space: nowrap;">
+            <button onclick="copyPath(\'' . $row->path_file . '\')" class="btn btn-sm btn-warning" style="margin-left: 5px;">
+                <i class="fas fa-copy"></i> Copy Path
+            </button>
+            <button onclick="modalAction(\'' . $detailUrl . '\', \'' . $kategori . '\')" class="btn btn-sm btn-info" style="margin-left: 5px;">
+                <i class="fas fa-info-circle"></i> Detail
+            </button>
+            <button onclick="modalAction(\'' . $editUrl . '\', \'' . $kategori . '\')" class="btn btn-sm btn-primary" style="margin-left: 5px;">
+                <i class="fas fa-edit"></i> Ubah
+            </button>
+            <button onclick="modalAction(\'' . $deleteUrl . '\', \'' . $kategori . '\')" class="btn btn-sm btn-danger" style="margin-left: 5px;">
+                <i class="fas fa-trash"></i> Hapus
+            </button>
+        </div>
+    ';
+})
             ->editColumn('nama_file', function ($row) {
                 return '<strong>' . $row->nama_file . '</strong>';
             })
@@ -60,14 +61,19 @@ class DokumenPendukungDataTable extends DataTable
      * Get the query source of dataTable.
      */
     protected $no_kriteria;
+    protected $kategori;
 
     public function with(array|string $key, mixed $value = null): static
     {
         if (is_array($key)) {
             $this->no_kriteria = $key['no_kriteria'] ?? null;
+            $this->kategori = $key['kategori'] ?? null;
         } else {
             if ($key === 'no_kriteria') {
                 $this->no_kriteria = $value;
+            }
+            if ($key === 'kategori') {
+                $this->kategori = $value;
             }
         }
         return $this;
@@ -80,6 +86,10 @@ class DokumenPendukungDataTable extends DataTable
 
         if ($this->no_kriteria) {
             $query->where('no_kriteria', $this->no_kriteria);
+        }
+
+        if ($this->kategori) {
+            $query->where('kategori', $this->kategori);
         }
 
         return $query;

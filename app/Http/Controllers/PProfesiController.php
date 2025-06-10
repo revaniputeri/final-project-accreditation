@@ -27,7 +27,30 @@ class PProfesiController extends Controller
         $isDos = $user->hasRole('DOS');
         $isAng = $user->hasRole('ANG');
 
-        return $dataTable->render('portofolio.profesi.index', compact('isAdm', 'isAng', 'isDos'));
+        // Distribution of Gelar Akademik (overall)
+        $gelarDistribution = PProfesiModel::select('gelar', DB::raw('count(*) as total'))
+            ->groupBy('gelar')
+            ->orderBy('total', 'desc')
+            ->get();
+
+        // Distribution of Perguruan Tinggi (for bar chart)
+        $perguruanTinggiDistribution = PProfesiModel::select('perguruan_tinggi', DB::raw('count(*) as total'))
+            ->groupBy('perguruan_tinggi')
+            ->orderBy('total', 'desc')
+            ->get();
+
+        // Prepare data arrays for charts
+        $gelarLabels = $gelarDistribution->pluck('gelar');
+        $gelarData = $gelarDistribution->pluck('total');
+
+        $perguruanTinggiLabels = $perguruanTinggiDistribution->pluck('perguruan_tinggi');
+        $perguruanTinggiData = $perguruanTinggiDistribution->pluck('total');
+
+        return $dataTable->render('portofolio.profesi.index', compact(
+            'isAdm', 'isAng', 'isDos',
+            'gelarLabels', 'gelarData',
+            'perguruanTinggiLabels', 'perguruanTinggiData'
+        ));
     }
 
     private function generateUniqueFilename($directory, $filename)
@@ -320,20 +343,28 @@ class PProfesiController extends Controller
         $profesi = PProfesiModel::findOrFail($id);
 
         try {
+            // Hapus file bukti jika ada
             if ($profesi->bukti && Storage::exists('public/portofolio/profesi/' . $profesi->bukti)) {
                 Storage::delete('public/portofolio/profesi/' . $profesi->bukti);
             }
-            $profesi->delete();
+
+            // Cek apakah model menggunakan SoftDeletes
+            if (method_exists($profesi, 'forceDelete')) {
+                $profesi->forceDelete(); // Hapus permanen jika tersedia
+            } else {
+                $profesi->delete();
+            }
 
             return response()->json([
                 'status' => true,
-                'message' => 'Data berhasil dihapus'
+                'message' => 'Data profesi berhasil dihapus'
             ]);
         } catch (\Exception $e) {
-            Log::error('Exception in delete_ajax: ' . $e->getMessage());
+            Log::error('Exception in delete_ajax PProfesi: ' . $e->getMessage());
+
             return response()->json([
                 'status' => false,
-                'message' => 'Gagal menghapus data'
+                'message' => 'Gagal menghapus data profesi'
             ]);
         }
     }
@@ -372,52 +403,117 @@ class PProfesiController extends Controller
 
     public function import_ajax(Request $request)
     {
-        if ($request->ajax() || $request->wantsJson()) {
-            $request->validate([
-                'file' => 'required|file|mimes:xlsx,xls,csv|max:2048',
-            ]);
+        $request->validate([
+            'file_p_profesi' => 'required|mimes:xlsx,xls|max:2048'
+        ]);
 
-            try {
-                $file = $request->file('file');
-                $spreadsheet = IOFactory::load($file->getRealPath());
-                $sheetData = $spreadsheet->getActiveSheet()->toArray();
+        try {
+            $file = $request->file('file_p_profesi');
+            $spreadsheet = IOFactory::load($file->getRealPath());
+            $sheet = $spreadsheet->getActiveSheet();
+            $data = $sheet->toArray(null, true, true, true);
 
-                // Proses data dari sheet
-                foreach ($sheetData as $row) {
-                    // Asumsikan kolom pertama adalah perguruan_tinggi, kedua kurun_waktu, ketiga gelar, keempat bukti
-                    if (count($row) < 4) {
-                        continue; // Lewati baris yang tidak lengkap
-                    }
+            $insertData = [];
+            $skippedData = [];
+            $errors = [];
 
-                    PProfesiModel::create([
-                        'perguruan_tinggi' => $row[0],
-                        'kurun_waktu' => $row[1],
-                        'gelar' => $row[2],
-                        'bukti' => isset($row[3]) ? $row[3] : null,
-                        'status' => 'perlu validasi',
-                        'sumber_data' => 'p3m',
-                    ]);
+            $user = Auth::user();
+            $role = $user ? $user->role : null;
+            $userNidn = DB::table('profile_user')->where('id_user', $user->id_user)->value('nidn');
+
+            foreach ($data as $row => $values) {
+                if ($row == 1) continue;
+
+                $nidn = trim($values['A']);
+                $perguruanTinggi = trim($values['B']);
+                $kurunWaktu = trim($values['C']);
+                $gelar = trim($values['D']);
+                $bukti = isset($values['E']) ? trim($values['E']) : null;
+
+                if ($role === 'DOS' && $nidn !== $userNidn) {
+                    $errors[] = "Baris $row: Anda hanya dapat mengimpor data dengan NIDN milik Anda ($userNidn).";
+                    continue;
                 }
 
-                return response()->json([
-                    'status' => true,
-                    'message' => 'Data berhasil diimpor'
+                $profileUser = DB::table('profile_user')->where('nidn', $nidn)->first();
+                if (!$profileUser) {
+                    $errors[] = "Baris $row: NIDN $nidn tidak ditemukan di data profil user.";
+                    continue;
+                }
+
+                $isDuplicate = PProfesiModel::where('id_user', $profileUser->id_user)
+                    ->where('perguruan_tinggi', $perguruanTinggi)
+                    ->where('kurun_waktu', $kurunWaktu)
+                    ->where('gelar', $gelar)
+                    ->exists();
+
+                if ($isDuplicate) {
+                    $skippedData[] = "Baris $row: Data dengan kombinasi Perguruan Tinggi, Kurun Waktu, dan Gelar sudah ada.";
+                    continue;
+                }
+
+                $validator = Validator::make([
+                    'perguruan_tinggi' => $perguruanTinggi,
+                    'kurun_waktu' => $kurunWaktu,
+                    'gelar' => $gelar,
+                ], [
+                    'perguruan_tinggi' => 'required|string|max:255',
+                    'kurun_waktu' => 'required|string|max:255',
+                    'gelar' => 'required|string|max:255',
                 ]);
-            } catch (\Exception $e) {
-                Log::error('Exception in import_ajax PProfesi: ' . $e->getMessage());
+
+                if ($validator->fails()) {
+                    $errors[] = "Baris $row: " . implode(', ', $validator->errors()->all());
+                    continue;
+                }
+
+                $insertData[] = [
+                    'id_user' => $profileUser->id_user,
+                    'perguruan_tinggi' => $perguruanTinggi,
+                    'kurun_waktu' => $kurunWaktu,
+                    'gelar' => $gelar,
+                    'bukti' => $bukti,
+                    'status' => $role === 'DOS' ? 'Tervalidasi' : 'perlu validasi',
+                    'sumber_data' => $role === 'DOS' ? 'dosen' : 'p3m',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+            }
+
+            $allMessages = array_merge($skippedData, $errors);
+
+            if (empty($insertData)) {
                 return response()->json([
                     'status' => false,
                     'alert' => 'error',
-                    'message' => 'Gagal mengimpor data',
-                ]);
+                    'message' => 'Tidak ada data baru yang valid untuk diimport:' .
+                        "\n" . implode("\n", array_slice($allMessages, 0, 1)) .
+                        (count($allMessages) > 3 ? "\n...dan " . (count($allMessages) - 3) . " lainnya." : ''),
+                    'showConfirmButton' => true
+                ], 422);
             }
-        }
 
-        return response()->json([
-            'status' => false,
-            'alert' => 'error',
-            'message' => 'Request tidak valid'
-        ], 400);
+            $inserted = PProfesiModel::insert($insertData);
+
+            return response()->json([
+                'status' => true,
+                'alert' => 'success',
+                'message' => 'Import data berhasil',
+                'inserted_count' => $inserted,
+                'skipped_count' => count($skippedData),
+                'info' => $allMessages,
+                'error_count' => count($errors)
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Import error PProfesi: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
+            return response()->json([
+                'status' => false,
+                'alert' => 'error',
+                'message' => 'Terjadi kesalahan saat memproses file',
+                'error' => $e->getMessage(),
+                'showConfirmButton' => true
+            ], 500);
+        }
     }
 
     public function export_excel()
@@ -425,7 +521,6 @@ class PProfesiController extends Controller
         $query = PProfesiModel::join('user', 'p_profesi.id_user', '=', 'user.id_user')
             ->join('profile_user', 'user.id_user', '=', 'profile_user.id_user')
             ->select(
-                'p_profesi.id_profesi',
                 'profile_user.nama_lengkap as nama_user',
                 'p_profesi.perguruan_tinggi',
                 'p_profesi.kurun_waktu',
@@ -458,47 +553,45 @@ class PProfesiController extends Controller
         $sheet = $spreadsheet->getActiveSheet();
 
         $sheet->setCellValue('A1', 'No');
-        $sheet->setCellValue('B1', 'ID Profesi');
-        $sheet->setCellValue('C1', 'Nama Dosen');
-        $sheet->setCellValue('D1', 'Perguruan Tinggi');
-        $sheet->setCellValue('E1', 'Kurun Waktu');
-        $sheet->setCellValue('F1', 'Gelar');
-        $sheet->setCellValue('G1', 'Status');
-        $sheet->setCellValue('H1', 'Sumber Data');
-        $sheet->setCellValue('I1', 'Bukti');
-        $sheet->setCellValue('J1', 'Created At');
-        $sheet->setCellValue('K1', 'Updated At');
+        $sheet->setCellValue('B1', 'Nama Dosen');
+        $sheet->setCellValue('C1', 'Perguruan Tinggi');
+        $sheet->setCellValue('D1', 'Kurun Waktu');
+        $sheet->setCellValue('E1', 'Gelar');
+        $sheet->setCellValue('F1', 'Status');
+        $sheet->setCellValue('G1', 'Sumber Data');
+        $sheet->setCellValue('H1', 'Bukti');
+        $sheet->setCellValue('I1', 'Created At');
+        $sheet->setCellValue('J1', 'Updated At');
 
-        $sheet->getStyle('A1:k1')->getFont()->setBold(true);
+        $sheet->getStyle('A1:J1')->getFont()->setBold(true);
 
         $no = 1;
         $row = 2;
         foreach ($profesi as $data) {
             $sheet->setCellValue('A' . $row, $no);
-            $sheet->setCellValue('B' . $row, $data->id_profesi);
-            $sheet->setCellValue('C' . $row, $data->nama_user);
-            $sheet->setCellValue('D' . $row, $data->perguruan_tinggi);
-            $sheet->setCellValue('E' . $row, $data->kurun_waktu);
-            $sheet->setCellValue('F' . $row, $data->gelar);
-            $sheet->setCellValue('G' . $row, $data->status);
-            $sheet->setCellValue('H' . $row, $data->sumber_data);
+            $sheet->setCellValue('B' . $row, $data->nama_user);
+            $sheet->setCellValue('C' . $row, $data->perguruan_tinggi);
+            $sheet->setCellValue('D' . $row, $data->kurun_waktu);
+            $sheet->setCellValue('E' . $row, $data->gelar);
+            $sheet->setCellValue('F' . $row, $data->status);
+            $sheet->setCellValue('G' . $row, $data->sumber_data);
 
             if ($data->bukti) {
                 $url = url('storage/portofolio/profesi/' . $data->bukti);
-                $sheet->setCellValue('I' . $row, 'Lihat File');
-                $sheet->getCell('I' . $row)->getHyperlink()->setUrl($url);
+                $sheet->setCellValue('H' . $row, 'Lihat File');
+                $sheet->getCell('H' . $row)->getHyperlink()->setUrl($url);
             } else {
-                $sheet->setCellValue('I' . $row, 'Tidak ada file');
+                $sheet->setCellValue('H' . $row, 'Tidak ada file');
             }
 
-            $sheet->setCellValue('J' . $row, $data->created_at);
-            $sheet->setCellValue('K' . $row, $data->updated_at);
+            $sheet->setCellValue('I' . $row, $data->created_at);
+            $sheet->setCellValue('J' . $row, $data->updated_at);
 
             $row++;
             $no++;
         }
 
-        foreach (range('A', 'K') as $columnID) {
+        foreach (range('A', 'J') as $columnID) {
             $sheet->getColumnDimension($columnID)->setAutoSize(true);
         }
 

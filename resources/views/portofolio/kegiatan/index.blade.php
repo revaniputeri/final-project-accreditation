@@ -7,7 +7,7 @@
     <div class="container-fluid">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ url('/') }}">Beranda</a></li>
+                <li class="breadcrumb-item"><a href="{{ url('/dashboard') }}">Beranda</a></li>
                 <li class="breadcrumb-item active">Kegiatan</li>
             </ol>
         </nav>
@@ -17,16 +17,25 @@
 @section('content')
     <div class="container-fluid">
 
+        <!-- Kegiatan -->
+        <div class="callout callout-primary shadow-sm">
+            <h5>Kegiatan</h5>
+            <p>Partisipasi dosen dalam seminar, workshop, lokakarya, pagelaran, peragaan, kunjungan, atau kegiatan sejenis
+                lainnya.</p>
+        </div>
+
         {{-- DataTable --}}
         <div class="card shadow-sm">
             <div class="card-header bg-primary border-bottom">
                 <div class="d-flex justify-content-between align-items-center">
                     <h3 class="card-title mb-0 text-white">Daftar Kegiatan</h3>
                     <div class="card-tools">
-                        <a id="exportPdfBtn" class="btn btn-custom-blue me-2" href="{{ route('portofolio.kegiatan.export_pdf') }}">
+                        <a id="exportPdfBtn" class="btn btn-custom-blue me-2"
+                            href="{{ route('portofolio.kegiatan.export_pdf') }}">
                             <i class="fa-solid fa-file-pdf me-2"></i> Export PDF
                         </a>
-                        <a id="exportExcelBtn" class="btn btn-custom-blue me-2" href="{{ route('portofolio.kegiatan.export_excel') }}">
+                        <a id="exportExcelBtn" class="btn btn-custom-blue me-2"
+                            href="{{ route('portofolio.kegiatan.export_excel') }}">
                             <i class="fas fa-file-excel me-2"></i> Export Excel
                         </a>
                         @if ($isAdm || $isDos)

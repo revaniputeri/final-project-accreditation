@@ -16,13 +16,29 @@ class PProfesiSeeder extends Seeder
             ->where('level.kode_level', 'DOS')
             ->get();
 
+        $universities = [
+            'Universitas Indonesia',
+            'Institut Teknologi Bandung',
+            'Universitas Gadjah Mada',
+            'Universitas Airlangga',
+            'Universitas Diponegoro',
+            'Universitas Negeri Malang',
+            'Universitas Brawijaya',
+            'Universitas Sebelas Maret',
+            'Universitas Padjadjaran',
+            'Institut Pertanian Bogor',
+            'Universitas Katolik Parahyangan',
+            'Universitas Kristen Petra',
+            'Universitas Multimedia Nusantara',
+        ];
+
         foreach ($dosenUsers as $user) {
             $sumber_data = ['p3m', 'dosen'][rand(0, 1)];
             $profesis[] = [
                 'id_user' => $user->id_user,
-                'perguruan_tinggi' => 'Universitas ' . $user->id_user,
+                'perguruan_tinggi' => $universities[rand(0, count($universities) - 1)],
                 'kurun_waktu' => (rand(2000, 2005)) . '-' . (rand(2006, 2010)),
-                'gelar' => 'Sarjana',
+                'gelar' => 'Doktor',
                 'status' => 'tervalidasi',
 
                 // Status sertifikasi tergantung pada sumber data
@@ -35,9 +51,9 @@ class PProfesiSeeder extends Seeder
 
             $profesis[] = [
                 'id_user' => $user->id_user,
-                'perguruan_tinggi' => 'Institut ' . $user->id_user,
+                'perguruan_tinggi' => $universities[rand(0, count($universities) - 1)],
                 'kurun_waktu' => (rand(2005, 2010)) . '-' . (rand(2011, 2015)),
-                'gelar' => 'Magister',
+                'gelar' => 'Profesor',
                 'status' => 'tervalidasi',
 
                 // Status sertifikasi tergantung pada sumber data
