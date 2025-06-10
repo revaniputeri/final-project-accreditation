@@ -113,7 +113,24 @@
                     <!-- /.card-body -->
                 </div>
             </div>
-        
+        <div class="col-md-6">
+                <div class="card card-danger">
+                    <div class="card-header">
+                        <h3 class="card-title">Partisipasi Dosen berdasarkan Jabatan</h3>
+
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="chartOrganisasi3"
+                            style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+            </div>
         </div>
 
         {{-- Modal --}}
@@ -350,7 +367,7 @@
                 success: function (response) {
                     const tingkat = [];
                     const jumlah = [];
-
+                    console.log(response.data);
                     response.data.forEach(item => {
                         tingkat.push(item.tingkat);
                         jumlah.push(item.jumlah);
@@ -363,6 +380,7 @@
                         data: {
                             labels: tingkat,
                             datasets: [{
+                                label: tingkat,
                                 data: jumlah,
                                 backgroundColor: ['bronze', 'silver'],
                                 borderColor: 'rgba(75, 192, 192, 1)',
@@ -403,6 +421,39 @@
                             datasets: [{
                                 data: jumlah,
                                 backgroundColor: ['green', '#f39c12', 'red'],
+                                borderColor: 'rgba(75, 192, 192, 1)',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                        }
+                    });
+                }
+            });
+        });
+        $(document).ready(function () {
+            $.ajax({
+                url: "{{ route('portofolio.organisasi.chart3') }}",
+                method: 'GET',
+                success: function (response) {
+                    const jabatan = [];
+                    const jumlah = [];
+
+                    response.data.forEach(item => {
+                        jabatan.push(item.jabatan_fungsional);
+                        jumlah.push(item.jumlah);
+                    });
+
+                    const ctx = document.getElementById('chartOrganisasi3').getContext('2d');
+
+                    new Chart(ctx, {
+                        type: 'pie',
+                        data: {
+                            labels: jabatan,
+                            datasets: [{
+                                data: jumlah,
+                                backgroundColor: ['green', '#f39c12', 'red','blue'],
                                 borderColor: 'rgba(75, 192, 192, 1)',
                                 borderWidth: 1
                             }]

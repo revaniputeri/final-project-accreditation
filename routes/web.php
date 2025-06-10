@@ -232,6 +232,7 @@ Route::middleware('auth')->group(function () {
             // Chart
             Route::get('/chart1',[POrganisasiController::class,'chart1'])->name('chart1');
             Route::get('/chart2',[POrganisasiController::class,'chart2'])->name('chart2');
+            Route::get('/chart3',[POrganisasiController::class,'chart3'])->name('chart3');
         });
 
         // Route Portofolio Publikasi

@@ -701,4 +701,23 @@ class POrganisasiController extends Controller
             'message' => 'Data berhasil diambil'
         ]);
     }
+    public function chart3(){
+        $data = POrganisasiModel::join('user', 'p_organisasi.id_user', '=', 'user.id_user')
+            ->join('profile_user', 'user.id_user', '=', 'profile_user.id_user')
+            ->select(DB::raw('COUNT(p_organisasi.id_user) as jumlah, profile_user.jabatan_fungsional'))
+            ->groupBy('profile_user.jabatan_fungsional')
+            ->get();
+
+        if($data->isEmpty()) {
+            return response()->json([
+                'message' => 'Data tidak ditemukan',
+                'status' => false
+            ], 404);
+        }
+        return response()->json([
+            'data' => $data,
+            'status' => true,
+            'message' => 'Data berhasil diambil'
+        ]);
+    }
 }
