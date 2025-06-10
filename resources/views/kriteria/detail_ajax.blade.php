@@ -11,23 +11,19 @@
             </tr>
             <tr>
                 <th>Nama User</th>
-                <td>{{ $kriteria->user->username ?? '-' }}</td>
-            </tr>
-            <tr>
-                <th>Jumlah Dokumen Kriteria</th>
-                <td>{{ $kriteria->dokumenKriteria->count() }}</td>
+                <td>{{ count($user_list) ? implode(', ', $user_list) : '-' }}</td>   
             </tr>
             <tr>
                 <th>Jumlah Dokumen Pendukung</th>
-                <td>{{ $kriteria->dokumenPendukung->count() }}</td>
+                <td>{{ $kriteria->jumlah_dokumen ?? 0 }}</td>
             </tr>
             <tr>
                 <th>Dibuat Pada</th>
-                <td>{{ $kriteria->created_at ? $kriteria->created_at->format('d M Y H:i:s') : '-' }}</td>
+                <td>{{ $kriteria->created_at ? $kriteria->created_at->format('d M Y') : '-' }}</td>
             </tr>
             <tr>
                 <th>Diubah Pada</th>
-                <td>{{ $kriteria->updated_at ? $kriteria->updated_at->format('d M Y H:i:s') : '-' }}</td>
+                <td>{{ $kriteria->updated_at ? $kriteria->updated_at->format('d M Y') : '-' }}</td>
             </tr>
         </tbody>
     </table>

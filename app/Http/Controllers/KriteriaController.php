@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\DokumenKriteriaModel;
 use App\Models\DokumenPendukungModel;
 use App\Models\ProfileUser;
+use Illuminate\Support\Facades\DB;
 
 class KriteriaController extends Controller
 {
@@ -55,16 +56,33 @@ class KriteriaController extends Controller
     {
         $rules = [
             'no_kriteria' => 'required|string|max:10',
-            'selected_users' => 'required|array|min:1',
+            'selected_users' => 'required|array|min:1|max:2',
             'selected_users.*' => 'exists:user,id_user',
         ];
-        $validator = Validator::make($request->all(), $rules);
+        $messages = [
+            'no_kriteria.required' => 'No kriteria wajib diisi.',
+            'selected_users.required' => 'Pilih minimal 1 user.',
+            'selected_users.max' => 'Maksimal 2 user.',
+            'selected_users.*.exists' => 'User tidak valid.',
+        ];
+        $validator = Validator::make($request->all(), $rules, $messages);
+
+        // Cek user duplikat di array
+        $selectedUsers = $request->input('selected_users', []);
+        $uniqueUsers = array_unique($selectedUsers);
+        if (count($selectedUsers) !== count($uniqueUsers)) {
+            return response()->json([
+                'status' => false,
+                'alert' => 'error',
+                'message' => 'User tidak boleh sama.',
+            ]);
+        }
 
         if ($validator->fails()) {
             return response()->json([
                 'status' => false,
                 'alert' => 'error',
-                'message' => 'Validasi Gagal',
+                'message' => $validator->errors()->first(),
                 'msgField' => $validator->errors(),
             ]);
         }
@@ -76,44 +94,30 @@ class KriteriaController extends Controller
         }
 
         $users = $request->selected_users; // array
-        $failedUsers = [];
-        $failedUserNames = [];
-        $successUsers = [];
 
-        // Cek dulu, jika ada user yang sudah punya kriteria, langsung gagal semua
-        foreach ($users as $userId) {
-            $user = ProfileUser::where('id_user', $userId)->first();
-            $namaLengkap = $user ? $user->nama_lengkap : 'User';
-            $exists = KriteriaModel::where('id_user', $userId)->exists();
-            if ($exists) {
-                $failedUsers[] = $userId;
-                $failedUserNames[] = $namaLengkap;
-            }
-        }
-
-        if (count($failedUsers) > 0) {
-            return response()->json([
-                'status' => false,
-                'alert' => 'error',
-                'message' => 'Gagal menambah kriteria karena user berikut sudah memiliki kriteria: ' . implode(', ', $failedUserNames),
-            ]);
-        }
-
-        // Jika semua lolos, baru lakukan insert
         try {
             foreach ($users as $userId) {
-                $user = ProfileUser::where('id_user', $userId)->first();
-                $namaLengkap = $user ? $user->nama_lengkap : 'User';
-                $kriteria = KriteriaModel::create([
+                $exists = KriteriaModel::where('id_user', $userId)
+                    ->where('no_kriteria', $no_kriteria)
+                    ->whereNull('deleted_at')
+                    ->exists();
+                if ($exists) {
+                    return response()->json([
+                        'status' => false,
+                        'alert' => 'error',
+                        'message' => 'User sudah ada di kriteria ini.',
+                    ]);
+                }
+
+                KriteriaModel::create([
                     'no_kriteria' => $no_kriteria,
                     'id_user' => $userId,
                 ]);
-                $successUsers[] = $namaLengkap;
             }
             return response()->json([
                 'status' => true,
                 'alert' => 'success',
-                'message' => 'Berhasil menambah kriteria untuk: ' . implode(', ', $successUsers),
+                'message' => 'Berhasil menambah kriteria.',
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -189,11 +193,15 @@ class KriteriaController extends Controller
 
     public function delete_ajax(Request $request, $no_kriteria, $id_user)
     {
-        $kriteria = KriteriaModel::where('no_kriteria', $no_kriteria)
-            ->where('id_user', $id_user)
-            ->first();
+        $dokumen_pendukung = DokumenPendukungModel::where('no_kriteria', $no_kriteria);
+        $dokumen_kriteria = DokumenKriteriaModel::where('no_kriteria', $no_kriteria);
+        $kriteria = KriteriaModel::where('no_kriteria', $no_kriteria);
         if ($kriteria) {
             $kriteria->delete();
+            $dokumen_pendukung->delete();
+            $dokumen_kriteria->delete();
+        }
+        if ($kriteria || $dokumen_pendukung || $dokumen_kriteria) {
             return response()->json([
                 'status' => true,
                 'message' => 'Data berhasil dihapus'
@@ -208,11 +216,41 @@ class KriteriaController extends Controller
 
     public function detail_ajax($no_kriteria, $id_user)
     {
-        $kriteria = KriteriaModel::with(['user', 'dokumenKriteria', 'dokumenPendukung'])
-            ->where('no_kriteria', $no_kriteria)
-            ->where('id_user', $id_user)
-            ->first();
-        return view('kriteria.detail_ajax', ['kriteria' => $kriteria]);
+        try {
+            $users = KriteriaModel::join('profile_user', 'kriteria.id_user', '=', 'profile_user.id_user')
+                ->where('kriteria.no_kriteria', $no_kriteria)
+                ->pluck('profile_user.nama_lengkap')
+                ->toArray();
+
+            $kriteria = KriteriaModel::select('kriteria.*', DB::raw('COUNT(DISTINCT dokumen_pendukung.id_dokumen_pendukung) as jumlah_dokumen'))
+                ->leftJoin('dokumen_pendukung', function($join) {
+                    $join->on('kriteria.no_kriteria', '=', 'dokumen_pendukung.no_kriteria')
+                         ->whereNull('dokumen_pendukung.deleted_at');
+                })
+                ->where('kriteria.no_kriteria', $no_kriteria)
+                ->where('kriteria.id_user', $id_user)
+                ->whereNull('kriteria.deleted_at')
+                ->groupBy('kriteria.no_kriteria', 'kriteria.id_user')
+                ->first();
+
+            if (!$kriteria) {
+                return response()->view('kriteria.detail_ajax', [
+                    'kriteria' => null,
+                    'user_list' => $users
+                ]);
+            }
+
+            return view('kriteria.detail_ajax', [
+                'kriteria' => $kriteria,
+                'user_list' => $users
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('Error in detail_ajax: ' . $e->getMessage());
+            return response()->json([
+                'status' => false,
+                'message' => 'Terjadi kesalahan saat mengambil detail kriteria'
+            ], 500);
+        }
     }
 
     public function export_excel()
@@ -300,7 +338,12 @@ class KriteriaController extends Controller
                 'profile_user.id_user'
             )
                 ->join('user', 'profile_user.id_user', '=', 'user.id_user')
+                ->leftJoin('kriteria', 'profile_user.id_user', '=', 'kriteria.id_user')
                 ->where('user.id_level', 2)
+                ->where(function($query) {
+                    $query->whereNull('kriteria.id_user')
+                          ->orWhereNotNull('kriteria.deleted_at');
+                })
                 ->orderBy('profile_user.nama_lengkap', 'asc')
                 ->get();
             return response()->json($users);
