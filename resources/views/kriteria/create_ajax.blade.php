@@ -91,7 +91,6 @@
             selectedUsers.push({ id: userId, name: userName });
             renderSelectedUsers();
             $('#id_user').val('');
-            selectedUsers = [];
         });
 
         function renderSelectedUsers() {
