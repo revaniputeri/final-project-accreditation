@@ -69,7 +69,7 @@ class AuthController extends Controller
         return response()->json([
             'status' => true,
             'message' => 'Verifikasi Berhasil',
-            'url' => route('newPassword', ['id' => $verif->id_profile]),
+            'url' => route('updatePassword', ['id' => $verif->id_profile]),
         ]);
     }
     public function newPassword($id)
