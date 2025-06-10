@@ -68,7 +68,7 @@
 
                     $(document).off('submit', '#formCreateKriteria, #formEditKriteria, #form-import');
 
-                    $(document).on('submit', '#formCreateKriteria, #formEditKriteria', function (e) {
+                    $(document).off('submit', '#formCreateKriteria, #formEditKriteria').on('submit', '#formCreateKriteria, #formEditKriteria', function (e) {
                         e.preventDefault();
                         var form = $(this);
 
