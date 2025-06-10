@@ -25,11 +25,23 @@ class ProfileUserSeeder extends Seeder
             ->where('kode_level', 'DIR')
             ->first();
 
+        $cities = [
+            'Jakarta', 'Bandung', 'Surabaya', 'Semarang', 'Yogyakarta',
+            'Medan', 'Palembang', 'Makassar', 'Denpasar', 'Malang',
+            'Bogor', 'Bekasi', 'Tangerang', 'Surakarta', 'Pontianak',
+            'Balikpapan', 'Manado', 'Padang', 'Pekanbaru', 'Banjarmasin'
+        ];
+
+        $months = [
+            'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+            'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+        ];
+
         // Admin profile (dummy)
         DB::table('profile_user')->insert([
             'id_user' => $admin->id_user,
             'nama_lengkap' => 'Rina Oktaviani',
-            'tempat_tanggal_lahir' => 'Jakarta, 8 Agustus 1988',
+            'tempat_tanggal_lahir' => $cities[array_rand($cities)] . ', ' . rand(1, 28) . ' ' . $months[array_rand($months)] . ' ' . rand(1980, 1990),
             'nidn' => $admin->username,
             'nip' => '198808081234567800',
             'jabatan_fungsional' => 'Administrator',
@@ -45,7 +57,7 @@ class ProfileUserSeeder extends Seeder
         DB::table('profile_user')->insert([
             'id_user' => $validator->id_user,
             'nama_lengkap' => 'Ahmad Fajar Pratama',
-            'tempat_tanggal_lahir' => 'Bandung, 12 Desember 1985',
+            'tempat_tanggal_lahir' => $cities[array_rand($cities)] . ', ' . rand(1, 28) . ' ' . $months[array_rand($months)] . ' ' . rand(1980, 1990),
             'nidn' => $validator->username,
             'nip' => '198512121234567801',
             'jabatan_fungsional' => 'Dosen Validator',
@@ -61,7 +73,7 @@ class ProfileUserSeeder extends Seeder
         DB::table('profile_user')->insert([
             'id_user' => $director->id_user,
             'nama_lengkap' => 'Prof. Dr. Surya Wijaya',
-            'tempat_tanggal_lahir' => 'Surabaya, 20 Mei 1970',
+            'tempat_tanggal_lahir' => $cities[array_rand($cities)] . ', ' . rand(1, 28) . ' ' . $months[array_rand($months)] . ' ' . rand(1970, 1980),
             'nidn' => $director->username,
             'nip' => '197005201234567802',
             'gelar_depan' => 'Prof. Dr.',
@@ -99,7 +111,7 @@ class ProfileUserSeeder extends Seeder
             DB::table('profile_user')->insert([
                 'id_user' => DB::table('user')->where('username', $nidn)->first()->id_user,
                 'nama_lengkap' => $dummyNamesStaff[$i],
-                'tempat_tanggal_lahir' => 'Kota, ' . rand(1, 28) . ' ' . ['Januari', 'Februari', 'Maret'][rand(0, 2)] . ' ' . rand(1980, 1990),
+                'tempat_tanggal_lahir' => $cities[array_rand($cities)] . ', ' . rand(1, 28) . ' ' . $months[array_rand($months)] . ' ' . rand(1980, 1990),
                 'nidn' => $nidn,
                 'nip' => '199' . rand(0, 9) . rand(0, 9) . rand(0, 9) . '0101' . rand(1000, 9999),
                 'jabatan_fungsional' => 'Staff Akademik',
@@ -141,7 +153,7 @@ class ProfileUserSeeder extends Seeder
             DB::table('profile_user')->insert([
                 'id_user' => DB::table('user')->where('username', $nidn)->first()->id_user,
                 'nama_lengkap' => $dummyNamesDosen[$i] . ' ' . $gelar[array_rand($gelar)],
-                'tempat_tanggal_lahir' => 'Kota, ' . rand(1, 28) . ' ' . ['Januari', 'Februari', 'Maret'][rand(0, 2)] . ' ' . rand(1970, 1985),
+                'tempat_tanggal_lahir' => $cities[array_rand($cities)] . ', ' . rand(1, 28) . ' ' . $months[array_rand($months)] . ' ' . rand(1970, 1995),
                 'nidn' => $nidn,
                 'nip' => '19' . rand(70, 85) . rand(0, 9) . rand(0, 9) . '0101' . rand(1000, 9999),
                 'gelar_depan' => (rand(0, 3) == 0 ? 'Dr.' : null),

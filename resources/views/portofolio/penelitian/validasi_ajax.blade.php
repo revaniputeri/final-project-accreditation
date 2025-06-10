@@ -69,8 +69,9 @@
                     <tr>
                         <th class="bg-light">Bukti</th>
                         <td>
-                            @if($penelitian->bukti)
-                                <a href="{{ asset('storage/portofolio/penelitian/' . $penelitian->bukti) }}" target="_blank">Lihat Bukti</a>
+                            @if ($penelitian->bukti)
+                                <a href="{{ asset('storage/portofolio/penelitian/' . $penelitian->bukti) }}"
+                                    target="_blank">Lihat Bukti</a>
                             @else
                                 Tidak ada file
                             @endif
@@ -96,7 +97,8 @@
             <h5 class="card-title mb-0">Form Validasi</h5>
         </div>
         <div class="card-body">
-            <form id="form-validasi" method="POST" action="{{ route('portofolio.penelitian.validasi_update', $penelitian->id_penelitian) }}">
+            <form id="form-validasi" method="POST"
+                action="{{ route('portofolio.penelitian.validasi_update', $penelitian->id_penelitian) }}">
                 @csrf
                 <div class="form-group">
                     <label for="status">Status Validasi</label>
@@ -111,8 +113,10 @@
                 </div>
 
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fas fa-times me-1"></i> Batal</button>
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i> Simpan Validasi</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal"><i
+                            class="fas fa-times me-1"></i> Batal</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i> Simpan
+                        Validasi</button>
                 </div>
             </form>
         </div>
@@ -121,7 +125,7 @@
 
 <script>
     $(document).ready(function() {
-        $('#formValidasiPenelitian').on('submit', function(e) {
+        $('#form-validasi').on('submit', function(e) {
             e.preventDefault();
             var form = $(this);
             $.ajax({
@@ -129,21 +133,37 @@
                 method: 'POST',
                 data: form.serialize(),
                 success: function(response) {
-                    $('#myModal').modal('hide');
-                    window.LaravelDataTables["p_penelitian-table"].ajax.reload();
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Berhasil',
-                        text: 'Status validasi berhasil diperbarui',
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
+                    if (response.status) {
+                        $('#myModal').modal('hide');
+                        if (typeof window.LaravelDataTables !== 'undefined') {
+                            window.LaravelDataTables["p_penelitian-table"].ajax.reload();
+                        } else {
+                            location.reload();
+                        }
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil',
+                            text: response.message,
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal',
+                            text: 'Gagal memperbarui status',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    }
                 },
                 error: function(xhr) {
                     Swal.fire({
                         icon: 'error',
-                        title: 'Gagal',
-                        text: 'Gagal memperbarui status validasi'
+                        title: 'Error',
+                        text: 'Terjadi kesalahan saat memperbarui status',
+                        timer: 2000,
+                        showConfirmButton: false
                     });
                 }
             });

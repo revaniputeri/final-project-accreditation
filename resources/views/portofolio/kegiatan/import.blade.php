@@ -6,7 +6,25 @@
     @csrf
     <div class="modal-body">
         <div class="alert alert-info">
-            <i class="fas fa-info-circle"></i> Pastikan file Excel mengikuti format template.
+            <i class="fas fa-info-circle"></i> Pastikan file Excel mengikuti format template. Perhatikan bahwa kolom
+            <b>Jenis Kegiatan</b> dan <b>Peran</b> harus mengikuti pilihan berikut:
+            <div class="mt-2">
+                <strong>Jenis Kegiatan:</strong>
+                <ul class="mb-1">
+                    <li>Lokakarya</li>
+                    <li>Workshop</li>
+                    <li>Pagelaran</li>
+                    <li>Peragaan</li>
+                    <li>Pelatihan</li>
+                    <li>Lain_lain</li>
+                </ul>
+                <strong>Peran:</strong>
+                <ul>
+                    <li>Penyaji</li>
+                    <li>Peserta</li>
+                    <li>Lainnya</li>
+                </ul>
+            </div>
         </div>
 
         <div class="mb-3">

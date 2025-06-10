@@ -40,13 +40,6 @@
         </div>
 
         <div class="mb-3">
-            <label for="sumber_data" class="form-label">Sumber Data</label>
-            <input type="text" class="form-control" id="sumber_data" name="sumber_data"
-                value="{{ $profesi->sumber_data }}" required>
-            <div class="invalid-feedback" id="error_sumber_data"></div>
-        </div>
-
-        <div class="mb-3">
             <label for="bukti" class="form-label">Bukti (PDF, JPG, PNG, max 2MB)</label>
             <div class="input-group">
                 <div class="input-group-prepend">
@@ -58,8 +51,12 @@
                 <input type="text" class="form-control" id="bukti_text" placeholder="No file chosen" readonly>
                 <div id="error_bukti" class="invalid-feedback"></div>
             </div>
+            @if ($profesi->bukti)
+                <small class="form-text text-muted mt-1">File saat ini:
+                    <a href="{{ asset('storage/portofolio/profesi/' . $profesi->bukti) }}" target="_blank">{{ $profesi->bukti }}</a>
+                </small>
+            @endif
         </div>
-
     </div>
 
     <div class="modal-footer">

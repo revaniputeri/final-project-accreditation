@@ -6,7 +6,13 @@
     @csrf
     <div class="modal-body">
         <div class="alert alert-info">
-            <i class="fas fa-info-circle"></i> Pastikan file Excel mengikuti format template.
+            <i class="fas fa-info-circle"></i> Pastikan file Excel mengikuti format template. Perhatikan bahwa kolom
+            <b>Peran</b> harus mengikuti pilihan berikut:
+            <ul>
+                <li>Ketua</li>
+                <li>Anggota</li>
+            </ul>
+            Dan kolom <b>Melibatkan Mahasiswa S2</b> hanya boleh diisi dengan 'Ya' atau 'Tidak'.
         </div>
 
         <div class="mb-3">

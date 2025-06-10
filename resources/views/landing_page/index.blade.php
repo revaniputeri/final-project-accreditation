@@ -9,7 +9,7 @@
             <div class="row gy-4">
                 <div class="col-lg-7 order-2 order-lg-1 d-flex flex-column justify-content-center">
                     <h1>Selamat Datang di Akresa</h1>
-                    <p>Sistem Akreditasi Program Studi Sistem Informasi Bisnis Jurusan Teknologi Informasi,
+                    <p><strong class="text-primary">Akreditasi Sistem Akademik</strong> Program Studi Sistem Informasi Bisnis Jurusan Teknologi Informasi,
                         Politeknik
                         Negeri Malang</p>
                     <div class="d-flex">

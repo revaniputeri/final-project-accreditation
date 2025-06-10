@@ -27,7 +27,47 @@ class PHKIController extends Controller
         $isDos = $role === 'DOS';
         $isAng = $role === 'ANG';
 
-        return $dataTable->render('portofolio.hki.index', compact('isAdm', 'isAng', 'isDos'));
+        // Distribusi jenis skema HKI (pie chart)
+        $skemaDistribution = PHKIModel::select('skema', DB::raw('count(*) as total'))
+            ->groupBy('skema')
+            ->orderBy('total', 'desc')
+            ->get();
+
+        // Keterlibatan mahasiswa S2 (bar chart)
+        $mahasiswaS2Distribution = PHKIModel::select('melibatkan_mahasiswa_s2', DB::raw('count(*) as total'))
+            ->groupBy('melibatkan_mahasiswa_s2')
+            ->orderBy('melibatkan_mahasiswa_s2')
+            ->get();
+
+        // Tren HKI per tahun (line chart)
+        $trenPerTahun = PHKIModel::select('tahun', DB::raw('count(*) as total'))
+            ->groupBy('tahun')
+            ->orderBy('tahun')
+            ->get();
+
+        // Prepare data arrays for charts
+        $skemaLabels = $skemaDistribution->pluck('skema');
+        $skemaData = $skemaDistribution->pluck('total');
+
+        $mahasiswaS2Labels = $mahasiswaS2Distribution->map(function ($item) {
+            return $item->melibatkan_mahasiswa_s2 ? 'Ya' : 'Tidak';
+        });
+        $mahasiswaS2Data = $mahasiswaS2Distribution->pluck('total');
+
+        $trenLabels = $trenPerTahun->pluck('tahun');
+        $trenData = $trenPerTahun->pluck('total');
+
+        return $dataTable->render('portofolio.hki.index', compact(
+            'isAdm',
+            'isAng',
+            'isDos',
+            'skemaLabels',
+            'skemaData',
+            'mahasiswaS2Labels',
+            'mahasiswaS2Data',
+            'trenLabels',
+            'trenData'
+        ));
     }
 
     private function generateUniqueFilename($directory, $filename)
@@ -141,6 +181,17 @@ class PHKIController extends Controller
                 ]);
 
                 $data['id_user'] = $id_user;
+
+                if ($role === 'DOS') {
+                    $data['status'] = 'Tervalidasi';
+                    $data['sumber_data'] = 'dosen';
+                } elseif ($role === 'ADM') {
+                    $data['status'] = 'Perlu Validasi';
+                    $data['sumber_data'] = 'p3m';
+                } else {
+                    $data['status'] = $request->input('status', 'Perlu Validasi');
+                    $data['sumber_data'] = $request->input('sumber_data', 'p3m');
+                }
 
                 if ($request->hasFile('bukti')) {
                     $file = $request->file('bukti');
@@ -275,8 +326,15 @@ class PHKIController extends Controller
                     'bukti',
                 ]);
 
-                if ($role === 'ADM') {
-                    $data['status'] = 'perlu validasi';
+                if ($role === 'DOS') {
+                    $data['status'] = 'Tervalidasi';
+                    $data['sumber_data'] = 'dosen';
+                } elseif ($role === 'ADM') {
+                    $data['status'] = 'Perlu Validasi';
+                    $data['sumber_data'] = 'p3m';
+                } else {
+                    $data['status'] = $request->input('status', 'Perlu Validasi');
+                    $data['sumber_data'] = $request->input('sumber_data', 'p3m');
                 }
 
                 if ($request->hasFile('bukti')) {
@@ -335,13 +393,7 @@ class PHKIController extends Controller
             if ($hki->bukti && Storage::exists('public/portofolio/hki/' . $hki->bukti)) {
                 Storage::delete('public/portofolio/hki/' . $hki->bukti);
             }
-
-            // Cek apakah model memakai SoftDeletes
-            if (method_exists($hki, 'forceDelete')) {
-                $hki->forceDelete(); // hapus permanen
-            } else {
-                $hki->delete();
-            }
+            $hki->delete();
 
             return response()->json([
                 'status' => true,
@@ -548,7 +600,7 @@ class PHKIController extends Controller
         }
 
         if ($status = request('filter_status')) {
-            $query->where('p_hki.status_hki', $status);
+            $query->where('p_hki.status', $status);
         }
 
         if ($sumber = request('filter_sumber')) {
@@ -640,7 +692,7 @@ class PHKIController extends Controller
         }
 
         if ($status = request('filter_status')) {
-            $query->where('status_hki', $status);
+            $query->where('status', $status);
         }
 
         if ($sumber = request('filter_sumber')) {

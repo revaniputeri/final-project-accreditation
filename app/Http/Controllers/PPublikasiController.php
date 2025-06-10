@@ -70,7 +70,7 @@ class PPublikasiController extends Controller
                 'judul' => 'required|string|max:255',
                 'tempat_publikasi' => 'required|string|max:100',
                 'tahun_publikasi' => 'required|integer',
-                'jenis_publikasi' => 'required|in:jurnal,prosiding,poster',
+                'jenis_publikasi' => 'required|in:artikel ilmiah,karya ilmiah,karya seni,lainnya',
                 'dana' => 'required|numeric',
                 'melibatkan_mahasiswa_s2' => 'required|boolean',
                 'bukti' => $role === 'DOS' ? 'required|file|mimes:pdf,jpg,jpeg,png|max:2048' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
@@ -215,11 +215,25 @@ class PPublikasiController extends Controller
         $role = $user ? $user->getRole() : null;
 
         if ($request->ajax() || $request->wantsJson()) {
+
+            // Log input data for debugging
+            Log::info('update_ajax input data', [
+                'id' => $id,
+                'judul' => $request->input('judul'),
+                'tempat_publikasi' => $request->input('tempat_publikasi'),
+                'tahun_publikasi' => $request->input('tahun_publikasi'),
+                'jenis_publikasi' => $request->input('jenis_publikasi'),
+                'dana' => $request->input('dana'),
+                'melibatkan_mahasiswa_s2' => $request->input('melibatkan_mahasiswa_s2'),
+                'id_user' => $user ? $user->id_user : null,
+                'role' => $role,
+            ]);
+
             $rules = [
                 'judul' => 'required|string|max:255',
                 'tempat_publikasi' => 'required|string|max:100',
                 'tahun_publikasi' => 'required|integer',
-                'jenis_publikasi' => 'required|in:jurnal,prosiding,poster',
+                'jenis_publikasi' => 'required|in:artikel ilmiah,karya ilmiah,karya seni,lainnya',
                 'dana' => 'required|numeric',
                 'melibatkan_mahasiswa_s2' => 'required|boolean',
                 'bukti' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
@@ -232,6 +246,12 @@ class PPublikasiController extends Controller
             $validator = Validator::make($request->all(), $rules);
 
             if ($validator->fails()) {
+                Log::error('Validation failed in update_ajax', [
+                    'user_id' => $user ? $user->id_user : null,
+                    'role' => $role,
+                    'errors' => $validator->errors()->toArray(),
+                    'input' => $request->all(),
+                ]);
                 return response()->json([
                     'status' => false,
                     'alert' => 'error',
@@ -460,13 +480,13 @@ class PPublikasiController extends Controller
                     'tahun_publikasi' => $tahunPublikasi,
                     'jenis_publikasi' => $jenisPublikasi,
                     'dana' => $dana,
-                    'melibatkan_mahasiswa_s2' => in_array($melibatkanMhsS2, ['true', '1', 'yes']) ? true : false,
+                    'melibatkan_mahasiswa_s2' => in_array($melibatkanMhsS2, ['true', '1', 'yes', 'ya']) ? true : false,
                 ], [
                     'id_user' => 'required|integer|exists:user,id_user',
                     'judul' => 'required|string|max:255',
                     'tempat_publikasi' => 'required|string|max:100',
                     'tahun_publikasi' => 'required|integer|min:1900|max:' . (date('Y') + 5),
-                    'jenis_publikasi' => 'required|in:jurnal,prosiding,poster',
+                    'jenis_publikasi' => 'required|in:artikel ilmiah,karya ilmiah,karya seni,lainnya',
                     'dana' => 'required|numeric',
                     'melibatkan_mahasiswa_s2' => 'required|boolean',
                 ]);
@@ -483,7 +503,7 @@ class PPublikasiController extends Controller
                     'tahun_publikasi' => $tahunPublikasi,
                     'jenis_publikasi' => $jenisPublikasi,
                     'dana' => $dana,
-                    'melibatkan_mahasiswa_s2' => in_array($melibatkanMhsS2, ['true', '1', 'yes']) ? true : false,
+                    'melibatkan_mahasiswa_s2' => in_array($melibatkanMhsS2, ['true', '1', 'yes', 'ya']) ? true : false,
                     'status' => $role === 'DOS' ? 'tervalidasi' : 'perlu validasi',
                     'sumber_data' => $role === 'DOS' ? 'dosen' : 'p3m',
                     'created_at' => now(),
@@ -677,4 +697,3 @@ class PPublikasiController extends Controller
         return $pdf->stream('Data Publikasi ' . date('d-m-Y H:i:s') . '.pdf');
     }
 }
-

@@ -10,7 +10,7 @@ class PPengabdianSeeder extends Seeder
     public function run()
     {
         $pengabdians = [];
-        $skema = ['KKN', 'PPM', 'Ipteks', 'Pengabdian Mandiri'];
+        $skema = ['DIPA Internal', 'SWADANA', 'Hibah', 'Pengabdian Mandiri'];
 
         $dosenUsers = DB::table('user')
             ->join('level', 'user.id_level', '=', 'level.id_level')

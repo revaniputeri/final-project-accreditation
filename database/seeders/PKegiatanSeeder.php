@@ -11,7 +11,7 @@ class PKegiatanSeeder extends Seeder
     {
         $kegiatans = [];
         $jenis_kegiatan = ['Lokakarya', 'Workshop', 'Pagelaran', 'Peragaan', 'Pelatihan', 'Lain_lain'];
-        $peran = ['penyaji', 'peserta', 'penyaji_dan_peserta'];
+        $peran = ['penyaji', 'peserta', 'lainnya'];
 
         $dosenUsers = DB::table('user')
             ->join('level', 'user.id_level', '=', 'level.id_level')
