@@ -159,7 +159,7 @@
                 @endif
 
                 <!-- VAL: Validasi -->
-                @if ($isAdm || $isVal)
+                @if ($isVal)
                     <div class="dropdown-divider"></div>
                     <!-- Header Validasi Kriteria -->
                     <li class="nav-header">Validasi Kriteria</li>
@@ -174,7 +174,7 @@
                 @endif
 
                 <!-- DIR: Dokumen Akhir -->
-                @if ($isDir || $isVal || $isAdm)
+                @if ($isDir || $isVal)
                     <div class="dropdown-divider"></div>
                     <li class="nav-header">Dokumen Akhir</li>
 

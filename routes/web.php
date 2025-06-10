@@ -123,7 +123,7 @@ Route::middleware('auth')->group(function () {
     });
 
     // Route untuk validasi
-    Route::prefix('validasi')->name('validasi.')->middleware('authorize:ADM,VAL')->group(function () {
+    Route::prefix('validasi')->name('validasi.')->middleware('authorize:VAL')->group(function () {
         Route::GET('/', [ValidasiController::class, 'index'])->name('index');
         Route::POST('/showFile', [ValidasiController::class, 'showFile'])->name('showFile');
         Route::PUT('/valid', [ValidasiController::class, 'valid'])->name('valid');
@@ -377,12 +377,11 @@ Route::middleware('auth')->group(function () {
     Route::prefix('chart')->name('chart.')->middleware('authorize:ADM,VAL,ANG')->group(function () {
         Route::get('/', [DashboardController::class, 'index'])->name('index');
         Route::get('/more-info', [DashboardController::class, 'moreInfo'])->name('moreInfo');
-    
+
     });
 
-
     // Route untuk dokumen akhir
-    Route::prefix('dokumen-akhir')->name('dokumen_akhir.')->middleware('authorize:VAL,DIR,ADM')->group(function () {
+    Route::prefix('dokumen-akhir')->name('dokumen_akhir.')->middleware('authorize:VAL,DIR')->group(function () {
         Route::get('/', [DokumenAkhirController::class, 'index'])->name('index');
     });
 });
