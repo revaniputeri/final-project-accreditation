@@ -58,18 +58,29 @@
                 @csrf
                 <div class="form-group">
                     <label for="nidn">NIDN</label>
-                    <input type="text" class="form-control" id="nidn" name="nidn" required autofocus>
+                    <div class="input-with-icon">
+                        <i class="fas fa-id-card"></i>
+                        <input type="text" class="form-control" id="nidn" name="nidn"
+                            placeholder="Enter your NIDN" required autofocus>
+                    </div>
                     <div class="error-message" id="error_nidn"></div>
                 </div>
                 <div class="form-group">
                     <label for="tempat_tanggal_lahir">Tempat Tanggal Lahir</label>
-                    <input type="text" class="form-control" id="tempat_tanggal_lahir" name="tempat_tanggal_lahir"
-                        required>
+                    <div class="input-with-icon">
+                        <i class="fas fa-calendar-alt"></i>
+                        <input type="text" class="form-control" id="tempat_tanggal_lahir" name="tempat_tanggal_lahir"
+                            placeholder="Enter your birth place and date" required>
+                    </div>
                     <div class="error-message" id="error_tempat_tanggal_lahir"></div>
                 </div>
                 <div class="form-group">
                     <label for="no_telp">Nomor Telfon</label>
-                    <input type="text" class="form-control" id="no_telp" name="no_telp" required>
+                    <div class="input-with-icon">
+                        <i class="fas fa-phone"></i>
+                        <input type="text" class="form-control" id="no_telp" name="no_telp"
+                            placeholder="Enter your phone number" required>
+                    </div>
                     <div class="error-message" id="error_no_telp"></div>
                 </div>
                 <div class="form-options">
@@ -84,12 +95,20 @@
                 @method('PUT')
                 <div class="form-group">
                     <label for="password">Password Baru</label>
-                    <input type="password" class="form-control" id="password" name="password" required autofocus>
+                    <div class="input-with-icon">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" class="form-control" id="password" name="password"
+                            placeholder="Enter your new password" required autofocus>
+                    </div>
                     <div class="error-message" id="error_password"></div>
                 </div>
                 <div class="form-group">
                     <label for="password_confirmation">Verifikasi Password</label>
-                    <input type="password" class="form-control" id="password_confirmation" name="password_confirmation" required>
+                    <div class="input-with-icon">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" class="form-control" id="password_confirmation"
+                            name="password_confirmation" placeholder="Enter your new password again" required>
+                    </div>
                     <div class="error-message" id="error_password_confirmation"></div>
                 </div>
                 <div class="form-options">
@@ -243,7 +262,7 @@
             padding: 12px 20px 12px 45px;
             border-radius: 10px;
             border: 1px solid rgba(255, 255, 255, 0.2);
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.685);
             color: black;
             font-size: 0.95rem;
             transition: all var(--transition-speed) ease;
@@ -372,7 +391,8 @@
             });
 
             // Back to login form (for forgot password and update password forms)
-            $('#forgotPasswordForm .forgot-password, #formUpdatePassword .forgot-password').on('click', function(e) {
+            $('#forgotPasswordForm .forgot-password, #formUpdatePassword .forgot-password').on('click', function(
+                e) {
                 e.preventDefault();
                 $('#forgotPasswordForm').hide();
                 $('#formUpdatePassword').hide();
@@ -489,7 +509,7 @@
             });
 
             // New password form submission
-            $(document).on('submit', '#formUpdatePassword', function (e) {
+            $(document).on('submit', '#formUpdatePassword', function(e) {
                 e.preventDefault();
                 var form = $(this);
 
@@ -512,13 +532,14 @@
                     headers: {
                         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                     },
-                    success: function (response) {
+                    success: function(response) {
                         $('#myModal').modal('hide');
 
                         if (response.alert && response.message) {
                             Swal.fire({
                                 icon: response.alert,
-                                title: response.alert === 'success' ? 'Sukses' : 'Error',
+                                title: response.alert === 'success' ? 'Sukses' :
+                                    'Error',
                                 text: response.message,
                                 timer: 2000,
                                 showConfirmButton: false
@@ -529,12 +550,14 @@
                             });
                         }
                     },
-                    error: function (xhr) {
+                    error: function(xhr) {
                         $('#myModal').modal('hide');
-                        if (xhr.responseJSON && xhr.responseJSON.alert && xhr.responseJSON.message) {
+                        if (xhr.responseJSON && xhr.responseJSON.alert && xhr.responseJSON
+                            .message) {
                             Swal.fire({
                                 icon: xhr.responseJSON.alert,
-                                title: xhr.responseJSON.alert === 'success' ? 'Sukses' : 'Error',
+                                title: xhr.responseJSON.alert === 'success' ? 'Sukses' :
+                                    'Error',
                                 text: xhr.responseJSON.message,
                                 timer: 2000,
                                 showConfirmButton: false
@@ -543,7 +566,8 @@
                                 location.reload();
                             });
                         } else {
-                            let msg = xhr.statusText || 'Terjadi kesalahan saat menyimpan data.';
+                            let msg = xhr.statusText ||
+                                'Terjadi kesalahan saat menyimpan data.';
                             Swal.fire('Error!', msg, 'error');
                         }
                     }
