@@ -5,6 +5,7 @@
             <div class="row gy-4">
                 <div class="col-lg-6 col-md-6 footer-about">
                     <a href="{{ url('/') }}" class="logo d-flex align-items-center">
+                        <img src="{{ asset('img/akresa-logo.svg') }}" alt="Akresa Logo" class="me-2">
                         <span class="sitename">Akresa</span>
                     </a>
                     <div class="footer-contact pt-3">

@@ -32,6 +32,7 @@
             <label for="tingkat" class="form-label">Tingkat</label>
             <select class="form-control" id="tingkat" name="tingkat" required>
                 <option value="">Pilih Tingkat</option>
+                <option value="Lokal" {{ $organisasi->tingkat == 'Lokal' ? 'selected' : '' }}>Lokal</option>
                 <option value="Nasional" {{ $organisasi->tingkat == 'Nasional' ? 'selected' : '' }}>Nasional</option>
                 <option value="Internasional" {{ $organisasi->tingkat == 'Internasional' ? 'selected' : '' }}>Internasional</option>
             </select>
@@ -50,6 +51,11 @@
                     value="{{ $organisasi->bukti ? $organisasi->bukti : 'No file chosen' }}" readonly>
                 <div id="error_bukti" class="invalid-feedback"></div>
             </div>
+            @if ($organisasi->bukti)
+                <small class="form-text text-muted mt-1">File saat ini:
+                    <a href="{{ asset('storage/portofolio/organisasi/' . $organisasi->bukti) }}" target="_blank">{{ $organisasi->bukti }}</a>
+                </small>
+            @endif
         </div>
     </div>
     <div class="modal-footer">

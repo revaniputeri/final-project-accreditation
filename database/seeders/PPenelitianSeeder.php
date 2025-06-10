@@ -10,7 +10,7 @@ class PPenelitianSeeder extends Seeder
     public function run()
     {
         $penelitians = [];
-        $skema = ['Hibah Dikti', 'Hibah Internal', 'Kerjasama Industri', 'Mandiri'];
+        $skema = ['DIPA Internal', 'SWADANA', 'Hibah', 'Penelitian Mandiri'];
 
         $dosenUsers = DB::table('user')
             ->join('level', 'user.id_level', '=', 'level.id_level')

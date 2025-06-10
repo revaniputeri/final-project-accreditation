@@ -10,7 +10,7 @@ class POrganisasiSeeder extends Seeder
     public function run()
     {
         $organisasis = [];
-        $tingkat = ['Nasional', 'Internasional'];
+        $tingkat = ['Lokal', 'Nasional', 'Internasional'];
 
         $dosenUsers = DB::table('user')
             ->join('level', 'user.id_level', '=', 'level.id_level')

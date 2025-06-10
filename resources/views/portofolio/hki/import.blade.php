@@ -6,7 +6,8 @@
     @csrf
     <div class="modal-body">
         <div class="alert alert-info">
-            <i class="fas fa-info-circle"></i> Pastikan file Excel mengikuti format template.
+            <i class="fas fa-info-circle"></i> Pastikan file Excel mengikuti format template. Perhatikan bahwa kolom
+            <b>Melibatkan Mahasiswa S2</b> hanya boleh diisi dengan 'Ya' atau 'Tidak'.
         </div>
 
         <div class="mb-3">

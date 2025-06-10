@@ -6,7 +6,16 @@
     @csrf
     <div class="modal-body">
         <div class="alert alert-info">
-            <i class="fas fa-info-circle"></i> Pastikan file Excel mengikuti format template.
+            <i class="fas fa-info-circle"></i> Pastikan file Excel mengikuti format template. Perhatikan bahwa kolom
+            <b>Tingkat</b> harus mengikuti pilihan berikut:
+            <div class="mt-2">
+                <strong>Tingkat:</strong>
+                <ul class="mb-1">
+                    <li>Lokal</li>
+                    <li>Nasional</li>
+                    <li>Internasional</li>
+                </ul>
+            </div>
         </div>
 
         <div class="mb-3">

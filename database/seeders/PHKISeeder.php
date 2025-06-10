@@ -10,7 +10,7 @@ class PHKISeeder extends Seeder
     public function run()
     {
         $hkis = [];
-        $skema = ['Paten', 'Paten Sederhana', 'Hak Cipta', 'Merek'];
+        $skema = ['Paten', 'Hak Cipta', 'Merek'];
 
         $dosenUsers = DB::table('user')
             ->join('level', 'user.id_level', '=', 'level.id_level')

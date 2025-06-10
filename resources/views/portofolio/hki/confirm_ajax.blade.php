@@ -33,6 +33,7 @@
                 data: formData,
                 success: function (response) {
                     if (response.status) {
+                        $('#myModal').modal('hide');
                         Swal.fire({
                             icon: 'success',
                             title: 'Berhasil',
@@ -40,9 +41,7 @@
                             timer: 1500,
                             showConfirmButton: false
                         }).then(() => {
-                            window.location.reload(); // reload halaman setelah berhasil
-                            // Atau redirect ke halaman index:
-                            // window.location.href = "{{ route('portofolio.hki.index') }}";
+                            window.LaravelDataTables["p_hki-table"].ajax.reload();
                         });
                     } else {
                         Swal.fire({

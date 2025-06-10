@@ -31,9 +31,10 @@
             <label for="jenis_publikasi" class="form-label">Jenis Publikasi</label>
             <select class="form-control" id="jenis_publikasi" name="jenis_publikasi" required>
                 <option value="">-- Pilih Jenis Publikasi --</option>
-                <option value="jurnal">Jurnal</option>
-                <option value="prosiding">Prosiding</option>
-                <option value="poster">Poster</option>
+                <option value="artikel ilmiah">Artikel Ilmiah</option>
+                <option value="karya ilmiah">Karya Ilmiah</option>
+                <option value="karya seni">Karya Seni</option>
+                <option value="lainnya">Lainnya</option>
             </select>
             <div class="invalid-feedback" id="error_jenis_publikasi"></div>
         </div>

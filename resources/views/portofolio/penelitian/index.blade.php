@@ -16,16 +16,25 @@
 
 @section('content')
     <div class="container-fluid">
+
+        <!-- Penelitian -->
+        <div class="callout callout-primary shadow-sm">
+            <h5>Penelitian</h5>
+            <p>Penelitian yang dilakukan dosen tetap sesuai bidang keahlian Program Studi dalam tiga tahun terakhir.</p>
+        </div>
+
         {{-- DataTable --}}
         <div class="card shadow-sm">
             <div class="card-header bg-primary border-bottom">
                 <div class="d-flex justify-content-between align-items-center">
                     <h3 class="card-title mb-0 text-white">Daftar Penelitian</h3>
                     <div class="card-tools">
-                        <a id="exportPdfBtn" class="btn btn-custom-blue me-2" href="{{ route('portofolio.penelitian.export_pdf') }}">
+                        <a id="exportPdfBtn" class="btn btn-custom-blue me-2"
+                            href="{{ route('portofolio.penelitian.export_pdf') }}">
                             <i class="fa-solid fa-file-pdf me-2"></i> Export PDF
                         </a>
-                        <a id="exportExcelBtn" class="btn btn-custom-blue me-2" href="{{ route('portofolio.penelitian.export_excel') }}">
+                        <a id="exportExcelBtn" class="btn btn-custom-blue me-2"
+                            href="{{ route('portofolio.penelitian.export_excel') }}">
                             <i class="fas fa-file-excel me-2"></i> Export Excel
                         </a>
                         @if ($isAdm || $isDos)
@@ -80,10 +89,107 @@
             </div>
         </div>
     </div>
+
+    @if ($isAdm || $isAng)
+        <!-- Penelitian Charts -->
+        <div class="callout callout-primary shadow-sm">
+            <h5>Chart</h5>
+            <p>Chart berikut menampilkan distribusi skema penelitian, tren penelitian per tahun, peran dosen dalam
+                penelitian, keterlibatan mahasiswa S2, dan tren dana untuk penelitian per tahun per skema.</p>
+        </div>
+
+        <div class="container-fluid mt-3">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-primary border-bottom">
+                            <h5 class="card-title mb-0 text-white">Distribusi Skema Penelitian</h5>
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body collapse">
+                            <canvas id="pieChartSkemaPenelitian"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-primary border-bottom">
+                            <h5 class="card-title mb-0 text-white">Tren Penelitian Per Tahun</h5>
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body collapse">
+                            <canvas id="lineChartTrenPenelitian"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 mt-3">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-primary border-bottom">
+                            <h5 class="card-title mb-0 text-white">Peran Dosen dalam Penelitian</h5>
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body collapse">
+                            <canvas id="doughnutChartPeranPenelitian"></canvas>
+                            <div id="peranLegendPenelitian" class="mt-3"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 mt-3">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-primary border-bottom">
+                            <h5 class="card-title mb-0 text-white">Keterlibatan Mahasiswa S2</h5>
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body collapse">
+                            <canvas id="barChartMahasiswaS2Penelitian"></canvas>
+                            <div id="mahasiswaS2LegendPenelitian" class="mt-3"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-12 mt-3">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-primary border-bottom">
+                            <h5 class="card-title mb-0 text-white">Tren Dana Penelitian Per Tahun Per Skema</h5>
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body collapse">
+                            <canvas id="multiLineChartDanaPenelitian"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
 @endsection
 
 @push('scripts')
     {!! $dataTable->scripts() !!}
+
+    {{-- Modal --}}
     <script>
         function modalAction(url) {
             $.get(url)
@@ -92,12 +198,16 @@
                     $('#myModal').modal('show');
 
                     $(document).off('submit', '#formCreatePenelitian, #formEditPenelitian');
+
                     $(document).on('submit', '#formCreatePenelitian, #formEditPenelitian', function(e) {
                         e.preventDefault();
                         var form = $(this);
                         var formData = new FormData(form[0]);
-                        var method = form.find('input[name="_method"]').val() || 'POST';
-
+                        var method = 'POST';
+                        var methodInput = form.find('input[name="_method"]');
+                        if (methodInput.length) {
+                            formData.append('_method', methodInput.val());
+                        }
                         $.ajax({
                             url: form.attr('action'),
                             method: method,
@@ -121,7 +231,8 @@
                                 }
                             },
                             error: function(xhr) {
-                                if (xhr.status === 422 && xhr.responseJSON && xhr.responseJSON.msgField) {
+                                if (xhr.status === 422 && xhr.responseJSON && xhr.responseJSON
+                                    .msgField) {
                                     var errors = xhr.responseJSON.msgField;
                                     $.each(errors, function(field, messages) {
                                         var input = form.find('[name="' + field + '"]');
@@ -130,11 +241,20 @@
                                     });
                                 } else {
                                     $('#myModal').modal('hide');
-                                    Swal.fire({
-                                        icon: 'error',
-                                        title: 'Error',
-                                        text: xhr.responseJSON?.message || 'Gagal menyimpan data'
-                                    });
+                                    window.LaravelDataTables["p_penelitian-table"].ajax.reload();
+                                    if (xhr.responseJSON && xhr.responseJSON.alert && xhr
+                                        .responseJSON.message) {
+                                        Swal.fire({
+                                            icon: xhr.responseJSON.alert,
+                                            title: xhr.responseJSON.alert === 'success' ?
+                                                'Sukses' : 'Error',
+                                            text: xhr.responseJSON.message,
+                                            timer: 2000,
+                                            showConfirmButton: false
+                                        });
+                                    } else {
+                                        Swal.fire('Error!', 'Gagal menyimpan data.', 'error');
+                                    }
                                 }
                             }
                         });
@@ -147,7 +267,8 @@
                         var formData = new FormData(form[0]);
                         var submitBtn = form.find('button[type="submit"]');
 
-                        submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i> Memproses...');
+                        submitBtn.prop('disabled', true).html(
+                            '<i class="fas fa-spinner fa-spin me-2"></i> Memproses...');
 
                         $.ajax({
                             url: form.attr('action'),
@@ -159,23 +280,27 @@
                                 $('#myModal').modal('hide');
                                 Swal.fire({
                                     icon: response.alert,
-                                    title: response.alert === 'success' ? 'Sukses' : 'Error',
+                                    title: response.alert === 'success' ? 'Sukses' :
+                                        'Error',
                                     text: response.message,
                                     timer: 2000,
                                     showConfirmButton: false
                                 }).then(() => {
-                                    window.LaravelDataTables["p_penelitian-table"].ajax.reload();
+                                    window.LaravelDataTables["p_penelitian-table"].ajax
+                                        .reload();
                                 });
                             },
                             error: function(xhr) {
                                 Swal.fire({
                                     icon: 'error',
                                     title: 'Error',
-                                    text: xhr.responseJSON?.message || 'Gagal mengimpor data'
+                                    text: xhr.responseJSON?.message ||
+                                        'Gagal mengimpor data'
                                 });
                             },
                             complete: function() {
-                                submitBtn.prop('disabled', false).html('<i class="fas fa-upload me-2"></i> Upload');
+                                submitBtn.prop('disabled', false).html(
+                                    '<i class="fas fa-upload me-2"></i> Upload');
                             }
                         });
                     });
@@ -244,6 +369,238 @@
             data.filter_status = $('#filterStatus').val();
             data.filter_sumber = $('#filterSumberData').val();
             data.filter_tahun = $('#filterTahun').val();
+        });
+    </script>
+
+    {{-- Chart.js --}}
+    <script>
+        // Prepare chart data from PHP variables
+        const skemaLabels = @json($skemaLabels);
+        const skemaData = @json($skemaData);
+        const trenLabels = @json($trenLabels);
+        const trenData = @json($trenData);
+        const peranLabels = @json($peranLabels);
+        const peranData = @json($peranData);
+        const mahasiswaS2Labels = @json($mahasiswaS2Labels);
+        const mahasiswaS2Data = @json($mahasiswaS2Data);
+        const multiLineDataSets = @json($multiLineDataSets);
+
+        const chartColors = [
+            '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+            '#FF9F40', '#E7E9ED', '#76A346', '#D9534F', '#5BC0DE'
+        ];
+
+        // Pie Chart - Distribusi Skema Penelitian
+        const ctxPieSkemaPenelitian = document.getElementById('pieChartSkemaPenelitian').getContext('2d');
+        const pieChartSkemaPenelitian = new Chart(ctxPieSkemaPenelitian, {
+            type: 'pie',
+            data: {
+                labels: skemaLabels,
+                datasets: [{
+                    data: skemaData,
+                    backgroundColor: chartColors,
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                    },
+                    title: {
+                        display: false,
+                    }
+                }
+            }
+        });
+
+        // Line Chart - Tren Penelitian Per Tahun
+        const ctxLineTrenPenelitian = document.getElementById('lineChartTrenPenelitian').getContext('2d');
+        const lineChartTrenPenelitian = new Chart(ctxLineTrenPenelitian, {
+            type: 'line',
+            data: {
+                labels: trenLabels,
+                datasets: [{
+                    label: 'Jumlah Penelitian',
+                    data: trenData,
+                    borderColor: '#36A2EB',
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    fill: true,
+                    tension: 0.3,
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        precision: 0,
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                    },
+                    title: {
+                        display: false,
+                    }
+                }
+            }
+        });
+
+        // Doughnut Chart - Peran Dosen dalam Penelitian (with percentage and count)
+        const ctxDoughnutPeranPenelitian = document.getElementById('doughnutChartPeranPenelitian').getContext('2d');
+        const totalPeranPenelitian = peranData.reduce((a, b) => a + b, 0);
+        const peranPercentagesPenelitian = peranData.map(value => ((value / totalPeranPenelitian) * 100).toFixed(1));
+
+        const doughnutChartPeranPenelitian = new Chart(ctxDoughnutPeranPenelitian, {
+            type: 'doughnut',
+            data: {
+                labels: peranLabels,
+                datasets: [{
+                    data: peranData,
+                    backgroundColor: chartColors,
+                }]
+            },
+            options: {
+                responsive: true,
+                cutout: '50%',
+                plugins: {
+                    legend: {
+                        display: false,
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.parsed || 0;
+                                const percentage = peranPercentagesPenelitian[context.dataIndex] || 0;
+                                return label + ': ' + value + ' (' + percentage + '%)';
+                            }
+                        }
+                    },
+                    title: {
+                        display: false,
+                    }
+                }
+            }
+        });
+
+        // Custom legend for Peran Dosen with counts and percentages
+        const peranLegendPenelitianContainer = document.getElementById('peranLegendPenelitian');
+        peranLabels.forEach((label, index) => {
+            const color = chartColors[index % chartColors.length];
+            const count = peranData[index];
+            const percentage = peranPercentagesPenelitian[index];
+            const legendItem = document.createElement('div');
+            legendItem.innerHTML =
+                `<span style="display:inline-block;width:12px;height:12px;background-color:${color};margin-right:8px;"></span>${label.charAt(0).toUpperCase() + label.slice(1)}: ${count} (${percentage}%)`;
+            peranLegendPenelitianContainer.appendChild(legendItem);
+        });
+
+        // Bar Chart - Keterlibatan Mahasiswa S2 (with percentage and count)
+        const ctxBarMahasiswaS2Penelitian = document.getElementById('barChartMahasiswaS2Penelitian').getContext('2d');
+        const totalMahasiswaS2Penelitian = mahasiswaS2Data.reduce((a, b) => a + b, 0);
+        const mahasiswaS2PercentagesPenelitian = mahasiswaS2Data.map(value => ((value / totalMahasiswaS2Penelitian) * 100)
+            .toFixed(1));
+
+        const barChartMahasiswaS2Penelitian = new Chart(ctxBarMahasiswaS2Penelitian, {
+            type: 'bar',
+            data: {
+                labels: mahasiswaS2Labels,
+                datasets: [{
+                    label: 'Jumlah',
+                    data: mahasiswaS2Data,
+                    backgroundColor: chartColors,
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        precision: 0,
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false,
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.dataset.label || '';
+                                const value = context.parsed.y || 0;
+                                const percentage = mahasiswaS2PercentagesPenelitian[context.dataIndex] || 0;
+                                return label + ': ' + value + ' (' + percentage + '%)';
+                            }
+                        }
+                    },
+                    title: {
+                        display: false,
+                    }
+                }
+            }
+        });
+
+        // Custom legend for Keterlibatan Mahasiswa S2 with counts and percentages
+        const mahasiswaS2LegendPenelitianContainer = document.getElementById('mahasiswaS2LegendPenelitian');
+        mahasiswaS2Labels.forEach((label, index) => {
+            const color = chartColors[index % chartColors.length];
+            const count = mahasiswaS2Data[index];
+            const percentage = mahasiswaS2PercentagesPenelitian[index];
+            const legendItem = document.createElement('div');
+            legendItem.innerHTML =
+                `<span style="display:inline-block;width:12px;height:12px;background-color:${color};margin-right:8px;"></span>${label}: ${count} (${percentage}%)`;
+            mahasiswaS2LegendPenelitianContainer.appendChild(legendItem);
+        });
+
+        // Multi-Line Chart - Tren Dana Penelitian Per Tahun Per Skema
+        const ctxMultiLineDanaPenelitian = document.getElementById('multiLineChartDanaPenelitian').getContext('2d');
+
+        // Assign colors to datasets
+        multiLineDataSets.forEach((dataset, index) => {
+            dataset.borderColor = chartColors[index % chartColors.length];
+        });
+
+        const multiLineChartDanaPenelitian = new Chart(ctxMultiLineDanaPenelitian, {
+            type: 'line',
+            data: {
+                labels: trenLabels,
+                datasets: multiLineDataSets
+            },
+            options: {
+                responsive: true,
+                interaction: {
+                    mode: 'nearest',
+                    axis: 'x',
+                    intersect: false
+                },
+                stacked: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Dana (Rp)'
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return 'Rp ' + value.toLocaleString();
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: false,
+                    }
+                }
+            }
         });
     </script>
 @endpush
