@@ -101,7 +101,7 @@
         <thead>
             <tr>
                 <th>No</th>
-                <th>ID HKI</th>
+                {{-- <th>ID HKI</th> --}}
                 <th>Nama Dosen</th>
                 <th>Judul</th>
                 <th>Tahun</th>
@@ -119,7 +119,7 @@
             @foreach ($hki as $key => $item)
                 <tr>
                     <td class="text-center">{{ $key + 1 }}</td>
-                    <td>{{ $item['id_hki'] }}</td>
+                    {{-- <td>{{ $item['id_hki'] }}</td> --}}
                     <td>{{ $item['nama_dosen'] }}</td>
                     <td>{{ $item['judul'] }}</td>
                     <td>{{ $item['tahun'] }}</td>
