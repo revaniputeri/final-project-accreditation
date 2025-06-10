@@ -254,6 +254,10 @@ class KriteriaController extends Controller
                 ->pluck('profile_user.nama_lengkap')
                 ->toArray();
 
+            $judul = DokumenKriteriaModel::where('no_kriteria', $no_kriteria)
+                ->whereNull('deleted_at')
+                ->value('judul');
+
             $kriteria = KriteriaModel::select(
                 'kriteria.no_kriteria',
                 'kriteria.id_user',
@@ -275,13 +279,15 @@ class KriteriaController extends Controller
             if (!$kriteria) {
                 return response()->view('kriteria.detail_ajax', [
                     'kriteria' => null,
-                    'user_list' => $users
+                    'user_list' => $users,
+                    'judul' => $judul
                 ]);
             }
 
             return view('kriteria.detail_ajax', [
                 'kriteria' => $kriteria,
-                'user_list' => $users
+                'user_list' => $users,
+                'judul' => $judul
             ]);
         } catch (\Throwable $e) {
             Log::error('Error in detail_ajax: ' . $e->getMessage());
@@ -302,15 +308,18 @@ class KriteriaController extends Controller
         $sheet->setCellValue('A1', 'No');
         $sheet->setCellValue('B1', 'No Kriteria');
         $sheet->setCellValue('C1', 'Nama User');
-        $sheet->setCellValue('D1', 'Jumlah Dokumen Pendukung');
+        $sheet->setCellValue('D1', 'Judul Kriteria');
+        $sheet->setCellValue('E1', 'Jumlah Dokumen Pendukung');
 
-        $sheet->getStyle('A1:D1')->getFont()->setBold(true);
+        $sheet->getStyle('A1:E1')->getFont()->setBold(true);
 
         $row = 2;
         $kriteria = $kriteria->groupBy('no_kriteria')->map(function ($group) {
             $first = $group->first();
             $namaLengkap = $group->pluck('profile_user.nama_lengkap')->filter()->join(', ');
+            $judul = $first->dokumenKriteria->first()?->judul ?? '-';
             $first->setRelation('profile_user', (object)['nama_lengkap' => $namaLengkap]);
+            $first->setRelation('dokumenKriteria', (object)['judul' => $judul]);
             return $first;
         });
 
@@ -318,11 +327,12 @@ class KriteriaController extends Controller
             $sheet->setCellValue('A' . $row, $row - 1);
             $sheet->setCellValue('B' . $row, 'Kriteria ' . $item->no_kriteria);
             $sheet->setCellValue('C' . $row, $item->profile_user->nama_lengkap ?: '-');
-            $sheet->setCellValue('D' . $row, $item->dokumenPendukung->count());
+            $sheet->setCellValue('D' . $row, $item->dokumenKriteria->judul ?: '-');
+            $sheet->setCellValue('E' . $row, $item->dokumenPendukung->count());
             $row++;
         }
 
-        foreach (range('A', 'D') as $columnID) {
+        foreach (range('A', 'E') as $columnID) {
             $sheet->getColumnDimension($columnID)->setAutoSize(true);
         }
 
@@ -345,7 +355,9 @@ class KriteriaController extends Controller
             ->map(function ($group) {
                 $first = $group->first();
                 $namaLengkap = $group->pluck('profile_user.nama_lengkap')->filter()->join(', ');
+                $judul = $first->dokumenKriteria->first()?->judul ?? '-';
                 $first->setRelation('profile_user', (object)['nama_lengkap' => $namaLengkap]);
+                $first->setRelation('dokumenKriteria', (object)['judul' => $judul]);
                 return $first;
             });
 

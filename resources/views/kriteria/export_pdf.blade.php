@@ -103,6 +103,7 @@
                 <th class="text-center">No</th>
                 <th>No Kriteria</th>
                 <th>Nama User</th>
+                <th>Judul Kriteria</th>
                 <th>Jumlah Dokumen Pendukung</th>
             </tr>
         </thead>
@@ -112,6 +113,7 @@
                 <td class="text-center">{{ $loop->iteration }}</td>
                 <td>{{ 'Kriteria ' . $item->no_kriteria }}</td>
                 <td>{{ $item->profile_user->nama_lengkap ?? '-' }}</td>
+                <td>{{ $item->judul }}</td>
                 <td>{{ $item->dokumenPendukung->count() }}</td>
             </tr>
             @endforeach

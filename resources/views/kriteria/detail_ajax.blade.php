@@ -10,6 +10,10 @@
                 <td>{{ $kriteria->no_kriteria }}</td>
             </tr>
             <tr>
+                <th>Judul Kriteria</th>
+                <td>{{ $judul }}</td>
+            </tr>
+            <tr>
                 <th>Nama User</th>
                 <td>{{ count($user_list) ? implode(', ', $user_list) : '-' }}</td>   
             </tr>
