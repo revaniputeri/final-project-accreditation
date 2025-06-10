@@ -60,7 +60,6 @@ class KriteriaController extends Controller
             'selected_users.*' => 'exists:user,id_user',
         ];
         $messages = [
-            'no_kriteria.required' => 'No kriteria wajib diisi.',
             'selected_users.required' => 'Pilih minimal 1 user.',
             'selected_users.max' => 'Maksimal 2 user.',
             'selected_users.*.exists' => 'User tidak valid.',
@@ -79,11 +78,12 @@ class KriteriaController extends Controller
         }
 
         if ($validator->fails()) {
+            Log::error('Validation failed', $validator->errors()->toArray());
             return response()->json([
                 'status' => false,
                 'alert' => 'error',
                 'message' => $validator->errors()->first(),
-                'msgField' => $validator->errors(),
+                'msgField' => $validator->errors()->first(),
             ]);
         }
 
@@ -193,9 +193,14 @@ class KriteriaController extends Controller
 
     public function delete_ajax(Request $request, $no_kriteria, $id_user)
     {
-        $dokumen_pendukung = DokumenPendukungModel::where('no_kriteria', $no_kriteria);
-        $dokumen_kriteria = DokumenKriteriaModel::where('no_kriteria', $no_kriteria);
-        $kriteria = KriteriaModel::where('no_kriteria', $no_kriteria);
+        $dokumen_pendukung = DokumenPendukungModel::where('no_kriteria', $no_kriteria)
+            ->whereNull('deleted_at');
+        $dokumen_kriteria = DokumenKriteriaModel::where('no_kriteria', $no_kriteria)
+            ->whereNull('deleted_at');
+        $kriteria = KriteriaModel::where('no_kriteria', $no_kriteria)
+            ->whereNull('deleted_at');
+        $dokumen_pendukung->delete();
+        $dokumen_kriteria->delete();
         if ($kriteria) {
             $kriteria->delete();
             $dokumen_pendukung->delete();
@@ -338,11 +343,12 @@ class KriteriaController extends Controller
                 'profile_user.id_user'
             )
                 ->join('user', 'profile_user.id_user', '=', 'user.id_user')
-                ->leftJoin('kriteria', 'profile_user.id_user', '=', 'kriteria.id_user')
                 ->where('user.id_level', 2)
-                ->where(function($query) {
-                    $query->whereNull('kriteria.id_user')
-                          ->orWhereNotNull('kriteria.deleted_at');
+                ->whereNotExists(function($query) {
+                    $query->select(DB::raw(1))
+                        ->from('kriteria')
+                        ->whereRaw('kriteria.id_user = profile_user.id_user')
+                        ->whereNull('kriteria.deleted_at'); // Masih aktif
                 })
                 ->orderBy('profile_user.nama_lengkap', 'asc')
                 ->get();
