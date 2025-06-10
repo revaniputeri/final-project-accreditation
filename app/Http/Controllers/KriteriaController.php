@@ -58,11 +58,21 @@ class KriteriaController extends Controller
             'no_kriteria' => 'required|string|max:10',
             'selected_users' => 'required|array|min:1|max:2',
             'selected_users.*' => 'exists:user,id_user',
+            'judul' => [
+                'required',
+                'string',
+                'max:255',
+                'regex:/[a-zA-Z]/',
+                'not_regex:/^[-_\\s]+$/',
+            ],
         ];
         $messages = [
             'selected_users.required' => 'Pilih minimal 1 user.',
             'selected_users.max' => 'Maksimal 2 user.',
             'selected_users.*.exists' => 'User tidak valid.',
+            'judul.required' => 'Judul kriteria wajib diisi.',
+            'judul.regex' => 'Judul harus mengandung minimal satu huruf.',
+            'judul.not_regex' => 'Judul tidak boleh hanya berisi karakter -, _ atau spasi.',
         ];
         $validator = Validator::make($request->all(), $rules, $messages);
 
@@ -120,7 +130,7 @@ class KriteriaController extends Controller
                     DokumenKriteriaModel::create([
                         'no_kriteria' => $no_kriteria,
                         'versi' => 1,
-                        'judul' => 'Dokumen Kriteria ' . $no_kriteria,
+                        'judul' => $request->judul,
                         'kategori' => $category,
                         'content_html' => '<p>Konten default untuk kriteria ' . $no_kriteria . ' dengan kategori ' . $category . '</p>',
                         'status' => 'kosong',

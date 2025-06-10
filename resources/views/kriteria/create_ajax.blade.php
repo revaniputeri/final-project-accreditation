@@ -11,6 +11,11 @@
             <div class="invalid-feedback" id="error_no_kriteria"></div>
         </div>
         <div class="mb-3">
+            <label for="judul" class="form-label">Judul Kriteria</label>
+            <input type="text" class="form-control" id="judul" name="judul" value="" required>
+            <div class="invalid-feedback" id="error_judul"></div>
+        </div>
+        <div class="mb-3">
             <label for="id_user" class="form-label">Nama User (Maksimal 2 User)</label>
             <div class="input-group">
                 <select class="form-select" id="id_user" name="id_user"

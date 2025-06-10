@@ -53,9 +53,10 @@ class KriteriaDataTable extends DataTable
     public function query(KriteriaModel $model): QueryBuilder
     {
         return $model->newQuery()
-            ->selectRaw('kriteria.no_kriteria, MIN(kriteria.id_user) as id_user, COUNT(DISTINCT dokumen_pendukung.id_dokumen_pendukung) as jumlah_dokumen')
+            ->selectRaw('kriteria.no_kriteria, MIN(kriteria.id_user) as id_user, COUNT(DISTINCT dokumen_pendukung.id_dokumen_pendukung) as jumlah_dokumen, MIN(dokumen_kriteria.judul) as judul')
             ->leftJoin('user', 'kriteria.id_user', '=', 'user.id_user')
             ->leftJoin('dokumen_pendukung', 'kriteria.no_kriteria', '=', 'dokumen_pendukung.no_kriteria')
+            ->leftJoin('dokumen_kriteria', 'kriteria.no_kriteria', '=', 'dokumen_kriteria.no_kriteria')
             ->groupBy('kriteria.no_kriteria')
             ->orderBy('kriteria.no_kriteria', 'asc');
     }
@@ -90,6 +91,7 @@ class KriteriaDataTable extends DataTable
         return [
             Column::make('DT_RowIndex')->title('No')->orderable(false)->searchable(false),
             Column::make('no_kriteria')->title('No Kriteria')->searchable(false),
+            Column::make('judul')->title('Judul Kriteria')->searchable(false),
             Column::make('jumlah_dokumen')->title('Jumlah Dokumen Pendukung')->searchable(false),
             Column::computed('aksi')
                 ->exportable(false)
