@@ -244,16 +244,23 @@ class KriteriaController extends Controller
                 ->pluck('profile_user.nama_lengkap')
                 ->toArray();
 
-            $kriteria = KriteriaModel::select('kriteria.*', DB::raw('COUNT(DISTINCT dokumen_pendukung.id_dokumen_pendukung) as jumlah_dokumen'))
-                ->leftJoin('dokumen_pendukung', function ($join) {
-                    $join->on('kriteria.no_kriteria', '=', 'dokumen_pendukung.no_kriteria')
-                        ->whereNull('dokumen_pendukung.deleted_at');
-                })
-                ->where('kriteria.no_kriteria', $no_kriteria)
-                ->where('kriteria.id_user', $id_user)
-                ->whereNull('kriteria.deleted_at')
-                ->groupBy('kriteria.no_kriteria', 'kriteria.id_user')
-                ->first();
+            $kriteria = KriteriaModel::select(
+                'kriteria.no_kriteria',
+                'kriteria.id_user',
+                DB::raw('MIN(kriteria.id_kriteria) as id_kriteria'),
+                DB::raw('COUNT(DISTINCT dokumen_pendukung.id_dokumen_pendukung) as jumlah_dokumen'),
+                DB::raw('MIN(kriteria.created_at) as created_at'),
+                DB::raw('MAX(kriteria.updated_at) as updated_at')
+            )
+            ->leftJoin('dokumen_pendukung', function ($join) {
+                $join->on('kriteria.no_kriteria', '=', 'dokumen_pendukung.no_kriteria')
+                    ->whereNull('dokumen_pendukung.deleted_at');
+            })
+            ->where('kriteria.no_kriteria', $no_kriteria)
+            ->where('kriteria.id_user', $id_user)
+            ->whereNull('kriteria.deleted_at')
+            ->groupBy('kriteria.no_kriteria', 'kriteria.id_user')
+            ->first();
 
             if (!$kriteria) {
                 return response()->view('kriteria.detail_ajax', [
