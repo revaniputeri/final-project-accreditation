@@ -55,16 +55,33 @@ class KriteriaController extends Controller
     {
         $rules = [
             'no_kriteria' => 'required|string|max:10',
-            'selected_users' => 'required|array|min:1',
+            'selected_users' => 'required|array|min:1|max:2',
             'selected_users.*' => 'exists:user,id_user',
         ];
-        $validator = Validator::make($request->all(), $rules);
+        $messages = [
+            'no_kriteria.required' => 'No kriteria wajib diisi.',
+            'selected_users.required' => 'Pilih minimal 1 user.',
+            'selected_users.max' => 'Maksimal 2 user.',
+            'selected_users.*.exists' => 'User tidak valid.',
+        ];
+        $validator = Validator::make($request->all(), $rules, $messages);
+
+        // Cek user duplikat di array
+        $selectedUsers = $request->input('selected_users', []);
+        $uniqueUsers = array_unique($selectedUsers);
+        if (count($selectedUsers) !== count($uniqueUsers)) {
+            return response()->json([
+                'status' => false,
+                'alert' => 'error',
+                'message' => 'User tidak boleh sama.',
+            ]);
+        }
 
         if ($validator->fails()) {
             return response()->json([
                 'status' => false,
                 'alert' => 'error',
-                'message' => 'Validasi Gagal',
+                'message' => $validator->errors()->first(),
                 'msgField' => $validator->errors(),
             ]);
         }
@@ -76,44 +93,30 @@ class KriteriaController extends Controller
         }
 
         $users = $request->selected_users; // array
-        $failedUsers = [];
-        $failedUserNames = [];
-        $successUsers = [];
 
-        // Cek dulu, jika ada user yang sudah punya kriteria, langsung gagal semua
-        foreach ($users as $userId) {
-            $user = ProfileUser::where('id_user', $userId)->first();
-            $namaLengkap = $user ? $user->nama_lengkap : 'User';
-            $exists = KriteriaModel::where('id_user', $userId)->exists();
-            if ($exists) {
-                $failedUsers[] = $userId;
-                $failedUserNames[] = $namaLengkap;
-            }
-        }
-
-        if (count($failedUsers) > 0) {
-            return response()->json([
-                'status' => false,
-                'alert' => 'error',
-                'message' => 'Gagal menambah kriteria karena user berikut sudah memiliki kriteria: ' . implode(', ', $failedUserNames),
-            ]);
-        }
-
-        // Jika semua lolos, baru lakukan insert
         try {
             foreach ($users as $userId) {
-                $user = ProfileUser::where('id_user', $userId)->first();
-                $namaLengkap = $user ? $user->nama_lengkap : 'User';
-                $kriteria = KriteriaModel::create([
+                $exists = KriteriaModel::where('id_user', $userId)
+                    ->where('no_kriteria', $no_kriteria)
+                    ->whereNull('deleted_at')
+                    ->exists();
+                if ($exists) {
+                    return response()->json([
+                        'status' => false,
+                        'alert' => 'error',
+                        'message' => 'User sudah ada di kriteria ini.',
+                    ]);
+                }
+
+                KriteriaModel::create([
                     'no_kriteria' => $no_kriteria,
                     'id_user' => $userId,
                 ]);
-                $successUsers[] = $namaLengkap;
             }
             return response()->json([
                 'status' => true,
                 'alert' => 'success',
-                'message' => 'Berhasil menambah kriteria untuk: ' . implode(', ', $successUsers),
+                'message' => 'Berhasil menambah kriteria.',
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -193,7 +196,8 @@ class KriteriaController extends Controller
             ->where('id_user', $id_user)
             ->first();
         if ($kriteria) {
-            $kriteria->delete();
+            $kriteria->deleted_at = now();
+            $kriteria->save();
             return response()->json([
                 'status' => true,
                 'message' => 'Data berhasil dihapus'
@@ -300,7 +304,12 @@ class KriteriaController extends Controller
                 'profile_user.id_user'
             )
                 ->join('user', 'profile_user.id_user', '=', 'user.id_user')
+                ->leftJoin('kriteria', 'profile_user.id_user', '=', 'kriteria.id_user')
                 ->where('user.id_level', 2)
+                ->where(function($query) {
+                    $query->whereNull('kriteria.id_user')
+                          ->orWhereNotNull('kriteria.deleted_at');
+                })
                 ->orderBy('profile_user.nama_lengkap', 'asc')
                 ->get();
             return response()->json($users);
