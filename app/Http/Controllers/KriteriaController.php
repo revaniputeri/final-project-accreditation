@@ -93,15 +93,31 @@ class KriteriaController extends Controller
             $no_kriteria = $matches ? (int)$matches[0] : 1;
         }
 
-        $users = $request->selected_users; // array
+        $users = $request->selected_users;
 
         try {
             foreach ($users as $userId) {
-                $exists = KriteriaModel::where('id_user', $userId)
+                // $exists = KriteriaModel::where('id_user', $userId)
+                //     ->where('no_kriteria', $no_kriteria)
+                //     ->whereNull('deleted_at')
+                //     ->exists();
+                // if ($exists) {
+                //     return response()->json([
+                //         'status' => false,
+                //         'alert' => 'error',
+                //         'message' => 'User sudah ada di kriteria ini.',
+                //     ]);
+                // }
+                $kriteria = KriteriaModel::where('id_user', $userId)
                     ->where('no_kriteria', $no_kriteria)
                     ->whereNull('deleted_at')
-                    ->exists();
-                if ($exists) {
+                    ->first();
+                if (!$kriteria) {
+                    KriteriaModel::create([
+                        'no_kriteria' => $no_kriteria,
+                        'id_user' => $userId,
+                    ]);
+                } else {
                     return response()->json([
                         'status' => false,
                         'alert' => 'error',
@@ -109,10 +125,22 @@ class KriteriaController extends Controller
                     ]);
                 }
 
-                KriteriaModel::create([
-                    'no_kriteria' => $no_kriteria,
-                    'id_user' => $userId,
-                ]);
+                $categories = ['penetapan', 'pelaksanaan', 'evaluasi', 'pengendalian', 'peningkatan'];
+
+                foreach ($categories as $category) {
+                    DokumenKriteriaModel::create([
+                        'no_kriteria' => $no_kriteria,
+                        'versi' => 1,
+                        'judul' => 'Dokumen Kriteria ' . $no_kriteria,
+                        'kategori' => $category,
+                        'content_html' => '<p>Konten default untuk kriteria ' . $no_kriteria . ' dengan kategori ' . $category . '</p>',
+                        'status' => 'kosong',
+                        'id_validator' => null,
+                        'komentar' => null,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
             }
             return response()->json([
                 'status' => true,
@@ -228,9 +256,9 @@ class KriteriaController extends Controller
                 ->toArray();
 
             $kriteria = KriteriaModel::select('kriteria.*', DB::raw('COUNT(DISTINCT dokumen_pendukung.id_dokumen_pendukung) as jumlah_dokumen'))
-                ->leftJoin('dokumen_pendukung', function($join) {
+                ->leftJoin('dokumen_pendukung', function ($join) {
                     $join->on('kriteria.no_kriteria', '=', 'dokumen_pendukung.no_kriteria')
-                         ->whereNull('dokumen_pendukung.deleted_at');
+                        ->whereNull('dokumen_pendukung.deleted_at');
                 })
                 ->where('kriteria.no_kriteria', $no_kriteria)
                 ->where('kriteria.id_user', $id_user)
@@ -344,7 +372,7 @@ class KriteriaController extends Controller
             )
                 ->join('user', 'profile_user.id_user', '=', 'user.id_user')
                 ->where('user.id_level', 2)
-                ->whereNotExists(function($query) {
+                ->whereNotExists(function ($query) {
                     $query->select(DB::raw(1))
                         ->from('kriteria')
                         ->whereRaw('kriteria.id_user = profile_user.id_user')

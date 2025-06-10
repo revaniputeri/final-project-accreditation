@@ -107,6 +107,8 @@ Route::middleware('auth')->group(function () {
     // Route untuk manage-kriteria
     Route::prefix('manage-kriteria')->group(function () {
         Route::get('/', [KriteriaController::class, 'index'])->name('kriteria.index');
+        
+        // CRUD routes
         Route::get('/create_ajax', [KriteriaController::class, 'create_ajax'])->name('kriteria.create_ajax');
         Route::post('/store_ajax', [KriteriaController::class, 'store_ajax'])->name('kriteria.store_ajax');
         Route::get('/edit_ajax/{no_kriteria}/{id_user}', [KriteriaController::class, 'edit_ajax'])->name('kriteria.edit_ajax');
@@ -114,10 +116,14 @@ Route::middleware('auth')->group(function () {
         Route::get('/detail_ajax/{no_kriteria}/{id_user}', [KriteriaController::class, 'detail_ajax'])->name('kriteria.detail_ajax');
         Route::get('/confirm_ajax/{no_kriteria}/{id_user}', [KriteriaController::class, 'confirm_ajax'])->name('kriteria.confirm_ajax');
         Route::delete('/delete_ajax/{no_kriteria}/{id_user}', [KriteriaController::class, 'delete_ajax'])->name('kriteria.delete_ajax');
+
+        // Import and Export routes
         Route::get('/export_excel', [KriteriaController::class, 'export_excel'])->name('kriteria.export_excel');
         Route::get('/export_pdf', [KriteriaController::class, 'export_pdf'])->name('kriteria.export_pdf');
         Route::get('/import', [KriteriaController::class, 'import'])->name('kriteria.import');
         Route::post('/import_ajax', [KriteriaController::class, 'import_ajax'])->name('kriteria.import_ajax');
+
+        // Get last number and users
         Route::get('/get-last-number', [KriteriaController::class, 'getLastNumber'])->name('kriteria.get_last_number');
         Route::get('/get-users', [KriteriaController::class, 'getUsers'])->name('kriteria.get_users');
     });
