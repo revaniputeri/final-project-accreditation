@@ -343,20 +343,28 @@ class PProfesiController extends Controller
         $profesi = PProfesiModel::findOrFail($id);
 
         try {
+            // Hapus file bukti jika ada
             if ($profesi->bukti && Storage::exists('public/portofolio/profesi/' . $profesi->bukti)) {
                 Storage::delete('public/portofolio/profesi/' . $profesi->bukti);
             }
-            $profesi->delete();
+
+            // Cek apakah model menggunakan SoftDeletes
+            if (method_exists($profesi, 'forceDelete')) {
+                $profesi->forceDelete(); // Hapus permanen jika tersedia
+            } else {
+                $profesi->delete();
+            }
 
             return response()->json([
                 'status' => true,
-                'message' => 'Data berhasil dihapus'
+                'message' => 'Data profesi berhasil dihapus'
             ]);
         } catch (\Exception $e) {
-            Log::error('Exception in delete_ajax: ' . $e->getMessage());
+            Log::error('Exception in delete_ajax PProfesi: ' . $e->getMessage());
+
             return response()->json([
                 'status' => false,
-                'message' => 'Gagal menghapus data'
+                'message' => 'Gagal menghapus data profesi'
             ]);
         }
     }
@@ -395,52 +403,117 @@ class PProfesiController extends Controller
 
     public function import_ajax(Request $request)
     {
-        if ($request->ajax() || $request->wantsJson()) {
-            $request->validate([
-                'file' => 'required|file|mimes:xlsx,xls,csv|max:2048',
-            ]);
+        $request->validate([
+            'file_p_profesi' => 'required|mimes:xlsx,xls|max:2048'
+        ]);
 
-            try {
-                $file = $request->file('file');
-                $spreadsheet = IOFactory::load($file->getRealPath());
-                $sheetData = $spreadsheet->getActiveSheet()->toArray();
+        try {
+            $file = $request->file('file_p_profesi');
+            $spreadsheet = IOFactory::load($file->getRealPath());
+            $sheet = $spreadsheet->getActiveSheet();
+            $data = $sheet->toArray(null, true, true, true);
 
-                // Proses data dari sheet
-                foreach ($sheetData as $row) {
-                    // Asumsikan kolom pertama adalah perguruan_tinggi, kedua kurun_waktu, ketiga gelar, keempat bukti
-                    if (count($row) < 4) {
-                        continue; // Lewati baris yang tidak lengkap
-                    }
+            $insertData = [];
+            $skippedData = [];
+            $errors = [];
 
-                    PProfesiModel::create([
-                        'perguruan_tinggi' => $row[0],
-                        'kurun_waktu' => $row[1],
-                        'gelar' => $row[2],
-                        'bukti' => isset($row[3]) ? $row[3] : null,
-                        'status' => 'perlu validasi',
-                        'sumber_data' => 'p3m',
-                    ]);
+            $user = Auth::user();
+            $role = $user ? $user->role : null;
+            $userNidn = DB::table('profile_user')->where('id_user', $user->id_user)->value('nidn');
+
+            foreach ($data as $row => $values) {
+                if ($row == 1) continue;
+
+                $nidn = trim($values['A']);
+                $perguruanTinggi = trim($values['B']);
+                $kurunWaktu = trim($values['C']);
+                $gelar = trim($values['D']);
+                $bukti = isset($values['E']) ? trim($values['E']) : null;
+
+                if ($role === 'DOS' && $nidn !== $userNidn) {
+                    $errors[] = "Baris $row: Anda hanya dapat mengimpor data dengan NIDN milik Anda ($userNidn).";
+                    continue;
                 }
 
-                return response()->json([
-                    'status' => true,
-                    'message' => 'Data berhasil diimpor'
+                $profileUser = DB::table('profile_user')->where('nidn', $nidn)->first();
+                if (!$profileUser) {
+                    $errors[] = "Baris $row: NIDN $nidn tidak ditemukan di data profil user.";
+                    continue;
+                }
+
+                $isDuplicate = PProfesiModel::where('id_user', $profileUser->id_user)
+                    ->where('perguruan_tinggi', $perguruanTinggi)
+                    ->where('kurun_waktu', $kurunWaktu)
+                    ->where('gelar', $gelar)
+                    ->exists();
+
+                if ($isDuplicate) {
+                    $skippedData[] = "Baris $row: Data dengan kombinasi Perguruan Tinggi, Kurun Waktu, dan Gelar sudah ada.";
+                    continue;
+                }
+
+                $validator = Validator::make([
+                    'perguruan_tinggi' => $perguruanTinggi,
+                    'kurun_waktu' => $kurunWaktu,
+                    'gelar' => $gelar,
+                ], [
+                    'perguruan_tinggi' => 'required|string|max:255',
+                    'kurun_waktu' => 'required|string|max:255',
+                    'gelar' => 'required|string|max:255',
                 ]);
-            } catch (\Exception $e) {
-                Log::error('Exception in import_ajax PProfesi: ' . $e->getMessage());
+
+                if ($validator->fails()) {
+                    $errors[] = "Baris $row: " . implode(', ', $validator->errors()->all());
+                    continue;
+                }
+
+                $insertData[] = [
+                    'id_user' => $profileUser->id_user,
+                    'perguruan_tinggi' => $perguruanTinggi,
+                    'kurun_waktu' => $kurunWaktu,
+                    'gelar' => $gelar,
+                    'bukti' => $bukti,
+                    'status' => $role === 'DOS' ? 'Tervalidasi' : 'perlu validasi',
+                    'sumber_data' => $role === 'DOS' ? 'dosen' : 'p3m',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+            }
+
+            $allMessages = array_merge($skippedData, $errors);
+
+            if (empty($insertData)) {
                 return response()->json([
                     'status' => false,
                     'alert' => 'error',
-                    'message' => 'Gagal mengimpor data',
-                ]);
+                    'message' => 'Tidak ada data baru yang valid untuk diimport:' .
+                        "\n" . implode("\n", array_slice($allMessages, 0, 1)) .
+                        (count($allMessages) > 3 ? "\n...dan " . (count($allMessages) - 3) . " lainnya." : ''),
+                    'showConfirmButton' => true
+                ], 422);
             }
-        }
 
-        return response()->json([
-            'status' => false,
-            'alert' => 'error',
-            'message' => 'Request tidak valid'
-        ], 400);
+            $inserted = PProfesiModel::insert($insertData);
+
+            return response()->json([
+                'status' => true,
+                'alert' => 'success',
+                'message' => 'Import data berhasil',
+                'inserted_count' => $inserted,
+                'skipped_count' => count($skippedData),
+                'info' => $allMessages,
+                'error_count' => count($errors)
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Import error PProfesi: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
+            return response()->json([
+                'status' => false,
+                'alert' => 'error',
+                'message' => 'Terjadi kesalahan saat memproses file',
+                'error' => $e->getMessage(),
+                'showConfirmButton' => true
+            ], 500);
+        }
     }
 
     public function export_excel()

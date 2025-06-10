@@ -149,7 +149,7 @@ class PHKIController extends Controller
                     return response()->json([
                         'status' => false,
                         'alert' => 'error',
-                        'message' => 'ID user tidak ditemukan. Pastikan akun user terkait.',
+                        'message' => 'ID user tidak ditemukan.'
                     ]);
                 }
 
@@ -172,9 +172,10 @@ class PHKIController extends Controller
                     'tahun',
                     'skema',
                     'nomor',
-                    'melibatkan_mahasiswa_s2',
-                    'bukti'
+                    'melibatkan_mahasiswa_s2'
                 ]);
+
+                $data['id_user'] = $id_user;
 
                 if ($request->hasFile('bukti')) {
                     $file = $request->file('bukti');
@@ -369,7 +370,13 @@ class PHKIController extends Controller
             if ($hki->bukti && Storage::exists('public/portofolio/hki/' . $hki->bukti)) {
                 Storage::delete('public/portofolio/hki/' . $hki->bukti);
             }
-            $hki->delete();
+
+            // Cek apakah model memakai SoftDeletes
+            if (method_exists($hki, 'forceDelete')) {
+                $hki->forceDelete(); // hapus permanen
+            } else {
+                $hki->delete();
+            }
 
             return response()->json([
                 'status' => true,
@@ -433,7 +440,6 @@ class PHKIController extends Controller
             $skippedData = [];
             $errors = [];
 
-            /** @var UserModel|null $user */
             $user = Auth::user();
             $role = $user && $user->level ? $user->level->kode_level : null;
             $userNidn = DB::table('profile_user')->where('id_user', $user->id_user)->value('nidn');
@@ -442,7 +448,12 @@ class PHKIController extends Controller
                 if ($row == 1) continue; // Skip header
 
                 $nidn = trim($values['A'] ?? '');
-                $judul = trim($values['C'] ?? '');
+                $judul = trim($values['B'] ?? '');
+                $tahun = $values['C'] ?? null;
+                $skema = $values['D'] ?? null;
+                $nomor = $values['E'] ?? null;
+                $melibatkan_mahasiswa_s2 = strtolower(trim($values['F'] ?? ''));
+
 
                 if ($role === 'DOS' && $nidn !== $userNidn) {
                     $errors[] = "Baris $row: Anda hanya dapat mengimpor data milik Anda (NIDN $userNidn).";
@@ -455,46 +466,46 @@ class PHKIController extends Controller
                     continue;
                 }
 
-                // Cek duplikat berdasarkan id_user + judul
                 $isDuplicate = PHKIModel::where('id_user', $profile->id_user)
                     ->where('judul', $judul)
                     ->exists();
 
                 if ($isDuplicate) {
-                    $skippedData[] = "Baris $row: Kombinasi NIDN $nidn dan Judul HKI '$judul' sudah ada.";
+                    $skippedData[] = "Baris $row: Kombinasi NIDN $nidn dan Judul '$judul' sudah ada.";
+                    continue;
+                }
+                if ($melibatkan_mahasiswa_s2 !== '' && !in_array($melibatkan_mahasiswa_s2, ['ya', 'tidak'])) {
+                    $errors[] = "Baris $row: Nilai kolom 'Melibatkan Mahasiswa S2' harus 'ya', 'tidak', atau kosong.";
                     continue;
                 }
 
+                $isMelibatkan = ($melibatkan_mahasiswa_s2 === 'ya') ? 1 : 0;
 
-                // Data dari Excel disesuaikan dengan field model
-                $tahun = $values['E'] ?? null;
-                $skema = $values['B'] ?? null;
-                $nomor = $values['D'] ?? null;
-                $melibatkan_mahasiswa_s2 = isset($values['F']) ? (strtolower(trim($values['F'])) === 'ya' ? true : false) : false;
-                $status_hki = $values['G'] ?? null;
 
                 $validator = Validator::make([
                     'id_user' => $profile->id_user,
-                    'judul' => $values,
+                    'judul' => $judul,
                     'tahun' => $tahun,
                     'skema' => $skema,
                     'nomor' => $nomor,
-                    'melibatkan_mahasiswa_s2' => $melibatkan_mahasiswa_s2,
-                    'status' => $status_hki,
+                    'melibatkan_mahasiswa_s2' => $melibatkan_mahasiswa_s2
                 ], [
                     'id_user' => 'required|integer|exists:user,id_user',
                     'judul' => 'required|string|max:255',
                     'tahun' => 'required|integer|min:1900|max:' . (date('Y') + 5),
                     'skema' => 'nullable|string|max:255',
                     'nomor' => 'nullable|string|max:255',
-                    'melibatkan_mahasiswa_s2' => 'boolean',
-                    'status' => 'required|string|max:100',
+                    'melibatkan_mahasiswa_s2' => 'nullable|in:ya,tidak',
                 ]);
+
 
                 if ($validator->fails()) {
                     $errors[] = "Baris $row: " . implode(', ', $validator->errors()->all());
                     continue;
                 }
+
+                $melibatkan_mahasiswa_s2 = strtolower(trim($melibatkan_mahasiswa_s2));
+                $isMelibatkan = ($melibatkan_mahasiswa_s2 === 'ya') ? 1 : 0;
 
                 $insertData[] = [
                     'id_user' => $profile->id_user,
@@ -502,12 +513,11 @@ class PHKIController extends Controller
                     'tahun' => $tahun,
                     'skema' => $skema,
                     'nomor' => $nomor,
-                    'melibatkan_mahasiswa_s2' => $melibatkan_mahasiswa_s2,
+                    'melibatkan_mahasiswa_s2' => $isMelibatkan,
                     'status' => $role === 'DOS' ? 'Tervalidasi' : 'perlu validasi',
                     'sumber_data' => $role === 'DOS' ? 'dosen' : 'p3m',
                     'created_at' => now(),
                     'updated_at' => now(),
-                    // 'bukti' => null, // Bisa ditambahkan jika ada data dari file
                 ];
             }
 
@@ -546,6 +556,7 @@ class PHKIController extends Controller
             ], 500);
         }
     }
+
     public function export_excel()
     {
         $query = PHKIModel::join('user', 'p_hki.id_user', '=', 'user.id_user')
@@ -675,7 +686,7 @@ class PHKIController extends Controller
 
         $data = $hki->map(function ($item) {
             return [
-                'id_hki' => $item->id_hki,
+                // 'id_hki' => $item->id_hki,
                 'nama_dosen' => optional(optional($item->dosen)->profile)->nama_lengkap ?? '-',
                 'judul' => $item->judul,
                 'tahun' => $item->tahun,

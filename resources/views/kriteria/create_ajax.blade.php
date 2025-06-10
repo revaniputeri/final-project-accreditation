@@ -57,16 +57,19 @@
         $.ajax({
             url: '{{ route("kriteria.get_users") }}',
             type: 'GET',
-            success: function(response) {
+            success: function (response) {
                 let options = '<option value="">Pilih User</option>';
                 if (response && response.length > 0) {
-                    response.forEach(function(profile_user) {
+                    response.forEach(function (profile_user) {
                         options += `<option value="${profile_user.id_user}">${profile_user.nama_lengkap}</option>`;
                     });
                 }
+                if (response.status === false) {
+                    alert(response.message);
+                }
                 $('#id_user').html(options);
             },
-            error: function(xhr, status, error) {
+            error: function (xhr, status, error) {
                 console.error('Error loading users:', error);
                 $('#id_user').html('<option value="">Gagal memuat user</option>');
             }
@@ -78,38 +81,17 @@
             const userId = $('#id_user').val();
             const userName = $('#id_user option:selected').text();
 
-            // Validasi: user harus dipilih dan belum ada di list
+            // Tidak ada validasi di JS, biarkan controller yang memvalidasi
             if (!userId) {
-                alert('Pilih user terlebih dahulu!');
-                $('#id_user').val('');
-                $('#id_user').focus();
-                return;
-            }
-            if (selectedUsers.find(u => u.id === userId)) {
-                alert('User sudah ditambahkan!');
-                $('#id_user').val('');
-                $('#id_user').focus();
-                return;
-            }
-            if (selectedUsers.length >= 2) {
-                alert('Maksimal 2 user!');
                 $('#id_user').val('');
                 $('#id_user').focus();
                 return;
             }
 
-            // Tambahkan ke array
             selectedUsers.push({ id: userId, name: userName });
-
-            // Render field readonly
             renderSelectedUsers();
-
-            // Reset dropdown
             $('#id_user').val('');
-            // Disable dropdown jika sudah 2 user
-            if (selectedUsers.length >= 2) {
-                $('#id_user').prop('disabled', true);
-            }
+            selectedUsers = [];
         });
 
         function renderSelectedUsers() {
@@ -128,24 +110,27 @@
             $('#selectedUsers').html(html);
         }
 
-        // Event untuk hapus user dari list
         $('#selectedUsers').on('click', '.removeUser', function () {
             const userId = $(this).data('id').toString();
             selectedUsers = selectedUsers.filter(u => u.id !== userId);
             renderSelectedUsers();
-            // Enable dropdown jika user kurang dari 2
-            if (selectedUsers.length < 2) {
-                $('#id_user').prop('disabled', false);
-            }
         });
 
-        // Validasi sebelum submit
-        $('#formCreateKriteria').off('submit').on('submit', function(e) {
-            if (selectedUsers.length === 0 || $('#id_user').val() !== '') {
-                alert('Pilih dan tambahkan minimal 1 user dengan tombol tambah!');
+        $('#formCreateKriteria').off('submit').on('submit', function (e) {
+            if ($('#id_user').val() !== '') {
+                alert('Klik tombol tambah (+) untuk memasukkan user ke daftar!');
                 e.preventDefault();
                 return false;
             }
+            setTimeout(function () {
+                selectedUsers = [];
+                renderSelectedUsers();
+            }, 500);
+        });
+
+        $(document).on('hidden.bs.modal', '.modal', function () {
+            selectedUsers = [];
+            renderSelectedUsers();
         });
     });
 </script>

@@ -6,7 +6,7 @@
         <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
     </div>
     <div class="modal-body">
-        <p>Apakah Anda yakin ingin menghapus data pengabdian berjudul <strong>{{ $pengabdian->judul_pengabdian }}</strong> yang dilaksanakan pada <strong>{{ $pengabdian->tahun_pengabdian }}</strong>?</p>
+        <p>Apakah Anda yakin ingin menghapus data pengabdian berjudul <strong>{{ $pengabdian->judul_pengabdian }}</strong> yang dilaksanakan pada <strong>{{ $pengabdian->tahun }}</strong>?</p>
     </div>
     <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">
