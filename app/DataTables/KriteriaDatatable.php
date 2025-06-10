@@ -69,7 +69,7 @@ class KriteriaDataTable extends DataTable
             ->setTableId('kriteria-table')
             ->columns($this->getColumns())
             ->minifiedAjax(route('kriteria.index'))
-            ->dom('Blfrtip')
+            ->dom('Blrtip')
             ->orderBy(1)
             ->selectStyleSingle()
             ->buttons([
@@ -89,8 +89,8 @@ class KriteriaDataTable extends DataTable
     {
         return [
             Column::make('DT_RowIndex')->title('No')->orderable(false)->searchable(false),
-            Column::make('no_kriteria')->title('No Kriteria'),
-            Column::make('jumlah_dokumen')->title('Jumlah Dokumen'),
+            Column::make('no_kriteria')->title('No Kriteria')->searchable(false),
+            Column::make('jumlah_dokumen')->title('Jumlah Dokumen Pendukung')->searchable(false),
             Column::computed('aksi')
                 ->exportable(false)
                 ->printable(false)
