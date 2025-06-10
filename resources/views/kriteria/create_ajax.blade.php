@@ -64,6 +64,9 @@
                         options += `<option value="${profile_user.id_user}">${profile_user.nama_lengkap}</option>`;
                     });
                 }
+                if (response.status === false) {
+                    alert(response.message);
+                }
                 $('#id_user').html(options);
             },
             error: function (xhr, status, error) {
@@ -128,9 +131,5 @@
             selectedUsers = [];
             renderSelectedUsers();
         });
-
-        if (response.status === false) {
-            alert(response.message);
-        }
     });
 </script>
