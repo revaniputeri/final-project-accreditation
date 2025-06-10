@@ -96,18 +96,7 @@ class KriteriaController extends Controller
         $users = $request->selected_users;
 
         try {
-            foreach ($users as $userId) {
-                // $exists = KriteriaModel::where('id_user', $userId)
-                //     ->where('no_kriteria', $no_kriteria)
-                //     ->whereNull('deleted_at')
-                //     ->exists();
-                // if ($exists) {
-                //     return response()->json([
-                //         'status' => false,
-                //         'alert' => 'error',
-                //         'message' => 'User sudah ada di kriteria ini.',
-                //     ]);
-                // }
+            foreach ($users as $userId) {                
                 $kriteria = KriteriaModel::where('id_user', $userId)
                     ->where('no_kriteria', $no_kriteria)
                     ->whereNull('deleted_at')

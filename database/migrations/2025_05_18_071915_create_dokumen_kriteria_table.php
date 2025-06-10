@@ -9,7 +9,7 @@ return new class extends Migration {
     {
         Schema::create('dokumen_kriteria', function (Blueprint $table) {
             $table->id('id_dokumen_kriteria');
-            $table->integer('no_kriteria');
+            $table->integer('no_kriteria')->index();
             $table->integer('versi');
             $table->string('judul', 255);
             $table->enum('kategori', ['penetapan', 'pelaksanaan', 'evaluasi', 'pengendalian', 'peningkatan'])->default('penetapan');
@@ -26,7 +26,7 @@ return new class extends Migration {
                 ->on('kriteria')
                 ->onDelete('cascade');
 
-            $table->unique(['no_kriteria', 'versi', 'kategori']); // Satu versi per no_kriteria dan kategori
+            // $table->unique(['no_kriteria', 'versi', 'kategori']); // Satu versi per no_kriteria dan kategori
         });
     }
 

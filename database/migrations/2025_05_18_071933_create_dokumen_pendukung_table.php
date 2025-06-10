@@ -9,7 +9,7 @@ return new class extends Migration {
     {
         Schema::create('dokumen_pendukung', function (Blueprint $table) {
             $table->id('id_dokumen_pendukung');
-            $table->integer('no_kriteria');
+            $table->integer('no_kriteria')->index();
             $table->enum('kategori', ['penetapan', 'pelaksanaan', 'evaluasi', 'pengendalian', 'peningkatan'])->default('penetapan');
             $table->foreignId('id_user')->constrained('user', 'id_user');
             $table->string('nama_file', 255);
