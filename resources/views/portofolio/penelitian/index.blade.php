@@ -198,12 +198,16 @@
                     $('#myModal').modal('show');
 
                     $(document).off('submit', '#formCreatePenelitian, #formEditPenelitian');
+
                     $(document).on('submit', '#formCreatePenelitian, #formEditPenelitian', function(e) {
                         e.preventDefault();
                         var form = $(this);
                         var formData = new FormData(form[0]);
-                        var method = form.find('input[name="_method"]').val() || 'POST';
-
+                        var method = 'POST';
+                        var methodInput = form.find('input[name="_method"]');
+                        if (methodInput.length) {
+                            formData.append('_method', methodInput.val());
+                        }
                         $.ajax({
                             url: form.attr('action'),
                             method: method,
@@ -237,12 +241,20 @@
                                     });
                                 } else {
                                     $('#myModal').modal('hide');
-                                    Swal.fire({
-                                        icon: 'error',
-                                        title: 'Error',
-                                        text: xhr.responseJSON?.message ||
-                                            'Gagal menyimpan data'
-                                    });
+                                    window.LaravelDataTables["p_penelitian-table"].ajax.reload();
+                                    if (xhr.responseJSON && xhr.responseJSON.alert && xhr
+                                        .responseJSON.message) {
+                                        Swal.fire({
+                                            icon: xhr.responseJSON.alert,
+                                            title: xhr.responseJSON.alert === 'success' ?
+                                                'Sukses' : 'Error',
+                                            text: xhr.responseJSON.message,
+                                            timer: 2000,
+                                            showConfirmButton: false
+                                        });
+                                    } else {
+                                        Swal.fire('Error!', 'Gagal menyimpan data.', 'error');
+                                    }
                                 }
                             }
                         });

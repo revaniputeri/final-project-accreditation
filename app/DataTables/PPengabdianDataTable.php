@@ -119,7 +119,7 @@ class PPengabdianDataTable extends DataTable
 
         // Jika user adalah dosen, hanya tampilkan miliknya
         if ($user->hasRole('DOS') && $user->id_user) {
-            $query->where('id_user', $user->id_user);
+            $query->where('p_pengabdian.id_user', $user->id_user);
         }
 
         // Filter berdasarkan status jika tersedia di request

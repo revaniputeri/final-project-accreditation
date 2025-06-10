@@ -69,7 +69,7 @@ class POrganisasiController extends Controller
             $rules = [
                 'nama_organisasi' => 'required|string|max:255',
                 'kurun_waktu' => 'required|string|max:100',
-                'tingkat' => 'required|in:Nasional,Internasional',
+                'tingkat' => 'required|in:Lokal,Nasional,Internasional',
                 'bukti' => $role === 'DOS' ? 'required|file|mimes:pdf,jpg,jpeg,png|max:2048' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             ];
 
@@ -212,7 +212,7 @@ class POrganisasiController extends Controller
             $rules = [
                 'nama_organisasi' => 'required|string|max:255',
                 'kurun_waktu' => 'required|string|max:100',
-                'tingkat' => 'required|in:Nasional,Internasional',
+                'tingkat' => 'required|in:Lokal,Nasional,Internasional',
                 'bukti' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             ];
 
@@ -458,7 +458,7 @@ class POrganisasiController extends Controller
                     'id_user' => 'required|integer|exists:user,id_user',
                     'nama_organisasi' => 'required|string|max:255',
                     'kurun_waktu' => 'required|string|max:100',
-                    'tingkat' => 'required|in:Nasional,Internasional',
+                    'tingkat' => 'required|in:Lokal,Nasional,Internasional',
                 ]);
 
                 if ($validator->fails()) {

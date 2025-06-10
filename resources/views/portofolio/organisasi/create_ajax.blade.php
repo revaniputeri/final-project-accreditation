@@ -28,6 +28,7 @@
             <label for="tingkat" class="form-label">Tingkat</label>
             <select class="form-control" id="tingkat" name="tingkat" required>
                 <option value="">Pilih Tingkat</option>
+                <option value="Lokal">Lokal</option>
                 <option value="Nasional">Nasional</option>
                 <option value="Internasional">Internasional</option>
             </select>

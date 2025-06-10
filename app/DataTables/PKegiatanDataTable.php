@@ -85,6 +85,9 @@ class PKegiatanDataTable extends DataTable
                 return '<span class="badge p-2 ' . ($badgeClass[$row->sumber_data] ?? 'badge-dark') . '">'
                     . strtoupper($row->sumber_data) . '</span>';
             })
+            ->editColumn('peran', function ($row) {
+                return ucwords(strtolower($row->peran));
+            })
             ->rawColumns(['aksi', 'status', 'sumber_data'])
             ->setRowId('id_kegiatan');
     }
@@ -99,7 +102,7 @@ class PKegiatanDataTable extends DataTable
             ->leftJoin('profile_user', 'user.id_user', '=', 'profile_user.id_user');
 
         if ($user->hasRole('DOS') && $user->id_user) {
-            $query->where('id_user', $user->id_user);
+            $query->where('p_kegiatan.id_user', $user->id_user);
         }
 
         if ($status = request('filter_status')) {

@@ -96,7 +96,7 @@ class POrganisasiDataTable extends DataTable
             ->leftJoin('profile_user', 'user.id_user', '=', 'profile_user.id_user');
 
         if ($user->hasRole('DOS') && $user->id_user) {
-            $query->where('id_user', $user->id_user);
+            $query->where('p_organisasi.id_user', $user->id_user);
         }
 
         if ($status = request('filter_status')) {

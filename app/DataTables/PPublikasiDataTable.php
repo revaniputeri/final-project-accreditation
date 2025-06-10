@@ -20,7 +20,7 @@ class PPublikasiDataTable extends DataTable
         $isDos = $user->hasRole('DOS');
         $isAdm = $user->hasRole('ADM');
 
-        return (new EloquentDataTable($query))
+return (new EloquentDataTable($query))
             ->addIndexColumn()
             ->addColumn('aksi', function ($row) use ($user, $isDos, $isAdm) {
                 $buttons = [];
@@ -80,6 +80,9 @@ class PPublikasiDataTable extends DataTable
                 return '<span class="badge p-2 ' . ($badgeClass[$row->sumber_data] ?? 'badge-dark') . '">'
                     . strtoupper($row->sumber_data) . '</span>';
             })
+            ->editColumn('jenis_publikasi', function ($row) {
+                return ucwords($row->jenis_publikasi);
+            })
             ->rawColumns(['aksi', 'status', 'sumber_data'])
             ->setRowId('id_publikasi');
     }
@@ -94,7 +97,7 @@ class PPublikasiDataTable extends DataTable
             ->leftJoin('profile_user', 'user.id_user', '=', 'profile_user.id_user');
 
         if ($user->hasRole('DOS') && $user->id_user) {
-            $query->where('id_user', $user->id_user);
+            $query->where('p_publikasi.id_user', $user->id_user);
         }
 
         if ($status = request('filter_status')) {

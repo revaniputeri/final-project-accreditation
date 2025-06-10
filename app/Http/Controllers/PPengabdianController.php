@@ -20,11 +20,12 @@ class PPengabdianController extends Controller
 {
     public function index(PPengabdianDataTable $dataTable)
     {
-        /** @var \App\Models\UserModel|null $user */
+        /** @var UserModel|null $user */
         $user = Auth::user();
-        $isAdm = $user->hasRole('ADM');
-        $isDos = $user->hasRole('DOS');
-        $isAng = $user->hasRole('ANG');
+        $role = $user->getRole();
+        $isAdm = $role === 'ADM';
+        $isDos = $role === 'DOS';
+        $isAng = $role === 'ANG';
 
         // Distribusi Skema Pengabdian (pie chart)
         $skemaDistribution = PPengabdianModel::select('skema', DB::raw('count(*) as total'))
@@ -244,7 +245,7 @@ class PPengabdianController extends Controller
 
         /** @var UserModel|null $user */
         $user = Auth::user();
-        $role = $user ? $user->role : null;
+        $role = $user ? $user->getRole() : null;
 
         $pengabdian = PPengabdianModel::findOrFail($id);
         return view('portofolio.pengabdian.edit_ajax', compact('pengabdian', 'dosens', 'role'));
@@ -254,7 +255,7 @@ class PPengabdianController extends Controller
     {
         /** @var UserModel|null $user */
         $user = Auth::user();
-        $role = $user ? $user->role : null;
+        $role = $user ? $user->getRole() : null;
 
         if ($request->ajax() || $request->wantsJson()) {
             $rules = [

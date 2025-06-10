@@ -35,7 +35,7 @@
             </tr>
             </tr>
             <tr>
-                <th>Melibatkan Mahasiswa</th>
+                <th>Melibatkan Mahasiswa S2</th>
                 <td>
                     <span class="badge p-2 {{ $publikasi->melibatkan_mahasiswa_s2 ? 'badge-success' : 'badge-danger' }}">
                         {{ $publikasi->melibatkan_mahasiswa_s2 ? 'YA' : 'TIDAK' }}

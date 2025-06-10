@@ -58,10 +58,15 @@ class PHKIController extends Controller
         $trenData = $trenPerTahun->pluck('total');
 
         return $dataTable->render('portofolio.hki.index', compact(
-            'isAdm', 'isAng', 'isDos',
-            'skemaLabels', 'skemaData',
-            'mahasiswaS2Labels', 'mahasiswaS2Data',
-            'trenLabels', 'trenData'
+            'isAdm',
+            'isAng',
+            'isDos',
+            'skemaLabels',
+            'skemaData',
+            'mahasiswaS2Labels',
+            'mahasiswaS2Data',
+            'trenLabels',
+            'trenData'
         ));
     }
 
@@ -176,6 +181,17 @@ class PHKIController extends Controller
                 ]);
 
                 $data['id_user'] = $id_user;
+
+                if ($role === 'DOS') {
+                    $data['status'] = 'Tervalidasi';
+                    $data['sumber_data'] = 'dosen';
+                } elseif ($role === 'ADM') {
+                    $data['status'] = 'Perlu Validasi';
+                    $data['sumber_data'] = 'p3m';
+                } else {
+                    $data['status'] = $request->input('status', 'Perlu Validasi');
+                    $data['sumber_data'] = $request->input('sumber_data', 'p3m');
+                }
 
                 if ($request->hasFile('bukti')) {
                     $file = $request->file('bukti');
@@ -310,8 +326,15 @@ class PHKIController extends Controller
                     'bukti',
                 ]);
 
-                if ($role === 'ADM') {
-                    $data['status'] = 'perlu validasi';
+                if ($role === 'DOS') {
+                    $data['status'] = 'Tervalidasi';
+                    $data['sumber_data'] = 'dosen';
+                } elseif ($role === 'ADM') {
+                    $data['status'] = 'Perlu Validasi';
+                    $data['sumber_data'] = 'p3m';
+                } else {
+                    $data['status'] = $request->input('status', 'Perlu Validasi');
+                    $data['sumber_data'] = $request->input('sumber_data', 'p3m');
                 }
 
                 if ($request->hasFile('bukti')) {
@@ -370,13 +393,7 @@ class PHKIController extends Controller
             if ($hki->bukti && Storage::exists('public/portofolio/hki/' . $hki->bukti)) {
                 Storage::delete('public/portofolio/hki/' . $hki->bukti);
             }
-
-            // Cek apakah model memakai SoftDeletes
-            if (method_exists($hki, 'forceDelete')) {
-                $hki->forceDelete(); // hapus permanen
-            } else {
-                $hki->delete();
-            }
+            $hki->delete();
 
             return response()->json([
                 'status' => true,
@@ -583,7 +600,7 @@ class PHKIController extends Controller
         }
 
         if ($status = request('filter_status')) {
-            $query->where('p_hki.status_hki', $status);
+            $query->where('p_hki.status', $status);
         }
 
         if ($sumber = request('filter_sumber')) {
@@ -675,7 +692,7 @@ class PHKIController extends Controller
         }
 
         if ($status = request('filter_status')) {
-            $query->where('status_hki', $status);
+            $query->where('status', $status);
         }
 
         if ($sumber = request('filter_sumber')) {
