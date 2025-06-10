@@ -377,6 +377,7 @@ Route::middleware('auth')->group(function () {
     Route::prefix('chart')->name('chart.')->middleware('authorize:ADM,VAL,ANG')->group(function () {
         Route::get('/', [DashboardController::class, 'index'])->name('index');
         Route::get('/more-info', [DashboardController::class, 'moreInfo'])->name('moreInfo');
+    
     });
 
 
