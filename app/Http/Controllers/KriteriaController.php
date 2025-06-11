@@ -202,8 +202,18 @@ class KriteriaController extends Controller
                 ]);
             }
 
+            $no_kriteria = $request->no_kriteria;
+            if (is_string($no_kriteria)) {
+                preg_match('/\d+$/', $no_kriteria, $matches);
+                $no_kriteria = $matches ? (int)$matches[0] : 1;
+            }
+
             $users = $request->selected_users;
             $judul = $request->judul;
+
+            KriteriaModel::where('no_kriteria', $no_kriteria)
+                ->whereNotIn('id_user', $users)
+                ->delete();
 
             try {
                 // Update judul semua dokumen kriteria dengan no_kriteria terkait
@@ -211,18 +221,16 @@ class KriteriaController extends Controller
                     ->whereNull('deleted_at')
                     ->update(['judul' => $judul]);
 
-                // Tambahkan user baru ke kriteria jika belum ada
+                KriteriaModel::where('no_kriteria', $no_kriteria)
+                    ->whereNull('deleted_at')
+                    ->update(['deleted_at' => now()]);
+
+                // Create new records for selected users
                 foreach ($users as $userId) {
-                    $exists = KriteriaModel::where('id_user', $userId)
-                        ->where('no_kriteria', $no_kriteria)
-                        ->whereNull('deleted_at')
-                        ->exists();
-                    if (!$exists) {
-                        KriteriaModel::create([
-                            'no_kriteria' => $no_kriteria,
-                            'id_user' => $userId,
-                        ]);
-                    }
+                    KriteriaModel::create([
+                        'no_kriteria' => $no_kriteria,
+                        'id_user' => $userId,
+                    ]);
                 }
                 return response()->json([
                     'status' => true,

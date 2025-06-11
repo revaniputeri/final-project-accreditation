@@ -75,7 +75,7 @@
             }
         });
 
-        let selectedUsers = [];
+        let selectedUsers = {!! json_encode($selectedUsers->map(function($u){ return ['id'=>$u->id_user, 'name'=>$u->nama_lengkap]; })) !!};
 
         $('#addNewUser').on('click', function () {
             const userId = $('#id_user').val();
@@ -98,7 +98,7 @@
                 html += `
                     <div class="input-group mb-1">
                         <input type="text" class="form-control rounded" value="${user.name}" readonly style="width: calc(80% - 40px); margin-right: 14px;">
-                        <input type="hidden" name="id_user[]" value="${user.id}">
+                        <input type="hidden" name="selected_users[]" value="${user.id}">
                         <button type="button" class="btn btn-danger removeUser" data-id="${user.id}" style="margin-right: 2px;">
                             <i class="fas fa-trash"></i>
                         </button>

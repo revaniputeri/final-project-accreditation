@@ -27,9 +27,6 @@
                         <a id="exportExcelBtn" class="btn btn-custom-blue me-2" href="{{ route('kriteria.export_excel') }}">
                             <i class="fas fa-file-excel me-2"></i> Export Excel
                         </a>
-                        <button class="btn btn-custom-blue me-2" onclick="modalAction('{{ route('kriteria.import') }}')">
-                            <i class="fa-solid fa-file-arrow-up me-2"></i> Import Data
-                        </button>
                         <button onclick="modalAction('{{ route('kriteria.create_ajax') }}')" class="btn btn-custom-blue">
                             <i class="fas fa-plus me-2"></i> Tambah Data
                         </button>
@@ -66,7 +63,7 @@
                     $('#myModal .modal-content').html(response);
                     $('#myModal').modal('show');
 
-                    $(document).off('submit', '#formCreateKriteria, #formEditKriteria, #form-import');
+                    $(document).off('submit', '#formCreateKriteria, #formEditKriteria');
 
                     $(document).off('submit', '#formCreateKriteria, #formEditKriteria').on('submit', '#formCreateKriteria, #formEditKriteria', function (e) {
                         e.preventDefault();
@@ -106,60 +103,6 @@
                                 } else {
                                     Swal.fire('Error!', 'Gagal menyimpan data karena duplikat Kode Kriteria.', 'error');
                                 }
-                            }
-                        });
-                    });
-
-                    $(document).off('submit', '#form-import');
-
-                    $(document).on('submit', '#form-import', function (e) {
-                        e.preventDefault();
-                        var form = $(this);
-                        var formData = new FormData(form[0]);
-                        var submitBtn = form.find('button[type="submit"]');
-
-                        submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> Memproses...');
-
-                        $.ajax({
-                            url: form.attr('action'),
-                            method: 'POST',
-                            data: formData,
-                            processData: false,
-                            contentType: false,
-                            success: function (response) {
-                                $('#myModal').modal('hide');
-                                if (response.alert && response.message) {
-                                    Swal.fire({
-                                        icon: response.alert,
-                                        title: response.alert === 'success' ? 'Sukses' : 'Error',
-                                        text: response.message,
-                                        timer: 2000,
-                                        showConfirmButton: false
-                                    }).then(() => {
-                                        window.LaravelDataTables["kriteria-table"].ajax.reload();
-                                    });
-                                }
-                            },
-                            error: function (xhr) {
-                                $('#myModal').modal('hide');
-                                if (xhr.responseJSON && xhr.responseJSON.alert && xhr.responseJSON.message) {
-                                    Swal.fire({
-                                        icon: xhr.responseJSON.alert,
-                                        title: xhr.responseJSON.alert === 'success' ? 'Sukses' : 'Error',
-                                        text: xhr.responseJSON.message,
-                                        timer: 2000,
-                                        showConfirmButton: false
-                                    });
-                                } else {
-                                    Swal.fire({
-                                        icon: 'error',
-                                        title: 'Error',
-                                        text: xhr.responseJSON.message
-                                    });
-                                }
-                            },
-                            complete: function () {
-                                submitBtn.prop('disabled', false).html('<i class="fas fa-upload me-1"></i> Upload');
                             }
                         });
                     });

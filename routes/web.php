@@ -120,9 +120,7 @@ Route::middleware('auth')->group(function () {
         // Import and Export routes
         Route::get('/export_excel', [KriteriaController::class, 'export_excel'])->name('kriteria.export_excel');
         Route::get('/export_pdf', [KriteriaController::class, 'export_pdf'])->name('kriteria.export_pdf');
-        Route::get('/import', [KriteriaController::class, 'import'])->name('kriteria.import');
-        Route::post('/import_ajax', [KriteriaController::class, 'import_ajax'])->name('kriteria.import_ajax');
-
+        
         // Get last number and users
         Route::get('/get-last-number', [KriteriaController::class, 'getLastNumber'])->name('kriteria.get_last_number');
         Route::get('/get-users', [KriteriaController::class, 'getUsers'])->name('kriteria.get_users');
