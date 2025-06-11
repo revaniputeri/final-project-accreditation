@@ -278,96 +278,105 @@
                 }
             }
 
-                    $('#kriteriaDropdown').on('change', function() {
-                        selectedKriteria = $(this).val();
-                        selectedKategori = $('#kategoriDropdown').val();
-                        if (selectedKriteria && selectedKategori) {
+            $('#kriteriaDropdown').on('change', function() {
+                selectedKriteria = $(this).val();
+                selectedKategori = $('#kategoriDropdown').val();
+                if (selectedKriteria && selectedKategori) {
+                    loadPdfAndData(selectedKriteria, selectedKategori);
+                } else {
+                    $('#dokumenInfoBody').html(
+                        '<tr><td colspan="5" class="text-center text-muted">Silakan pilih kriteria dan kategori terlebih dahulu</td></tr>'
+                    );
+                    $('#pdfPreview').attr('src', '');
+                    $('#statusSelect').val('');
+                    $('#komentarInput').val('');
+                    $('#submitValidation').prop('disabled', true);
+                }
+            });
+
+            $('#kategoriDropdown').on('change', function() {
+                selectedKategori = $(this).val();
+                selectedKriteria = $('#kriteriaDropdown').val();
+                if (selectedKriteria && selectedKategori) {
+                    loadPdfAndData(selectedKriteria, selectedKategori);
+                } else {
+                    $('#dokumenInfoBody').html(
+                        '<tr><td colspan="5" class="text-center text-muted">Silakan pilih kriteria dan kategori terlebih dahulu</td></tr>'
+                    );
+                    $('#pdfPreview').attr('src', '');
+                    $('#statusSelect').val('');
+                    $('#komentarInput').val('');
+                    $('#submitValidation').prop('disabled', true);
+                }
+            });
+
+            $('#submitValidation').on('click', function() {
+                if (!selectedKriteria || !selectedKategori) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Peringatan',
+                        text: 'Pilih kriteria dan kategori terlebih dahulu.'
+                    });
+                    return;
+                }
+                var status = $('#statusSelect').val();
+                var komentar = $('#komentarInput').val();
+
+                if (!status) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Peringatan',
+                        text: 'Pilih status validasi.'
+                    });
+                    return;
+                }
+
+                if (status === 'revisi' && !komentar) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Peringatan',
+                        text: 'Komentar validasi harus diisi ketika status validasi adalah Revisi.'
+                    });
+                    return;
+                }
+
+                $.ajax({
+                    url: "{{ route('validasi.store') }}",
+                    type: "PUT",
+                    data: {
+                        kriteria: selectedKriteria,
+                        kategori: selectedKategori,
+                        status: status,
+                        komentar: komentar,
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Sukses',
+                                text: 'Validasi berhasil disimpan.'
+                            });
+                            // Refresh informasi dokumen setelah validasi
                             loadPdfAndData(selectedKriteria, selectedKategori);
                         } else {
-                            $('#dokumenInfoBody').html(
-                                '<tr><td colspan="5" class="text-center text-muted">Silakan pilih kriteria dan kategori terlebih dahulu</td></tr>'
-                            );
-                            $('#pdfPreview').attr('src', '');
-                            $('#statusSelect').val('');
-                            $('#komentarInput').val('');
-                            $('#submitValidation').prop('disabled', true);
-                        }
-                    });
-
-                    $('#kategoriDropdown').on('change', function() {
-                        selectedKategori = $(this).val();
-                        selectedKriteria = $('#kriteriaDropdown').val();
-                        if (selectedKriteria && selectedKategori) {
-                            loadPdfAndData(selectedKriteria, selectedKategori);
-                        } else {
-                            $('#dokumenInfoBody').html(
-                                '<tr><td colspan="5" class="text-center text-muted">Silakan pilih kriteria dan kategori terlebih dahulu</td></tr>'
-                            );
-                            $('#pdfPreview').attr('src', '');
-                            $('#statusSelect').val('');
-                            $('#komentarInput').val('');
-                            $('#submitValidation').prop('disabled', true);
-                        }
-                    });
-
-                    $('#submitValidation').on('click', function() {
-                        if (!selectedKriteria || !selectedKategori) {
                             Swal.fire({
-                                icon: 'warning',
-                                title: 'Peringatan',
-                                text: 'Pilih kriteria dan kategori terlebih dahulu.'
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'Gagal menyimpan validasi: ' + (response
+                                    .message || '')
                             });
-                            return;
                         }
-                        var status = $('#statusSelect').val();
-                        var komentar = $('#komentarInput').val();
-
-                        if (!status) {
-                            Swal.fire({
-                                icon: 'warning',
-                                title: 'Peringatan',
-                                text: 'Pilih status validasi.'
-                            });
-                            return;
-                        }
-
-                        $.ajax({
-                            url: "{{ route('validasi.store') }}",
-                            type: "PUT",
-                            data: {
-                                kriteria: selectedKriteria,
-                                kategori: selectedKategori,
-                                status: status,
-                                komentar: komentar,
-                                _token: '{{ csrf_token() }}'
-                            },
-                            success: function(response) {
-                                if (response.success) {
-                                    Swal.fire({
-                                        icon: 'success',
-                                        title: 'Sukses',
-                                        text: 'Validasi berhasil disimpan.'
-                                    });
-                                    // Refresh informasi dokumen setelah validasi
-                                    loadPdfAndData(selectedKriteria, selectedKategori);
-                                } else {
-                                    Swal.fire({
-                                        icon: 'error',
-                                        title: 'Error',
-                                        text: 'Gagal menyimpan validasi: ' + (response
-                                            .message || '')
-                                    });
-                                }
-                            },
-                            error: function(xhr) {
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Error',
-                                    text: 'Terjadi kesalahan saat menyimpan validasi.'
-                                });
-                            }
+                    },
+                    error: function(xhr) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Terjadi kesalahan saat menyimpan validasi.'
                         });
-                    });
+                    }
                 });
-            </script>
+            });
+        });
+    </script>
 @endpush

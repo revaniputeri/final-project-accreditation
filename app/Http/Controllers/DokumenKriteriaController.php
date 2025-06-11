@@ -121,7 +121,8 @@ class DokumenKriteriaController extends Controller
     public function create_ajax(Request $request)
     {
         $no_kriteria = $request->query('no_kriteria');
-        return view('dokumen_kriteria.create_ajax', compact('no_kriteria'));
+        $kategori = $request->query('kategori', '');
+        return view('dokumen_kriteria.create_ajax', compact('no_kriteria', 'kategori'));
     }
 
     public function store_ajax(Request $request)

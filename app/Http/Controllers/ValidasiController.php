@@ -12,7 +12,8 @@ use Dompdf\Options;
 
 class ValidasiController extends Controller
 {
-    public function index(){
+    public function index()
+    {
         // Get unique no_kriteria only, ignoring versi and kategori
         $dokumenKriteria = DokumenKriteriaModel::select('no_kriteria', 'judul')
             ->groupBy('no_kriteria', 'judul')
@@ -58,21 +59,42 @@ class ValidasiController extends Controller
             $dom = new \DOMDocument();
             $dom->loadHTML(mb_convert_encoding($contentHtml, 'HTML-ENTITIES', 'UTF-8'));
 
-            $images = $dom->getElementsByTagName('img');
-            foreach ($images as $img) {
+            // Fix image <img src="storage/img/..."> to base64
+            foreach ($dom->getElementsByTagName('img') as $img) {
                 $src = $img->getAttribute('src');
-                // Check if src is a local storage path
-                if (preg_match('/^(\/?storage\/img\/.+)$/', $src, $matches)) {
-                    $path = public_path(ltrim($matches[1], '/'));
+                if (preg_match('#(?:/)?storage/img/(.+)$#', $src, $matches)) {
+                    $path = public_path('storage/img/' . $matches[1]);
                     if (file_exists($path)) {
                         $type = mime_content_type($path);
                         $data = base64_encode(file_get_contents($path));
-                        $base64 = 'data:' . $type . ';base64,' . $data;
+                        $base64 = "data:$type;base64,$data";
                         $img->setAttribute('src', $base64);
                     }
                 }
             }
-            $contentHtml = $dom->saveHTML();
+
+            // Replace hyperlinks href to local file paths for dompdf
+            $anchors = $dom->getElementsByTagName('a');
+            foreach ($anchors as $a) {
+                $href = $a->getAttribute('href');
+
+                // Handle both formats:
+                // 1. http://127.0.0.1:8000/storage/dokumen_pendukung/...
+                // 2. /storage/dokumen_pendukung/...
+                if (preg_match('/^(https?:\/\/127\.0\.0\.1:8000)?(\/storage\/dokumen_pendukung\/.+)$/', $href, $matches)) {
+                    $relativePath = $matches[2]; // This will capture the /storage/... part in both cases
+                    $localPath = public_path(ltrim($relativePath, '/'));
+
+                    if (file_exists($localPath)) {
+                        // Pastikan URL yang dihasilkan bisa diakses publik
+                        $a->setAttribute('href', asset($relativePath));
+                        $a->setAttribute('target', '_blank');
+                    }
+                }
+            }
+
+            $contentHtml = $dom->saveHTML($dom->documentElement);
+
 
             // Load fixed content_html to Dompdf
             $dompdf->loadHtml($contentHtml);
@@ -102,7 +124,8 @@ class ValidasiController extends Controller
             ]);
         }
     }
-    public function valid(Request $request){
+    public function valid(Request $request)
+    {
         $user = Auth::user();
         $idValidator = $user->id; // Use user id for foreign key
         $kriteria = $request->kriteria;
@@ -114,24 +137,26 @@ class ValidasiController extends Controller
 
         if (!$check) {
             return response()->json([
-                    'success' => false,
-                    'message' => "Data data kriteria tidak ditemukan didalam system"
-                ]);
+                'success' => false,
+                'message' => "Data data kriteria tidak ditemukan didalam system"
+            ]);
         }
         $check->update(
             [
-                'id_validator'=>$idValidator,
-                'status'=> $status,
-                'komentar'=>'',
-            'updated_at'=>now()
-            ]);
+                'id_validator' => $idValidator,
+                'status' => $status,
+                'komentar' => '',
+                'updated_at' => now()
+            ]
+        );
         return response()->json([
-                    'success' => true,
-                    'message' => "Berhasil Menyimpan"
-                ]);
+            'success' => true,
+            'message' => "Berhasil Menyimpan"
+        ]);
     }
 
-    public function store(Request $request){
+    public function store(Request $request)
+    {
         try {
             $user = Auth::user();
             $idValidator = $user->id; // Use user id for foreign key
@@ -144,20 +169,20 @@ class ValidasiController extends Controller
                 ->latest('versi')->first();
             if (!$check) {
                 return response()->json([
-                        'success' => false,
-                        'message' => "PDF untuk kriteria data kriteria tidak ditemukan"
-                    ]);
+                    'success' => false,
+                    'message' => "PDF untuk kriteria data kriteria tidak ditemukan"
+                ]);
             }
             $check->update([
-                'id_validator'=>$idValidator,
-                'status'=> $status,
-                'komentar'=>$komentar,
-                'updated_at'=>now()
+                'id_validator' => $idValidator,
+                'status' => $status,
+                'komentar' => $komentar,
+                'updated_at' => now()
             ]);
             return response()->json([
-                        'success' => true,
-                        'message' => "Berhasil Menyimpan"
-                    ]);
+                'success' => true,
+                'message' => "Berhasil Menyimpan"
+            ]);
         } catch (\Exception $e) {
             Log::error('Error in ValidasiController@store: ' . $e->getMessage());
             return response()->json([

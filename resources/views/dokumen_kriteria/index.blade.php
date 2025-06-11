@@ -14,160 +14,163 @@
 @endsection
 
 @section('content')
-    <div class="nav-tabs">
-        <ul class="nav nav-tabs" id="kategoriTabs" role="tablist">
-            @foreach ($kategoriList as $index => $kategori)
-                <li class="nav-item" role="presentation">
-                    <a class="nav-link @if ($kategori === $selectedKategori) active @endif"
-                        id="custom-content-below-{{ $kategori }}-tab" data-toggle="tab"
-                        href="#custom-content-below-{{ $kategori }}" role="tab"
-                        aria-controls="custom-content-below-{{ $kategori }}"
-                        aria-selected="{{ $kategori === $selectedKategori ? 'true' : 'false' }}">
-                        {{ ucfirst($kategori) }}
-                    </a>
-                </li>
-            @endforeach
-        </ul>
+    @if (count($kategoriList) === 0)
+        <div class="alert alert-danger text-center">Dokumen kriteria belum tersedia.</div>
+    @else
+        <div class="nav-tabs">
+            <ul class="nav nav-tabs" id="kategoriTabs" role="tablist">
+                @foreach ($kategoriList as $index => $kategori)
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link @if ($kategori === $selectedKategori) active @endif"
+                            id="custom-content-below-{{ $kategori }}-tab" data-toggle="tab"
+                            href="#custom-content-below-{{ $kategori }}" role="tab"
+                            aria-controls="custom-content-below-{{ $kategori }}"
+                            aria-selected="{{ $kategori === $selectedKategori ? 'true' : 'false' }}">
+                            {{ ucfirst($kategori) }}
+                        </a>
+                    </li>
+                @endforeach
+            </ul>
 
-        <div class="tab-content" id="kategoriTabsContent">
-            @foreach ($kategoriList as $kategori)
-                @php
-                    $dokumenForKategori = $dokumenGrouped->get($kategori, collect());
-                    $latestDokumen = $dokumenForKategori->first();
-                @endphp
-                <div class="tab-pane fade @if ($kategori === $selectedKategori) show active @endif"
-                    id="custom-content-below-{{ $kategori }}" role="tabpanel"
-                    aria-labelledby="custom-content-below-{{ $kategori }}-tab">
-                    <div class="container-fluid mt-3">
-                        {{-- CARD 1: Keterangan Dokumen Kriteria --}}
-                        <div class="card shadow-sm mb-4">
-                            <div class="card-header bg-primary border-bottom">
-                                <h3 class="card-title mb-0">Keterangan Dokumen Kriteria</h3>
-                            </div>
-                            <div class="card-body">
-                                @if (!$latestDokumen)
-                                    <p class="mb-0">Tidak ada data dokumen kriteria.</p>
-                                @else
-                                    <table class="table table-bordered table-striped">
-                                        <thead>
-                                            <tr>
-                                                <th>No Kriteria</th>
-                                                <th>Judul</th>
-                                                <th>Versi</th>
-                                                <th>Status</th>
-                                                <th>Waktu Dibuat</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr data-id="{{ $latestDokumen->id_dokumen_kriteria }}"
-                                                data-content_html="{{ htmlspecialchars($latestDokumen->content_html) }}">
-                                                <td>{{ $latestDokumen->no_kriteria }}</td>
-                                                <td>{{ $latestDokumen->judul }}</td>
-                                                <td>{{ $latestDokumen->versi }}</td>
-                                                <td>
-                                                    @php
-                                                        $badgeClass = [
-                                                            'tervalidasi' => 'badge-success',
-                                                            'revisi' => 'badge-warning',
-                                                            'perlu validasi' => 'badge-info',
-                                                            '' => 'badge-secondary',
-                                                        ];
-                                                    @endphp
-                                                    <span
-                                                        class="badge p-2 {{ $badgeClass[$latestDokumen->status] ?? 'badge-secondary' }}">
-                                                        {{ strtoupper($latestDokumen->status) }}
-                                                    </span>
-                                                </td>
-                                                <td>{{ $latestDokumen->created_at->format('d-m-Y H:i') }}</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                @endif
-                            </div>
-                        </div>
-
-                        {{-- CARD 2: Daftar Dokumen Pendukung --}}
-                        <div class="card shadow-sm mb-4">
-                            <div class="card-header bg-primary border-bottom">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <h3 class="card-title mb-0 text-white">Daftar Dokumen Pendukung</h3>
-                                    @if ($latestDokumen)
-                                        <button
-                                            onclick="modalAction('{{ route('dokumen_kriteria.create_ajax', [], false) }}?no_kriteria={{ $latestDokumen->no_kriteria }}&kategori={{ $kategori }}', '{{ $kategori }}')"
-                                            class="btn btn-custom-blue">
-                                            <i class="fas fa-plus me-2"></i> Tambah Data
-                                        </button>
+            <div class="tab-content" id="kategoriTabsContent">
+                @foreach ($kategoriList as $kategori)
+                    @php
+                        $dokumenForKategori = $dokumenGrouped->get($kategori, collect());
+                        $latestDokumen = $dokumenForKategori->first();
+                    @endphp
+                    <div class="tab-pane fade @if ($kategori === $selectedKategori) show active @endif"
+                        id="custom-content-below-{{ $kategori }}" role="tabpanel"
+                        aria-labelledby="custom-content-below-{{ $kategori }}-tab">
+                        <div class="container-fluid mt-3">
+                            {{-- CARD 1: Keterangan Dokumen Kriteria --}}
+                            <div class="card shadow-sm mb-4">
+                                <div class="card-header bg-primary border-bottom">
+                                    <h3 class="card-title mb-0">Keterangan Dokumen Kriteria</h3>
+                                </div>
+                                <div class="card-body">
+                                    @if (!$latestDokumen)
+                                        <p class="mb-0">Tidak ada data dokumen kriteria.</p>
+                                    @else
+                                        <table class="table table-bordered table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>No Kriteria</th>
+                                                    <th>Judul</th>
+                                                    <th>Versi</th>
+                                                    <th>Status</th>
+                                                    <th>Waktu Dibuat</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr data-id="{{ $latestDokumen->id_dokumen_kriteria }}"
+                                                    data-no_kriteria="{{ $latestDokumen->no_kriteria }}"
+                                                    data-content_html="{{ htmlspecialchars($latestDokumen->content_html) }}">
+                                                    <td>{{ $latestDokumen->no_kriteria }}</td>
+                                                    <td>{{ $latestDokumen->judul }}</td>
+                                                    <td>{{ $latestDokumen->versi }}</td>
+                                                    <td>
+                                                        @php
+                                                            $badgeClass = [
+                                                                'tervalidasi' => 'badge-success',
+                                                                'revisi' => 'badge-warning',
+                                                                'perlu validasi' => 'badge-info',
+                                                                '' => 'badge-secondary',
+                                                            ];
+                                                        @endphp
+                                                        <span
+                                                            class="badge p-2 {{ $badgeClass[$latestDokumen->status] ?? 'badge-secondary' }}">
+                                                            {{ strtoupper($latestDokumen->status) }}
+                                                        </span>
+                                                    </td>
+                                                    <td>{{ $latestDokumen->created_at->format('d-m-Y H:i') }}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
                                     @endif
                                 </div>
                             </div>
-                            <div class="card-body">
-                                @if ($latestDokumen)
-                                    <div class="table-responsive">
-                                        {{ $dataTable->table([
-                                            'id' => 'dokumen-pendukung-table-' . $kategori,
-                                            'class' => 'table table-hover table-bordered table-striped dokumen-pendukung-table',
-                                            'style' => 'width:100%',
-                                            'data-kategori' => $kategori,
-                                        ]) }}
-                                    </div>
-                                @else
-                                    <p class="mb-0">Tidak ada data dokumen pendukung.</p>
-                                @endif
-                            </div>
-                        </div>
 
-                        {{-- Modal --}}
-                        <div id="myModal-{{ $kategori }}" class="modal fade" tabindex="-1" aria-hidden="true">
-                            <div class="modal-dialog modal-lg">
-                                <div class="modal-content">
-                                    <!-- Konten modal akan diisi secara dinamis -->
+                            {{-- CARD 2: Daftar Dokumen Pendukung --}}
+                            <div class="card shadow-sm mb-4">
+                                <div class="card-header bg-primary border-bottom">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h3 class="card-title mb-0 text-white">Daftar Dokumen Pendukung</h3>
+                                        @if ($latestDokumen)
+                                            <button class="btnTambahDokumenPendukung btn btn-custom-blue">
+                                                <i class="fas fa-plus me-2"></i> Tambah Data
+                                            </button>
+                                        @endif
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    @if ($latestDokumen)
+                                        <div class="table-responsive">
+                                            {{ $dataTable->table([
+                                                'id' => 'dokumen-pendukung-table-' . $kategori,
+                                                'class' => 'table table-hover table-bordered table-striped dokumen-pendukung-table',
+                                                'style' => 'width:100%',
+                                                'data-kategori' => $kategori,
+                                            ]) }}
+                                        </div>
+                                    @else
+                                        <p class="mb-0">Tidak ada data dokumen pendukung.</p>
+                                    @endif
                                 </div>
                             </div>
-                        </div>
 
-                        {{-- CARD 3: Form Edit Isi Dokumen --}}
-                        @if ($latestDokumen)
-                            <form id="dokumenForm"
-                                action="{{ route('dokumen_kriteria.update', ['id' => $latestDokumen->id_dokumen_kriteria]) }}"
-                                method="POST">
-                                @csrf
-                                @method('PUT')
-                                <input type="hidden" id="dokumen_id" name="dokumen_id"
-                                    value="{{ $latestDokumen->id_dokumen_kriteria }}">
-
-                                <div class="card shadow-sm mb-4">
-                                    <div class="card-header bg-primary border-bottom">
-                                        <h3 class="card-title mb-0">Edit Isi Dokumen</h3>
+                            {{-- Modal --}}
+                            <div id="myModal-{{ $kategori }}" class="modal fade" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                        <!-- Konten modal akan diisi secara dinamis -->
                                     </div>
-                                    <div class="card-body">
-                                        <div class="form-group mb-3">
-                                            <div class="word-like-editor">
-                                                <div class="editor-noneditable-area" style="background-color: transparent;">
-                                                    <textarea id="open-source-plugins" name="content_html">{!! old('content_html', $latestDokumen->content_html) !!}</textarea>
+                                </div>
+                            </div>
+
+                            {{-- CARD 3: Form Edit Isi Dokumen --}}
+                            @if ($latestDokumen)
+                                <form id="dokumenForm"
+                                    action="{{ route('dokumen_kriteria.update', ['id' => $latestDokumen->id_dokumen_kriteria]) }}"
+                                    method="POST">
+                                    @csrf
+                                    @method('PUT')
+                                    <input type="hidden" id="dokumen_id" name="dokumen_id"
+                                        value="{{ $latestDokumen->id_dokumen_kriteria }}">
+
+                                    <div class="card shadow-sm mb-4">
+                                        <div class="card-header bg-primary border-bottom">
+                                            <h3 class="card-title mb-0">Edit Isi Dokumen</h3>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="form-group mb-3">
+                                                <div class="word-like-editor">
+                                                    <div class="editor-noneditable-area" style="background-color: transparent;">
+                                                        <textarea id="open-source-plugins" name="content_html">{!! old('content_html', $latestDokumen->content_html) !!}</textarea>
+                                                    </div>
+                                                    <div class="editor-noneditable-background"></div>
                                                 </div>
-                                                <div class="editor-noneditable-background"></div>
+                                            </div>
+                                            <div class="px-3 pb-3">
+                                                <button type="submit" name="action" value="save" class="btn btn-primary">
+                                                    <i class="fas fa-save me-2"></i> Simpan
+                                                </button>
+                                                <button type="submit" name="action" value="submit"
+                                                    class="btn btn-success ms-2">
+                                                    <i class="fas fa-paper-plane me-2"></i> Submit
+                                                </button>
                                             </div>
                                         </div>
-                                        <div class="px-3 pb-3">
-                                            <button type="submit" name="action" value="save" class="btn btn-primary">
-                                                <i class="fas fa-save me-2"></i> Simpan
-                                            </button>
-                                            <button type="submit" name="action" value="submit"
-                                                class="btn btn-success ms-2">
-                                                <i class="fas fa-paper-plane me-2"></i> Submit
-                                            </button>
-                                        </div>
                                     </div>
-                                </div>
-                            </form>
-                        @else
-                            <div class="alert alert-info">Tidak ada dokumen untuk diedit.</div>
-                        @endif
+                                </form>
+                            @else
+                                <div class="alert alert-info">Tidak ada dokumen untuk diedit.</div>
+                            @endif
+                        </div>
                     </div>
-                </div>
-            @endforeach
+                @endforeach
+            </div>
         </div>
-    </div>
+    @endif
 
     @push('css')
         <style>
@@ -225,6 +228,10 @@
     @endpush
 
     @push('scripts')
+        @php
+            $dokumenForSelectedKategori = $dokumenGrouped->get($selectedKategori, collect());
+            $latestDokumen = $dokumenForSelectedKategori->first();
+        @endphp
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
         <script>
@@ -327,11 +334,47 @@
 
                 // Reload DataTable on tab change
                 $('button[data-toggle="tab"]').on('shown.bs.tab', function(e) {
-                    var kategori = $(e.target).data('target').replace('#content-', '');
-                    var tableId = 'dokumen-pendukung-table-' + kategori;
-                    if (window.LaravelDataTables && window.LaravelDataTables[tableId]) {
-                        window.LaravelDataTables[tableId].ajax.reload();
+                    var targetData = $(e.target).data('target');
+                    if (typeof targetData === 'string') {
+                        var kategori = targetData.replace('#content-', '');
+                        var tableId = 'dokumen-pendukung-table-' + kategori;
+                        if (window.LaravelDataTables && window.LaravelDataTables[tableId]) {
+                            window.LaravelDataTables[tableId].ajax.reload();
+                        }
+                    } else {
+                        console.warn(
+                            'Tab shown event target data-target attribute is undefined or not a string.');
                     }
+                });
+
+                // Handle upload button click to open modal with correct kategori
+                $(document).on('click', '.btnTambahDokumenPendukung', function() {
+                    var activeTabButton = $('ul#kategoriTabs a.nav-link.active');
+                    console.log('Active tab button count:', activeTabButton.length);
+                    var kategori = '';
+                    if (activeTabButton.length > 0) {
+                        var href = activeTabButton.attr('href'); // e.g. #custom-content-below-pengendalian
+                        console.log('Active tab href:', href);
+                        if (typeof href === 'string' && href.length > 0) {
+                            kategori = href.replace('#custom-content-below-', '');
+                        }
+                    }
+                    if (!kategori) {
+                        // fallback to first kategori tab if kategori is empty
+                        var firstTabHref = $('ul#kategoriTabs a.nav-link').first().attr('href');
+                        console.log('First tab href:', firstTabHref);
+                        if (typeof firstTabHref === 'string' && firstTabHref.length > 0) {
+                            kategori = firstTabHref.replace('#custom-content-below-', '');
+                        }
+                    }
+                    console.log('Opening create modal with kategori:', kategori);
+                    var no_kriteria = $('div.tab-pane.show.active table tbody tr').data('no_kriteria');
+                    if (!no_kriteria) {
+                        console.warn('no_kriteria is undefined or null');
+                    }
+                    var url = '{{ route('dokumen_kriteria.create_ajax', [], false) }}?no_kriteria=' +
+                        encodeURIComponent(no_kriteria) + '&kategori=' + encodeURIComponent(kategori);
+                    modalAction(url, kategori);
                 });
             });
 
@@ -352,6 +395,7 @@
                 var form = $(this);
                 var kategori = form.closest('.modal').attr('id').replace('myModal-', '');
                 var formData = new FormData(form[0]);
+                console.log('Submitting form with kategori:', kategori);
 
                 $.ajax({
                     url: form.attr('action'),
@@ -364,11 +408,13 @@
                     },
                     success: function(res) {
                         $('#myModal-' + kategori).modal('hide');
-                        var activeKategori = $('ul#kategoriTabs button.nav-link.active').attr('id').replace(
-                            'tab-', '');
-                        var activeTableId = 'dokumen-pendukung-table-' + activeKategori;
-                        if (window.LaravelDataTables && window.LaravelDataTables[activeTableId]) {
-                            window.LaravelDataTables[activeTableId].ajax.reload();
+                        // Reload all dokumen-pendukung DataTables to ensure data refresh
+                        if (window.LaravelDataTables) {
+                            Object.keys(window.LaravelDataTables).forEach(function(tableId) {
+                                if (tableId.startsWith('dokumen-pendukung-table-')) {
+                                    window.LaravelDataTables[tableId].ajax.reload();
+                                }
+                            });
                         }
                         if (res.alert && res.message) {
                             Swal.fire({
@@ -382,11 +428,16 @@
                     },
                     error: function(xhr) {
                         $('#myModal-' + kategori).modal('hide');
-                        var activeKategori = $('ul#kategoriTabs button.nav-link.active').attr('id').replace(
-                            'tab-', '');
-                        var activeTableId = 'dokumen-pendukung-table-' + activeKategori;
-                        if (window.LaravelDataTables && window.LaravelDataTables[activeTableId]) {
-                            window.LaravelDataTables[activeTableId].ajax.reload();
+                        var activeTabButton = $('ul#kategoriTabs button.nav-link.active');
+                        var activeKategori = activeTabButton.attr('id');
+                        if (typeof activeKategori === 'string') {
+                            activeKategori = activeKategori.replace('tab-', '');
+                            var activeTableId = 'dokumen-pendukung-table-' + activeKategori;
+                            if (window.LaravelDataTables && window.LaravelDataTables[activeTableId]) {
+                                window.LaravelDataTables[activeTableId].ajax.reload();
+                            }
+                        } else {
+                            console.warn('Active tab button id attribute is undefined or not a string.');
                         }
                         if (xhr.responseJSON && xhr.responseJSON.alert && xhr.responseJSON.message) {
                             Swal.fire({
@@ -417,11 +468,13 @@
                     data: form.serialize(),
                     success: function(response) {
                         $('#myModal-' + kategori).modal('hide');
-                        var activeKategori = $('ul#kategoriTabs button.nav-link.active').attr('id').replace(
-                            'tab-', '');
-                        var activeTableId = 'dokumen-pendukung-table-' + activeKategori;
-                        if (window.LaravelDataTables && window.LaravelDataTables[activeTableId]) {
-                            window.LaravelDataTables[activeTableId].ajax.reload();
+                        // Reload all dokumen-pendukung DataTables to ensure data refresh
+                        if (window.LaravelDataTables) {
+                            Object.keys(window.LaravelDataTables).forEach(function(tableId) {
+                                if (tableId.startsWith('dokumen-pendukung-table-')) {
+                                    window.LaravelDataTables[tableId].ajax.reload();
+                                }
+                            });
                         }
                         // Prevent duplicate alerts by clearing any existing Swal timers
                         if (window.Swal && Swal.isVisible()) {
@@ -456,6 +509,7 @@
                     });
                     return;
                 }
+                path = path.trim();
                 const fullPath = window.location.origin + '/storage/dokumen_pendukung/' + path;
                 navigator.clipboard.writeText(fullPath).then(function() {
                     Swal.fire({

@@ -40,6 +40,12 @@
                     </div>
                     <div class="card-body">
                         <table class="table table-bordered table-striped">
+                            <colgroup>
+                                <col style="width: 5%">
+                                <col style="width: 40%">
+                                <col style="width: 40%">
+                                <col style="width: 15%">
+                            </colgroup>
                             <thead>
                                 <tr>
                                     <th>No</th>

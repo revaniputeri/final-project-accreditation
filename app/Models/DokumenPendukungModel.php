@@ -14,6 +14,7 @@ class DokumenPendukungModel extends Model
     protected $primaryKey = 'id_dokumen_pendukung';
     protected $fillable = [
         'no_kriteria',
+        'kategori',
         'id_user',
         'nama_file',
         'path_file',
