@@ -106,7 +106,7 @@ class KriteriaController extends Controller
         $users = $request->selected_users;
 
         try {
-            foreach ($users as $userId) {                
+            foreach ($users as $userId) {
                 $kriteria = KriteriaModel::where('id_user', $userId)
                     ->where('no_kriteria', $no_kriteria)
                     ->whereNull('deleted_at')
@@ -161,37 +161,69 @@ class KriteriaController extends Controller
             ->where('id_user', $id_user)
             ->first();
         $users = UserModel::all();
-        return view('kriteria.edit_ajax', ['kriteria' => $kriteria, 'users' => $users]);
+        $judul = DokumenKriteriaModel::where('no_kriteria', $no_kriteria)
+            ->whereNull('deleted_at')
+            ->value('judul');
+        $selectedUsers = KriteriaModel::join('profile_user', 'kriteria.id_user', '=', 'profile_user.id_user')
+            ->where('kriteria.no_kriteria', $no_kriteria)
+            ->whereNull('kriteria.deleted_at')
+            ->select('profile_user.*')
+            ->get();
+        return view('kriteria.edit_ajax', [
+            'kriteria' => $kriteria,
+            'users' => $users,
+            'judul' => $judul,
+            'selectedUsers' => $selectedUsers
+        ]);
     }
 
     public function update_ajax(Request $request, $no_kriteria, $id_user)
     {
         if ($request->ajax() || $request->wantsJson()) {
             $rules = [
-                'no_kriteria' => 'required|string|max:10',
-                'id_user' => 'required|exists:user,id_user',
+                'selected_users' => 'required|array|min:1|max:2',
+                'selected_users.*' => 'exists:user,id_user',
+                'judul' => [
+                    'required',
+                    'string',
+                    'max:255',
+                    'regex:/[a-zA-Z]/',
+                    'not_regex:/^[-_\\s]+$/',
+                ],
             ];
 
-            try {
-                $kriteria = KriteriaModel::where('no_kriteria', $no_kriteria)
-                    ->where('id_user', $id_user)
-                    ->firstOrFail();
-
-                $validator = Validator::make($request->all(), $rules);
-                if ($validator->fails()) {
-                    return response()->json([
-                        'status' => false,
-                        'alert' => 'error',
-                        'message' => 'Validasi gagal.',
-                        'msgField' => $validator->errors()
-                    ]);
-                }
-
-                $kriteria->update([
-                    'no_kriteria' => $request->no_kriteria,
-                    'id_user' => $request->id_user,
+            $validator = Validator::make($request->all(), $rules);
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => false,
+                    'alert' => 'error',
+                    'message' => 'Validasi gagal.',
+                    'msgField' => $validator->errors()
                 ]);
+            }
 
+            $users = $request->selected_users;
+            $judul = $request->judul;
+
+            try {
+                // Update judul semua dokumen kriteria dengan no_kriteria terkait
+                DokumenKriteriaModel::where('no_kriteria', $no_kriteria)
+                    ->whereNull('deleted_at')
+                    ->update(['judul' => $judul]);
+
+                // Tambahkan user baru ke kriteria jika belum ada
+                foreach ($users as $userId) {
+                    $exists = KriteriaModel::where('id_user', $userId)
+                        ->where('no_kriteria', $no_kriteria)
+                        ->whereNull('deleted_at')
+                        ->exists();
+                    if (!$exists) {
+                        KriteriaModel::create([
+                            'no_kriteria' => $no_kriteria,
+                            'id_user' => $userId,
+                        ]);
+                    }
+                }
                 return response()->json([
                     'status' => true,
                     'alert' => 'success',
@@ -206,8 +238,6 @@ class KriteriaController extends Controller
                 ], 500);
             }
         }
-
-        return redirect('/');
     }
 
     public function confirm_ajax($no_kriteria, $id_user)
@@ -266,15 +296,15 @@ class KriteriaController extends Controller
                 DB::raw('MIN(kriteria.created_at) as created_at'),
                 DB::raw('MAX(kriteria.updated_at) as updated_at')
             )
-            ->leftJoin('dokumen_pendukung', function ($join) {
-                $join->on('kriteria.no_kriteria', '=', 'dokumen_pendukung.no_kriteria')
-                    ->whereNull('dokumen_pendukung.deleted_at');
-            })
-            ->where('kriteria.no_kriteria', $no_kriteria)
-            ->where('kriteria.id_user', $id_user)
-            ->whereNull('kriteria.deleted_at')
-            ->groupBy('kriteria.no_kriteria', 'kriteria.id_user')
-            ->first();
+                ->leftJoin('dokumen_pendukung', function ($join) {
+                    $join->on('kriteria.no_kriteria', '=', 'dokumen_pendukung.no_kriteria')
+                        ->whereNull('dokumen_pendukung.deleted_at');
+                })
+                ->where('kriteria.no_kriteria', $no_kriteria)
+                ->where('kriteria.id_user', $id_user)
+                ->whereNull('kriteria.deleted_at')
+                ->groupBy('kriteria.no_kriteria', 'kriteria.id_user')
+                ->first();
 
             if (!$kriteria) {
                 return response()->view('kriteria.detail_ajax', [
