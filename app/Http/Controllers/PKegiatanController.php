@@ -649,4 +649,39 @@ class PKegiatanController extends Controller
 
         return $pdf->stream('Data Kegiatan ' . date('d-m-Y H:i:s') . '.pdf');
     }
+
+    public function chart1(){
+        $data = PKegiatanModel::select(DB::raw('COUNT(id_user) as jumlah, jenis_kegiatan'))
+            ->groupBy('jenis_kegiatan')
+            ->get();
+            if(!$data) {
+            return response()->json([
+                'message' => 'Data tidak ditemukan',
+                'status' => false
+            ], 404);
+        }
+
+        return response()->json([
+            'data' => $data,
+            'status' => true,
+            'message' => 'Data berhasil diambil'
+        ]);
+    }
+    public function chart2(){
+        $data = PKegiatanModel::select(DB::raw('COUNT(id_user) as jumlah, peran'))
+            ->groupBy('peran')
+            ->get();
+            if(!$data) {
+            return response()->json([
+                'message' => 'Data tidak ditemukan',
+                'status' => false
+            ], 404);
+        }
+
+        return response()->json([
+            'data' => $data,
+            'status' => true,
+            'message' => 'Data berhasil diambil'
+        ]);
+    }
 }

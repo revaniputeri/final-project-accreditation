@@ -30,6 +30,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     @stack('css')
+
     <style>
         .card-header {
             border-bottom: none;

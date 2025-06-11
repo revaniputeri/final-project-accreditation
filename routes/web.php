@@ -173,6 +173,10 @@ Route::middleware('auth')->group(function () {
             Route::post('/import_ajax', [PSertifikasiController::class, 'import_ajax'])->name('import_ajax');
             Route::get('/export_excel', [PSertifikasiController::class, 'export_excel'])->name('export_excel');
             Route::get('/export_pdf', [PSertifikasiController::class, 'export_pdf'])->name('export_pdf');
+        
+            Route::get('/chart1',[PSertifikasiController::class,'chart1'])->name('chart1');
+            Route::get('/chart2',[PSertifikasiController::class,'chart2'])->name('chart2');
+            
         });
 
         // Route Portofolio Kegiatan
@@ -196,6 +200,11 @@ Route::middleware('auth')->group(function () {
             Route::post('/import_ajax', [PKegiatanController::class, 'import_ajax'])->name('import_ajax');
             Route::get('/export_excel', [PKegiatanController::class, 'export_excel'])->name('export_excel');
             Route::get('/export_pdf', [PKegiatanController::class, 'export_pdf'])->name('export_pdf');
+            
+            // Charts
+            Route::get('/chart1',[PKegiatanController::class,'chart1'])->name('chart1');
+           Route::get('/chart2',[PKegiatanController::class,'chart2'])->name('chart2');
+           
         });
 
         // Route Portofolio Prestasi
@@ -240,6 +249,11 @@ Route::middleware('auth')->group(function () {
             Route::post('/import_ajax', [POrganisasiController::class, 'import_ajax'])->name('import_ajax');
             Route::get('/export_excel', [POrganisasiController::class, 'export_excel'])->name('export_excel');
             Route::get('/export_pdf', [POrganisasiController::class, 'export_pdf'])->name('export_pdf');
+
+            // Chart
+            Route::get('/chart1',[POrganisasiController::class,'chart1'])->name('chart1');
+            Route::get('/chart2',[POrganisasiController::class,'chart2'])->name('chart2');
+            Route::get('/chart3',[POrganisasiController::class,'chart3'])->name('chart3');
         });
 
         // Route Portofolio Publikasi
@@ -262,6 +276,9 @@ Route::middleware('auth')->group(function () {
             Route::post('/import_ajax', [PPublikasiController::class, 'import_ajax'])->name('import_ajax');
             Route::get('/export_excel', [PPublikasiController::class, 'export_excel'])->name('export_excel');
             Route::get('/export_pdf', [PPublikasiController::class, 'export_pdf'])->name('export_pdf');
+        
+            Route::get('/chart1',[PPublikasiController::class,'chart1'])->name('chart1');
+            Route::get('/chart2',[PPublikasiController::class,'chart2'])->name('chart2');
         });
 
         // Route Portofolio Penelitian
