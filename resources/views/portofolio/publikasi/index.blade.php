@@ -91,6 +91,46 @@
                 </div>
             </div>
         </div>
+    @if($isAdm || $isAng)
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title">Jumlah Partisipasi Berdasarkan skala</h3>
+
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart">
+                            <canvas id="chartPublikasi1"
+                                style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card card-danger">
+                    <div class="card-header">
+                        <h3 class="card-title">Status Validasi</h3>
+
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="chartPublikasi2"
+                            style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+            </div>
+        @endif
     </div>
 @endsection
 
@@ -288,6 +328,46 @@
         $(document).ready(function() {
             updateExportLinks();
             $('#filterStatus, #filterSumberData').change(updateExportLinks);
+        });
+
+        $(document).ready(function () {
+            $.ajax({
+                url: "{{ route('portofolio.publikasi.chart1') }}",
+                method: 'GET',
+                success: function (response) {
+                    const tingkat = [];
+                    const jumlah = [];
+                    console.log(response.data);
+                    response.data.forEach(item => {
+                        tingkat.push(item.tingkat);
+                        jumlah.push(item.jumlah);
+                    });
+
+                    const ctx = document.getElementById('chartPublikasi1').getContext('2d');
+
+                    new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: tingkat,
+                            datasets: [{
+                                label: tingkat,
+                                data: jumlah,
+                                backgroundColor: ['bronze', 'silver'],
+                                borderColor: 'rgba(75, 192, 192, 1)',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+                }
+            });
         });
     </script>
 @endpush

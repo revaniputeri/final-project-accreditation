@@ -75,10 +75,10 @@
 
                 <div class="table-responsive">
                     {{ $dataTable->table([
-                        'id' => 'p_kegiatan-table',
-                        'class' => 'table table-hover table-bordered table-striped',
-                        'style' => 'width:100%',
-                    ]) }}
+        'id' => 'p_kegiatan-table',
+        'class' => 'table table-hover table-bordered table-striped',
+        'style' => 'width:100%',
+    ]) }}
                 </div>
             </div>
         </div>
@@ -92,217 +92,330 @@
                 </div>
             </div>
         </div>
-    </div>
+
+        @if($isAdm || $isAng)
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card card-primary">
+                        <div class="card-header">
+                            <h3 class="card-title">Jumlah Berdasarkan Jenis Kegiatan</h3>
+
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart">
+                                <canvas id="chartKegiatan1"
+                                    style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card card-danger">
+                        <div class="card-header">
+                            <h3 class="card-title">Partisipasi Peran Dalam Kegiatan</h3>
+
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="chartKegiatan2"
+                                style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                        </div>
+                        <!-- /.card-body -->
+                    </div>
+                </div>
+        @endif
+        </div>
 @endsection
 
-@push('scripts')
-    {!! $dataTable->scripts() !!}
-    <script>
-        function modalAction(url) {
-            $.get(url)
-                .done(function(response) {
-                    $('#myModal .modal-content').html(response);
-                    $('#myModal').modal('show');
+    @push('scripts')
+        {!! $dataTable->scripts() !!}
+        <script>
+            function modalAction(url) {
+                $.get(url)
+                    .done(function (response) {
+                        $('#myModal .modal-content').html(response);
+                        $('#myModal').modal('show');
 
-                    $(document).off('submit', '#formCreateKegiatan, #formEditKegiatan');
+                        $(document).off('submit', '#formCreateKegiatan, #formEditKegiatan');
 
-                    $(document).on('submit', '#formCreateKegiatan, #formEditKegiatan', function(e) {
-                        e.preventDefault();
-                        var form = $(this);
-                        var formData = new FormData(form[0]);
-                        var method = 'POST';
-                        var methodInput = form.find('input[name="_method"]');
-                        if (methodInput.length) {
-                            formData.append('_method', methodInput.val());
-                        }
-                        $.ajax({
-                            url: form.attr('action'),
-                            method: method,
-                            data: formData,
-                            processData: false,
-                            contentType: false,
-                            headers: {
-                                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                            },
-                            success: function(res) {
-                                $('#myModal').modal('hide');
-                                window.LaravelDataTables["p_kegiatan-table"].ajax.reload();
-                                if (res.alert && res.message) {
-                                    Swal.fire({
-                                        icon: res.alert,
-                                        title: res.alert === 'success' ? 'Sukses' : 'Error',
-                                        text: res.message,
-                                        timer: 2000,
-                                        showConfirmButton: false
-                                    });
-                                }
-                            },
-                            error: function(xhr) {
-                                if (xhr.status === 422 && xhr.responseJSON && xhr.responseJSON
-                                    .msgField) {
-                                    var errors = xhr.responseJSON.msgField;
-                                    $.each(errors, function(field, messages) {
-                                        var input = form.find('[name="' + field + '"]');
-                                        input.addClass('is-invalid');
-                                        input.next('.invalid-feedback').text(messages[0]);
-                                    });
-                                } else {
+                        $(document).on('submit', '#formCreateKegiatan, #formEditKegiatan', function (e) {
+                            e.preventDefault();
+                            var form = $(this);
+                            var formData = new FormData(form[0]);
+                            var method = 'POST';
+                            var methodInput = form.find('input[name="_method"]');
+                            if (methodInput.length) {
+                                formData.append('_method', methodInput.val());
+                            }
+                            $.ajax({
+                                url: form.attr('action'),
+                                method: method,
+                                data: formData,
+                                processData: false,
+                                contentType: false,
+                                headers: {
+                                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                                },
+                                success: function (res) {
                                     $('#myModal').modal('hide');
                                     window.LaravelDataTables["p_kegiatan-table"].ajax.reload();
-                                    if (xhr.responseJSON && xhr.responseJSON.alert && xhr
-                                        .responseJSON.message) {
+                                    if (res.alert && res.message) {
+                                        Swal.fire({
+                                            icon: res.alert,
+                                            title: res.alert === 'success' ? 'Sukses' : 'Error',
+                                            text: res.message,
+                                            timer: 2000,
+                                            showConfirmButton: false
+                                        });
+                                    }
+                                },
+                                error: function (xhr) {
+                                    if (xhr.status === 422 && xhr.responseJSON && xhr.responseJSON
+                                        .msgField) {
+                                        var errors = xhr.responseJSON.msgField;
+                                        $.each(errors, function (field, messages) {
+                                            var input = form.find('[name="' + field + '"]');
+                                            input.addClass('is-invalid');
+                                            input.next('.invalid-feedback').text(messages[0]);
+                                        });
+                                    } else {
+                                        $('#myModal').modal('hide');
+                                        window.LaravelDataTables["p_kegiatan-table"].ajax.reload();
+                                        if (xhr.responseJSON && xhr.responseJSON.alert && xhr
+                                            .responseJSON.message) {
+                                            Swal.fire({
+                                                icon: xhr.responseJSON.alert,
+                                                title: xhr.responseJSON.alert === 'success' ?
+                                                    'Sukses' : 'Error',
+                                                text: xhr.responseJSON.message,
+                                                timer: 2000,
+                                                showConfirmButton: false
+                                            });
+                                        } else {
+                                            Swal.fire('Error!', 'Gagal menyimpan data.', 'error');
+                                        }
+                                    }
+                                }
+                            });
+                        });
+
+                        $(document).off('submit', '#form-import');
+
+                        $(document).on('submit', '#form-import', function (e) {
+                            e.preventDefault();
+                            var form = $(this);
+                            var formData = new FormData(form[0]);
+                            var submitBtn = form.find('button[type="submit"]');
+
+                            submitBtn.prop('disabled', true).html(
+                                '<i class="fas fa-spinner fa-spin me-2"></i> Memproses...');
+
+                            $.ajax({
+                                url: form.attr('action'),
+                                method: 'POST',
+                                data: formData,
+                                processData: false,
+                                contentType: false,
+                                success: function (response) {
+                                    $('#myModal').modal('hide');
+                                    if (response.alert && response.message) {
+                                        Swal.fire({
+                                            icon: response.alert,
+                                            title: response.alert === 'success' ?
+                                                'Sukses' : 'Error',
+                                            text: response.message,
+                                            timer: 2000,
+                                            showConfirmButton: false
+                                        }).then(() => {
+                                            window.LaravelDataTables["p_kegiatan-table"].ajax
+                                                .reload();
+                                        });
+                                    }
+                                },
+                                error: function (xhr) {
+                                    $('#myModal').modal('hide');
+                                    if (xhr.responseJSON && xhr.responseJSON.alert && xhr.responseJSON
+                                        .message) {
                                         Swal.fire({
                                             icon: xhr.responseJSON.alert,
                                             title: xhr.responseJSON.alert === 'success' ?
                                                 'Sukses' : 'Error',
                                             text: xhr.responseJSON.message,
-                                            timer: 2000,
-                                            showConfirmButton: false
+                                            showConfirmButton: true
                                         });
                                     } else {
-                                        Swal.fire('Error!', 'Gagal menyimpan data.', 'error');
+                                        Swal.fire({
+                                            icon: 'error',
+                                            title: 'Error',
+                                            text: xhr.responseJSON.message
+                                        });
                                     }
+                                },
+                                complete: function () {
+                                    submitBtn.prop('disabled', false).html(
+                                        '<i class="fas fa-upload me-2"></i> Upload');
                                 }
-                            }
+                            });
                         });
+                    })
+                    .fail(function (xhr) {
+                        Swal.fire('Error!', 'Gagal memuat form: ' + xhr.statusText, 'error');
                     });
+            }
 
-                    $(document).off('submit', '#form-import');
-
-                    $(document).on('submit', '#form-import', function(e) {
-                        e.preventDefault();
-                        var form = $(this);
-                        var formData = new FormData(form[0]);
-                        var submitBtn = form.find('button[type="submit"]');
-
-                        submitBtn.prop('disabled', true).html(
-                            '<i class="fas fa-spinner fa-spin me-2"></i> Memproses...');
-
-                        $.ajax({
-                            url: form.attr('action'),
-                            method: 'POST',
-                            data: formData,
-                            processData: false,
-                            contentType: false,
-                            success: function(response) {
-                                $('#myModal').modal('hide');
-                                if (response.alert && response.message) {
-                                    Swal.fire({
-                                        icon: response.alert,
-                                        title: response.alert === 'success' ?
-                                            'Sukses' : 'Error',
-                                        text: response.message,
-                                        timer: 2000,
-                                        showConfirmButton: false
-                                    }).then(() => {
-                                        window.LaravelDataTables["p_kegiatan-table"].ajax
-                                            .reload();
-                                    });
-                                }
-                            },
-                            error: function(xhr) {
-                                $('#myModal').modal('hide');
-                                if (xhr.responseJSON && xhr.responseJSON.alert && xhr.responseJSON
-                                    .message) {
-                                    Swal.fire({
-                                        icon: xhr.responseJSON.alert,
-                                        title: xhr.responseJSON.alert === 'success' ?
-                                            'Sukses' : 'Error',
-                                        text: xhr.responseJSON.message,
-                                        showConfirmButton: true
-                                    });
-                                } else {
-                                    Swal.fire({
-                                        icon: 'error',
-                                        title: 'Error',
-                                        text: xhr.responseJSON.message
-                                    });
-                                }
-                            },
-                            complete: function() {
-                                submitBtn.prop('disabled', false).html(
-                                    '<i class="fas fa-upload me-2"></i> Upload');
-                            }
+            $(document).on('submit', '#formDeleteKegiatan', function (e) {
+                e.preventDefault();
+                var form = $(this);
+                $.ajax({
+                    url: form.attr('action'),
+                    method: 'POST',
+                    data: form.serialize(),
+                    success: function (response) {
+                        $('#myModal').modal('hide');
+                        window.LaravelDataTables["p_kegiatan-table"].ajax.reload();
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil',
+                            text: 'Data kegiatan berhasil dihapus.',
+                            timer: 2000,
+                            showConfirmButton: false
                         });
-                    });
-                })
-                .fail(function(xhr) {
-                    Swal.fire('Error!', 'Gagal memuat form: ' + xhr.statusText, 'error');
+                    },
+                    error: function (xhr) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal',
+                            text: 'Tidak dapat menghapus data kegiatan.'
+                        });
+                    }
                 });
-        }
+            });
 
-        $(document).on('submit', '#formDeleteKegiatan', function(e) {
-            e.preventDefault();
-            var form = $(this);
-            $.ajax({
-                url: form.attr('action'),
-                method: 'POST',
-                data: form.serialize(),
-                success: function(response) {
-                    $('#myModal').modal('hide');
-                    window.LaravelDataTables["p_kegiatan-table"].ajax.reload();
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Berhasil',
-                        text: 'Data kegiatan berhasil dihapus.',
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
-                },
-                error: function(xhr) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Gagal',
-                        text: 'Tidak dapat menghapus data kegiatan.'
-                    });
+            $(document).ready(function () {
+                $('#filterStatus, #filterSumberData').change(function () {
+                    window.LaravelDataTables["p_kegiatan-table"].draw();
+                });
+            });
+
+            $('#p_kegiatan-table').on('preXhr.dt', function (e, settings, data) {
+                data.filter_status = $('#filterStatus').val();
+                data.filter_sumber = $('#filterSumberData').val();
+            });
+
+            function updateExportPdfLink() {
+                var status = $('#filterStatus').val();
+                var sumber = $('#filterSumberData').val();
+                var url = new URL("{{ route('portofolio.kegiatan.export_pdf') }}", window.location.origin);
+                if (status) {
+                    url.searchParams.set('filter_status', status);
                 }
-            });
-        });
-
-        $(document).ready(function() {
-            $('#filterStatus, #filterSumberData').change(function() {
-                window.LaravelDataTables["p_kegiatan-table"].draw();
-            });
-        });
-
-        $('#p_kegiatan-table').on('preXhr.dt', function(e, settings, data) {
-            data.filter_status = $('#filterStatus').val();
-            data.filter_sumber = $('#filterSumberData').val();
-        });
-
-        function updateExportPdfLink() {
-            var status = $('#filterStatus').val();
-            var sumber = $('#filterSumberData').val();
-            var url = new URL("{{ route('portofolio.kegiatan.export_pdf') }}", window.location.origin);
-            if (status) {
-                url.searchParams.set('filter_status', status);
+                if (sumber) {
+                    url.searchParams.set('filter_sumber', sumber);
+                }
+                $('#exportPdfBtn').attr('href', url.toString());
             }
-            if (sumber) {
-                url.searchParams.set('filter_sumber', sumber);
-            }
-            $('#exportPdfBtn').attr('href', url.toString());
-        }
 
-        function updateExportExcelLink() {
-            var status = $('#filterStatus').val();
-            var sumber = $('#filterSumberData').val();
-            var url = new URL("{{ route('portofolio.kegiatan.export_excel') }}", window.location.origin);
-            if (status) {
-                url.searchParams.set('filter_status', status);
+            function updateExportExcelLink() {
+                var status = $('#filterStatus').val();
+                var sumber = $('#filterSumberData').val();
+                var url = new URL("{{ route('portofolio.kegiatan.export_excel') }}", window.location.origin);
+                if (status) {
+                    url.searchParams.set('filter_status', status);
+                }
+                if (sumber) {
+                    url.searchParams.set('filter_sumber', sumber);
+                }
+                $('#exportExcelBtn').attr('href', url.toString());
             }
-            if (sumber) {
-                url.searchParams.set('filter_sumber', sumber);
-            }
-            $('#exportExcelBtn').attr('href', url.toString());
-        }
 
-        $(document).ready(function() {
-            updateExportPdfLink();
-            updateExportExcelLink();
-            $('#filterStatus, #filterSumberData').change(function() {
+            $(document).ready(function () {
                 updateExportPdfLink();
                 updateExportExcelLink();
+                $('#filterStatus, #filterSumberData').change(function () {
+                    updateExportPdfLink();
+                    updateExportExcelLink();
+                });
             });
-        });
-    </script>
-@endpush
+            $(document).ready(function () {
+                $.ajax({
+                    url: "{{ route('portofolio.kegiatan.chart1') }}",
+                    method: 'GET',
+                    success: function (response) {
+                        const kegiatan = [];
+                        const jumlah = [];
+
+                        response.data.forEach(item => {
+                            kegiatan.push(item.jenis_kegiatan);
+                            jumlah.push(item.jumlah);
+                        });
+                        const chartColors = [
+                            '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+                            '#FF9F40', '#E7E9ED', '#76A346', '#D9534F', '#5BC0DE'
+                        ];
+                        const ctx = document.getElementById('chartKegiatan1').getContext('2d');
+
+                        new Chart(ctx, {
+                            type: 'pie',
+                            data: {
+                                labels: kegiatan,
+                                datasets: [{
+                                    data: jumlah,
+                                    backgroundColor: chartColors,
+                                    borderColor: 'rgba(75, 192, 192, 1)',
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                            }
+                        });
+                    }
+                });
+            });
+            $(document).ready(function () {
+                $.ajax({
+                    url: "{{ route('portofolio.kegiatan.chart2') }}",
+                    method: 'GET',
+                    success: function (response) {
+                        const peran = [];
+                        const jumlah = [];
+
+                        response.data.forEach(item => {
+                            peran.push(item.peran);
+                            jumlah.push(item.jumlah);
+                        });
+                        const chartColors = [
+                            '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+                            '#FF9F40', '#E7E9ED', '#76A346', '#D9534F', '#5BC0DE'
+                        ];
+                        const ctx = document.getElementById('chartKegiatan2').getContext('2d');
+
+                        new Chart(ctx, {
+                            type: 'bar',
+                            data: {
+                                labels: peran,
+                                datasets: [{
+                                    data: jumlah,
+                                    backgroundColor: chartColors,
+                                    borderColor: 'rgba(75, 192, 192, 1)',
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                            }
+                        });
+                    }
+                });
+            });
+        </script>
+    @endpush

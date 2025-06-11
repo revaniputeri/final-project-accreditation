@@ -81,6 +81,16 @@
                 </div>
             </div>
         </div>
+        
+        <div id="myModal" class="modal fade" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <!-- Konten modal akan diisi secara dinamis -->
+                </div>
+            </div>
+        </div>
+
+        @if($isAdm||$isAng)
         <div class="row">
             <div class="col-md-6">
                 <div class="card card-primary">
@@ -138,15 +148,10 @@
                 </div>
             </div>
         </div>
+        @endif
 
         {{-- Modal --}}
-        <div id="myModal" class="modal fade" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <!-- Konten modal akan diisi secara dinamis -->
-                </div>
-            </div>
-        </div>
+        
     </div>
 @endsection
 

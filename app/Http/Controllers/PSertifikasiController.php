@@ -663,4 +663,40 @@ class PSertifikasiController extends Controller
 
         return $pdf->stream('Data Sertifikasi ' . date('d-m-Y H:i:s') . '.pdf');
     }
+    public function chart1(){
+        $data = PSertifikasiModel::select(DB::raw('COUNT(id_user) as jumlah, tahun_diperoleh'))
+            ->groupBy('tahun_diperoleh')
+            ->get();
+            if(!$data) {
+            return response()->json([
+                'message' => 'Data tidak ditemukan',
+                'status' => false
+            ], 404);
+        }
+
+        return response()->json([
+            'data' => $data,
+            'status' => true,
+            'message' => 'Data berhasil diambil'
+        ]);
+    }
+    public function chart2(){
+        $data = PSertifikasiModel::join('user', 'p_sertifikasi.id_user', '=', 'user.id_user')
+            ->join('profile_user', 'user.id_user', '=', 'profile_user.id_user')
+            ->select(DB::raw('COUNT(p_sertifikasi.id_user) as jumlah, profile_user.jabatan_fungsional'))
+            ->groupBy('profile_user.jabatan_fungsional')
+            ->get();
+
+        if($data->isEmpty()) {
+            return response()->json([
+                'message' => 'Data tidak ditemukan',
+                'status' => false
+            ], 404);
+        }
+        return response()->json([
+            'data' => $data,
+            'status' => true,
+            'message' => 'Data berhasil diambil'
+        ]);
+    }
 }
