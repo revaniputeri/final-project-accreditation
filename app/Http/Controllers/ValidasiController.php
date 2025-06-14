@@ -73,21 +73,41 @@ class ValidasiController extends Controller
                 }
             }
 
-            // Replace hyperlinks href to local file paths for dompdf
             $anchors = $dom->getElementsByTagName('a');
             foreach ($anchors as $a) {
                 $href = $a->getAttribute('href');
 
-                // Handle both formats:
-                // 1. http://127.0.0.1:8000/storage/dokumen_pendukung/...
-                // 2. /storage/dokumen_pendukung/...
-                if (preg_match('/^(https?:\/\/127\.0\.0\.1:8000)?(\/storage\/dokumen_pendukung\/.+)$/', $href, $matches)) {
-                    $relativePath = $matches[2]; // This will capture the /storage/... part in both cases
+                $appUrl = config('app.url');
+                $parsedUrl = parse_url($appUrl);
+                $appHost = $parsedUrl['host'] ?? 'localhost';
+
+                // Determine the host to use in URLs
+                $requestHost = request()->getHost();
+                $hostToUse = $appHost;
+
+                // If app host is localhost but request host is 127.0.0.1, or vice versa, use request host
+                if (($appHost === 'localhost' && $requestHost === '127.0.0.1') || ($appHost === '127.0.0.1' && $requestHost === 'localhost')) {
+                    $hostToUse = $requestHost;
+                } else {
+                    $hostToUse = $appHost;
+                }
+
+                if (preg_match('/^(https?:\/\/(?:localhost|127\.0\.0\.1|[^\/]+))?(\/storage\/dokumen_pendukung\/.+)$/', $href, $matches) || preg_match('/^storage\/dokumen_pendukung\/.+$/', $href)) {
+                    if (preg_match('/^(https?:\/\/(?:localhost|127\.0\.0\.1|[^\/]+))?(\/storage\/dokumen_pendukung\/.+)$/', $href, $matches)) {
+                        $relativePath = $matches[2]; // This will capture the /storage/... part in all cases
+                    } else {
+                        $relativePath = '/' . $href; // Add leading slash for relative path
+                    }
                     $localPath = public_path(ltrim($relativePath, '/'));
 
                     if (file_exists($localPath)) {
-                        // Pastikan URL yang dihasilkan bisa diakses publik
-                        $a->setAttribute('href', asset($relativePath));
+                        // Add port 8000 if host is 127.0.0.1 and no port is present
+                        $port = '';
+                        if ($hostToUse === '127.0.0.1') {
+                            $port = ':8000';
+                        }
+                        $newHref = rtrim($parsedUrl['scheme'] . '://' . $hostToUse . $port, '/') . $relativePath;
+                        $a->setAttribute('href', $newHref);
                         $a->setAttribute('target', '_blank');
                     }
                 }

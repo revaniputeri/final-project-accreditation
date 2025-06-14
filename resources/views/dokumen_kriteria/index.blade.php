@@ -634,6 +634,26 @@
                             body.appendChild(paper);
                         }
                     });
+
+                    // Add event listener to enforce saving alignment style on images
+                    editor.on('ExecCommand', function(e) {
+                        if (e.command === 'JustifyCenter' || e.command === 'JustifyLeft' || e.command === 'JustifyRight') {
+                            const selectedNode = editor.selection.getNode();
+                            if (selectedNode.nodeName === 'IMG') {
+                                // Apply text-align style to the parent <p> or container
+                                const parent = selectedNode.parentNode;
+                                if (parent && parent.nodeName === 'P') {
+                                    if (e.command === 'JustifyCenter') {
+                                        parent.style.textAlign = 'center';
+                                    } else if (e.command === 'JustifyLeft') {
+                                        parent.style.textAlign = 'left';
+                                    } else if (e.command === 'JustifyRight') {
+                                        parent.style.textAlign = 'right';
+                                    }
+                                }
+                            }
+                        }
+                    });
                 },
                 autosave_ask_before_unload: true,
                 autosave_interval: '30s',
