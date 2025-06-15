@@ -32,7 +32,7 @@
                     <div class="card-body">
                         <div class="row">
                             <!-- Filters for DataTable -->
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="form-group">
                                     <label for="filterNoKriteria">Filter Nomor Kriteria</label>
                                     <select id="filterNoKriteria" class="form-control select2">
@@ -45,7 +45,7 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="form-group">
                                     <label for="filterKategori">Filter Kategori</label>
                                     <select id="filterKategori" class="form-control select2">
@@ -55,6 +55,18 @@
                                         <option value="evaluasi">Evaluasi</option>
                                         <option value="pengendalian">Pengendalian</option>
                                         <option value="peningkatan">Peningkatan</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="filterStatus">Filter Status</label>
+                                    <select id="filterStatus" class="form-control select2">
+                                        <option value="">-- Semua Status --</option>
+                                        <option value="tervalidasi">Tervalidasi</option>
+                                        <option value="revisi">Revisi</option>
+                                        <option value="perlu validasi">Perlu Validasi</option>
+                                        <option value="kosong">Kosong</option>
                                     </select>
                                 </div>
                             </div>
@@ -164,6 +176,53 @@
     <!-- Select2 JS -->
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
+        // Function to load PDF and validation data based on selected kriteria and kategori
+        function loadPdfAndData(kriteriaId, kategori) {
+            if (!kriteriaId || !kategori) return;
+
+            $('#pdfPreview').attr('src', '');
+            $('#statusSelect').val('');
+            $('#komentarInput').val('');
+            $('#submitValidation').prop('disabled', true);
+
+            // Load PDF and validation data
+            $.ajax({
+                url: "{{ route('validasi.showFile') }}",
+                dataType: "json",
+                type: "POST",
+                data: {
+                    kriteria: kriteriaId,
+                    kategori: kategori,
+                    _token: '{{ csrf_token() }}'
+                },
+                success: function(response) {
+                    if (response.success && response.pdfUrl) {
+                        $('#pdfPreview').attr('src', response.pdfUrl);
+                        if (response.status) {
+                            $('#statusSelect').val(response.status);
+                        }
+                        if (response.komentar) {
+                            $('#komentarInput').val(response.komentar);
+                        }
+                        $('#submitValidation').prop('disabled', false);
+                    } else {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Peringatan',
+                            text: 'Dokumen PDF tidak ditemukan.'
+                        });
+                    }
+                },
+                error: function() {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Gagal memuat dokumen PDF.'
+                    });
+                }
+            });
+        }
+
         $(document).ready(function() {
             // Inisialisasi Select2
             $('.select2').select2({
@@ -172,84 +231,7 @@
             });
 
             var selectedKriteria = null;
-
-            function loadPdfAndData(kriteriaId, kategori) {
-                if (!kriteriaId || !kategori) return;
-
-                $('#pdfPreview').attr('src', '');
-                $('#statusSelect').val('');
-                $('#komentarInput').val('');
-                $('#submitValidation').prop('disabled', true);
-
-                // Load PDF and validation data
-                $.ajax({
-                    url: "{{ route('validasi.showFile') }}",
-                    dataType: "json",
-                    type: "POST",
-                    data: {
-                        kriteria: kriteriaId,
-                        kategori: kategori,
-                        _token: '{{ csrf_token() }}'
-                    },
-                    success: function(response) {
-                        if (response.success && response.pdfUrl) {
-                            $('#pdfPreview').attr('src', response.pdfUrl);
-                            if (response.status) {
-                                $('#statusSelect').val(response.status);
-                            }
-                            if (response.komentar) {
-                                $('#komentarInput').val(response.komentar);
-                            }
-                            $('#submitValidation').prop('disabled', false);
-                        } else {
-                            Swal.fire({
-                                icon: 'warning',
-                                title: 'Peringatan',
-                                text: 'Dokumen PDF tidak ditemukan.'
-                            });
-                        }
-                    },
-                    error: function() {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'Gagal memuat dokumen PDF.'
-                        });
-                    }
-                });
-            }
-
-            $('#kriteriaDropdown').on('change', function() {
-                selectedKriteria = $(this).val();
-                selectedKategori = $('#kategoriDropdown').val();
-                if (selectedKriteria && selectedKategori) {
-                    loadPdfAndData(selectedKriteria, selectedKategori);
-                } else {
-                    $('#dokumenInfoBody').html(
-                        '<tr><td colspan="5" class="text-center text-muted">Silakan pilih kriteria dan kategori terlebih dahulu</td></tr>'
-                    );
-                    $('#pdfPreview').attr('src', '');
-                    $('#statusSelect').val('');
-                    $('#komentarInput').val('');
-                    $('#submitValidation').prop('disabled', true);
-                }
-            });
-
-            $('#kategoriDropdown').on('change', function() {
-                selectedKategori = $(this).val();
-                selectedKriteria = $('#kriteriaDropdown').val();
-                if (selectedKriteria && selectedKategori) {
-                    loadPdfAndData(selectedKriteria, selectedKategori);
-                } else {
-                    $('#dokumenInfoBody').html(
-                        '<tr><td colspan="5" class="text-center text-muted">Silakan pilih kriteria dan kategori terlebih dahulu</td></tr>'
-                    );
-                    $('#pdfPreview').attr('src', '');
-                    $('#statusSelect').val('');
-                    $('#komentarInput').val('');
-                    $('#submitValidation').prop('disabled', true);
-                }
-            });
+            var selectedKategori = null; // Tambahkan deklarasi variabel ini
 
             $('#submitValidation').on('click', function() {
                 if (!selectedKriteria || !selectedKategori) {
@@ -296,7 +278,7 @@
                             Swal.fire({
                                 icon: 'success',
                                 title: 'Sukses',
-                                text: 'Validasi berhasil disimpan.'
+                                text: 'Status validasi berhasil diubah.'
                             });
                             // Refresh informasi dokumen setelah validasi
                             loadPdfAndData(selectedKriteria, selectedKategori);
@@ -318,11 +300,27 @@
                     }
                 });
             });
-        });
 
-        $('#filterNoKriteria, #filterKategori').on('change', function() {
-            table.column(1).search($('#filterNoKriteria').val()).draw();
-            table.column(5).search($('#filterKategori').val()).draw();
+            var table;
+
+            $(document).ready(function() {
+                table = $('#p_dokumen_kriteria-table').DataTable();
+
+                $('#filterNoKriteria, #filterKategori, #filterStatus').on('change', function() {
+                    table.column(1).search($('#filterNoKriteria').val()).draw();
+                    table.column(3).search($('#filterKategori').val()).draw();
+                    table.column(5).search($('#filterStatus').val()).draw();
+                });
+            });
+
+            // Add event listener for preview buttons
+            $(document).on('click', '.preview-btn', function() {
+                var noKriteria = $(this).data('no-kriteria');
+                var kategori = $(this).data('kategori');
+                selectedKriteria = noKriteria; // Set selectedKriteria from button data
+                selectedKategori = kategori;   // Set selectedKategori from button data
+                loadPdfAndData(noKriteria, kategori);
+            });
         });
     </script>
 @endpush
