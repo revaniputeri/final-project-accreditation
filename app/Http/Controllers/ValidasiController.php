@@ -80,31 +80,36 @@ class ValidasiController extends Controller
             foreach ($anchors as $a) {
                 $href = $a->getAttribute('href');
 
-                $appUrl = config('app.url');
-                $parsedUrl = parse_url($appUrl);
-                $appHost = $parsedUrl['host'] ?? 'localhost';
+                $isLocalLink = preg_match('/^(https?:\/\/(?:localhost|127\.0\.0\.1|[^\/]+))?(\/storage\/dokumen_pendukung\/.+)$/', $href, $matches) || preg_match('/^storage\/dokumen_pendukung\/.+$/', $href);
 
-                // Determine the host to use in URLs
-                $requestHost = request()->getHost();
-                $hostToUse = $appHost;
-
-                // If app host is localhost but request host is 127.0.0.1, or vice versa, use request host
-                if (($appHost === 'localhost' && $requestHost === '127.0.0.1') || ($appHost === '127.0.0.1' && $requestHost === 'localhost')) {
-                    $hostToUse = $requestHost;
+                if (!$isLocalLink) {
+                    // External link handling
+                    if (preg_match('/^(?!https?:\/\/)/i', $href)) {
+                        $href = 'http://' . $href;
+                    }
+                    $a->setAttribute('href', $href);
+                    $a->setAttribute('target', '_blank');
                 } else {
-                    $hostToUse = $appHost;
-                }
-
-                if (preg_match('/^(https?:\/\/(?:localhost|127\.0\.0\.1|[^\/]+))?(\/storage\/dokumen_pendukung\/.+)$/', $href, $matches) || preg_match('/^storage\/dokumen_pendukung\/.+$/', $href)) {
+                    // Local link handling
                     if (preg_match('/^(https?:\/\/(?:localhost|127\.0\.0\.1|[^\/]+))?(\/storage\/dokumen_pendukung\/.+)$/', $href, $matches)) {
-                        $relativePath = $matches[2]; // This will capture the /storage/... part in all cases
+                        $relativePath = $matches[2];
                     } else {
-                        $relativePath = '/' . $href; // Add leading slash for relative path
+                        $relativePath = '/' . $href;
                     }
                     $localPath = public_path(ltrim($relativePath, '/'));
 
                     if (file_exists($localPath)) {
-                        // Add port 8000 if host is 127.0.0.1 and no port is present
+                        $appUrl = config('app.url');
+                        $parsedUrl = parse_url($appUrl);
+                        $appHost = $parsedUrl['host'] ?? 'localhost';
+
+                        $requestHost = request()->getHost();
+                        $hostToUse = $appHost;
+
+                        if (($appHost === 'localhost' && $requestHost === '127.0.0.1') || ($appHost === '127.0.0.1' && $requestHost === 'localhost')) {
+                            $hostToUse = $requestHost;
+                        }
+
                         $port = '';
                         if ($hostToUse === '127.0.0.1') {
                             $port = ':8000';
