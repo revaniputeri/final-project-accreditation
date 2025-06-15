@@ -67,7 +67,10 @@ class DokumenKriteriaDataTable extends DataTable
             ->editColumn('updated_at', function ($row) {
                 return date('d M Y, H:i:s', strtotime($row->updated_at));
             })
-            ->rawColumns(['aksi', 'status', 'kategori']);
+            ->editColumn('no_kriteria', function ($row) {
+                return '<strong>' . 'Kriteria ' . $row->no_kriteria . '</strong>';
+            })
+            ->rawColumns(['aksi', 'status', 'kategori', 'no_kriteria', 'updated_at']);
     }
 
     public function query(DokumenKriteriaModel $model): QueryBuilder
