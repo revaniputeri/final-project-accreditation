@@ -64,6 +64,9 @@ class DokumenKriteriaDataTable extends DataTable
                 return '<span class="badge p-2" style="background-color:' . $color . '; color:white;">'
                     . strtoupper($row->kategori) . '</span>';
             })
+            ->editColumn('updated_at', function ($row) {
+                return date('d M Y, H:i:s', strtotime($row->updated_at));
+            })
             ->rawColumns(['aksi', 'status', 'kategori']);
     }
 
@@ -132,3 +135,4 @@ class DokumenKriteriaDataTable extends DataTable
         return 'DokumenKriteria_' . date('YmdHis');
     }
 }
+
