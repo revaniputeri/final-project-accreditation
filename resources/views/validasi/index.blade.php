@@ -16,116 +16,116 @@
 
 @section('content')
     <div class="container-fluid">
-        <div class="card shadow-sm mb-4">
-            <div class="card-header bg-primary border-bottom">
-                <h3 class="card-title">Validasi Dokumen Kriteria</h3>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary border-bottom">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h3 class="card-title mb-0 text-white">Daftar Dokumen Kriteria</h3>
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <!-- Filters for DataTable -->
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="filterNoKriteria">Filter Nomor Kriteria</label>
+                                    <select id="filterNoKriteria" class="form-control select2">
+                                        <option value="">-- Semua Kriteria --</option>
+                                        @foreach ($dokumenKriteria as $dokumen)
+                                            <option value="{{ $dokumen->no_kriteria }}">
+                                                Kriteria {{ $dokumen->no_kriteria }} - {{ $dokumen->judul }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="filterKategori">Filter Kategori</label>
+                                    <select id="filterKategori" class="form-control select2">
+                                        <option value="">-- Semua Kategori --</option>
+                                        <option value="penetapan">Penetapan</option>
+                                        <option value="pelaksanaan">Pelaksanaan</option>
+                                        <option value="evaluasi">Evaluasi</option>
+                                        <option value="pengendalian">Pengendalian</option>
+                                        <option value="peningkatan">Peningkatan</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="filterStatus">Filter Status</label>
+                                    <select id="filterStatus" class="form-control select2">
+                                        <option value="">-- Semua Status --</option>
+                                        <option value="tervalidasi">Tervalidasi</option>
+                                        <option value="revisi">Revisi</option>
+                                        <option value="perlu validasi">Perlu Validasi</option>
+                                        <option value="kosong">Kosong</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            {{ $dataTable->table([
+                                'id' => 'p_dokumen_kriteria-table',
+                                'class' => 'table table-hover table-bordered table-striped',
+                                'style' => 'width:100%',
+                            ]) }}
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="card-body">
-                <!-- Dropdown Pilihan Kriteria -->
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label>Pilih Nomor Kriteria</label>
-                            <select id="kriteriaDropdown" class="form-control select2">
-                                <option value="" selected disabled>-- Pilih Kriteria --</option>
-                                @foreach ($dokumenKriteria as $dokumen)
-                                    <option value="{{ $dokumen->no_kriteria }}">
-                                        Kriteria {{ $dokumen->no_kriteria }} - {{ $dokumen->judul }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label>Pilih Kategori</label>
-                            <select id="kategoriDropdown" class="form-control select2">
-                                <option value="" selected disabled>-- Pilih Kategori --</option>
-                                <option value="penetapan">Penetapan</option>
-                                <option value="pelaksanaan">Pelaksanaan</option>
-                                <option value="evaluasi">Evaluasi</option>
-                                <option value="pengendalian">Pengendalian</option>
-                                <option value="peningkatan">Peningkatan</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
+        </div>
 
-                <div class="row">
-                    <!-- Tabel Informasi Dokumen -->
-                    <div class="col-md-12">
-                        <div class="card">
-                            <div class="card-header">
-                                <h3 class="card-title">Informasi Dokumen Kriteria</h3>
-                            </div>
-                            <div class="card-body p-0">
-                                <table class="table table-bordered table-hover">
-                                    <thead class="thead-light">
-                                        <tr>
-                                            <th width="15%">No Kriteria</th>
-                                            <th width="35%">Judul</th>
-                                            <th width="15%">Versi</th>
-                                            <th width="15%">Status</th>
-                                            <th width="20%">Terakhir Diupdate</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="dokumenInfoBody">
-                                        <tr>
-                                            <td colspan="5" class="text-center text-muted">Silakan pilih kriteria
-                                                terlebih dahulu</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
+        <div class="row mt-3">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header bg-primary border-bottom">
+                        <h3 class="card-title">Preview Dokumen & Form Validasi</h3>
                     </div>
-                </div>
-
-                <!-- Preview PDF dan Form Validasi -->
-                <div class="row mt-3">
-                    <div class="col-md-12">
-                        <div class="card">
-                            <div class="card-header">
-                                <h3 class="card-title">Preview Dokumen & Form Validasi</h3>
-                            </div>
-                            <div class="card-body">
-                                <div class="row">
-                                    <!-- PDF Preview -->
-                                    <div class="col-md-6">
-                                        <div class="border rounded p-2" style="background-color: #f8f9fa;">
-                                            <div style="width: 100%; height: 842px;"> <!-- A4 height -->
-                                                <iframe id="pdfPreview" src=""
-                                                    style="width: 100%; height: 100%; border: none;">
-                                                    Browser Anda tidak mendukung PDF viewer.
-                                                </iframe>
-                                            </div>
-                                            <div class="text-center mt-2">
-                                                <small class="text-muted">Preview dokumen PDF (Ukuran A4)</small>
-                                            </div>
-                                        </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <!-- PDF Preview -->
+                            <div class="col-md-6">
+                                <div class="border rounded p-2" style="background-color: #f8f9fa;">
+                                    <div style="width: 100%; height: 842px;"> <!-- A4 height -->
+                                        <iframe id="pdfPreview" src=""
+                                            style="width: 100%; height: 100%; border: none;">
+                                            Browser Anda tidak mendukung PDF viewer.
+                                        </iframe>
                                     </div>
-
-                                    <!-- Form Validasi -->
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label for="statusSelect">Status Validasi</label>
-                                            <select id="statusSelect" class="form-control">
-                                                <option value="" selected disabled>-- Pilih Status --</option>
-                                                <option value="tervalidasi">Tervalidasi</option>
-                                                <option value="revisi">Revisi</option>
-                                            </select>
-                                        </div>
-
-                                        <div class="form-group">
-                                            <label for="komentarInput">Komentar Validasi</label>
-                                            <textarea id="komentarInput" class="form-control" rows="8" placeholder="Masukkan komentar validasi..."></textarea>
-                                        </div>
-
-                                        <button id="submitValidation" class="btn btn-primary btn-block" disabled>
-                                            <i class="fas fa-check-circle mr-2"></i>Submit Validasi
-                                        </button>
+                                    <div class="text-center mt-2">
+                                        <small class="text-muted">Preview dokumen PDF (Ukuran A4)</small>
                                     </div>
                                 </div>
+                            </div>
+
+                            <!-- Form Validasi -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="statusSelect">Status Validasi</label>
+                                    <select id="statusSelect" class="form-control">
+                                        <option value="" selected disabled>-- Pilih Status --</option>
+                                        <option value="tervalidasi">Tervalidasi</option>
+                                        <option value="revisi">Revisi</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="komentarInput">Komentar Validasi</label>
+                                    <textarea id="komentarInput" class="form-control" rows="8" placeholder="Masukkan komentar validasi..."></textarea>
+                                </div>
+
+                                <button id="submitValidation" class="btn btn-primary btn-block" disabled>
+                                    <i class="fas fa-check-circle mr-2"></i>Submit Validasi
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -171,9 +171,58 @@
 @endpush
 
 @push('scripts')
+    {!! $dataTable->scripts() !!}
+
     <!-- Select2 JS -->
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
+        // Function to load PDF and validation data based on selected kriteria and kategori
+        function loadPdfAndData(kriteriaId, kategori) {
+            if (!kriteriaId || !kategori) return;
+
+            $('#pdfPreview').attr('src', '');
+            $('#statusSelect').val('');
+            $('#komentarInput').val('');
+            $('#submitValidation').prop('disabled', true);
+
+            // Load PDF and validation data
+            $.ajax({
+                url: "{{ route('validasi.showFile') }}",
+                dataType: "json",
+                type: "POST",
+                data: {
+                    kriteria: kriteriaId,
+                    kategori: kategori,
+                    _token: '{{ csrf_token() }}'
+                },
+                success: function(response) {
+                    if (response.success && response.pdfUrl) {
+                        $('#pdfPreview').attr('src', response.pdfUrl);
+                        if (response.status) {
+                            $('#statusSelect').val(response.status);
+                        }
+                        if (response.komentar) {
+                            $('#komentarInput').val(response.komentar);
+                        }
+                        $('#submitValidation').prop('disabled', false);
+                    } else {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Peringatan',
+                            text: 'Dokumen PDF tidak ditemukan.'
+                        });
+                    }
+                },
+                error: function() {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Gagal memuat dokumen PDF.'
+                    });
+                }
+            });
+        }
+
         $(document).ready(function() {
             // Inisialisasi Select2
             $('.select2').select2({
@@ -182,133 +231,7 @@
             });
 
             var selectedKriteria = null;
-
-            function loadPdfAndData(kriteriaId, kategori) {
-                if (!kriteriaId || !kategori) return;
-
-                $('#pdfPreview').attr('src', '');
-                $('#statusSelect').val('');
-                $('#komentarInput').val('');
-                $('#submitValidation').prop('disabled', true);
-
-                // Load dokumen info
-                $.ajax({
-                    url: "{{ route('validasi.getDokumenInfo') }}",
-                    dataType: "json",
-                    type: "POST",
-                    data: {
-                        no_kriteria: kriteriaId,
-                        kategori: kategori,
-                        _token: '{{ csrf_token() }}'
-                    },
-                    success: function(response) {
-                        if (response.success && response.data) {
-                            var data = response.data;
-                            var rowHtml = '<tr>' +
-                                '<td>' + data.no_kriteria + '</td>' +
-                                '<td>' + data.judul + '</td>' +
-                                '<td>' + data.versi + '</td>' +
-                                '<td><span class="badge p-2 ' + getStatusBadgeClass(data.status) +
-                                '">' +
-                                data.status.toUpperCase() + '</span></td>' +
-                                '<td>' + (data.updated_at || '-') + '</td>' +
-                                '</tr>';
-                            $('#dokumenInfoBody').html(rowHtml);
-                        } else {
-                            $('#dokumenInfoBody').html(
-                                '<tr><td colspan="5" class="text-center text-muted">Informasi dokumen tidak ditemukan</td></tr>'
-                            );
-                        }
-                    },
-                    error: function() {
-                        $('#dokumenInfoBody').html(
-                            '<tr><td colspan="5" class="text-center text-danger">Gagal memuat informasi dokumen</td></tr>'
-                        );
-                    }
-                });
-
-                // Load PDF and validation data
-                $.ajax({
-                    url: "{{ route('validasi.showFile') }}",
-                    dataType: "json",
-                    type: "POST",
-                    data: {
-                        kriteria: kriteriaId,
-                        kategori: kategori,
-                        _token: '{{ csrf_token() }}'
-                    },
-                    success: function(response) {
-                        if (response.success && response.pdfUrl) {
-                            $('#pdfPreview').attr('src', response.pdfUrl);
-                            if (response.status) {
-                                $('#statusSelect').val(response.status);
-                            }
-                            if (response.komentar) {
-                                $('#komentarInput').val(response.komentar);
-                            }
-                            $('#submitValidation').prop('disabled', false);
-                        } else {
-                            Swal.fire({
-                                icon: 'warning',
-                                title: 'Peringatan',
-                                text: 'Dokumen PDF tidak ditemukan.'
-                            });
-                        }
-                    },
-                    error: function() {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'Gagal memuat dokumen PDF.'
-                        });
-                    }
-                });
-            }
-
-            function getStatusBadgeClass(status) {
-                switch (status.toLowerCase()) {
-                    case 'tervalidasi':
-                        return 'badge-success';
-                    case 'revisi':
-                        return 'badge-warning';
-                    case 'perlu validasi':
-                        return 'badge-info';
-                    default:
-                        return 'badge-secondary';
-                }
-            }
-
-            $('#kriteriaDropdown').on('change', function() {
-                selectedKriteria = $(this).val();
-                selectedKategori = $('#kategoriDropdown').val();
-                if (selectedKriteria && selectedKategori) {
-                    loadPdfAndData(selectedKriteria, selectedKategori);
-                } else {
-                    $('#dokumenInfoBody').html(
-                        '<tr><td colspan="5" class="text-center text-muted">Silakan pilih kriteria dan kategori terlebih dahulu</td></tr>'
-                    );
-                    $('#pdfPreview').attr('src', '');
-                    $('#statusSelect').val('');
-                    $('#komentarInput').val('');
-                    $('#submitValidation').prop('disabled', true);
-                }
-            });
-
-            $('#kategoriDropdown').on('change', function() {
-                selectedKategori = $(this).val();
-                selectedKriteria = $('#kriteriaDropdown').val();
-                if (selectedKriteria && selectedKategori) {
-                    loadPdfAndData(selectedKriteria, selectedKategori);
-                } else {
-                    $('#dokumenInfoBody').html(
-                        '<tr><td colspan="5" class="text-center text-muted">Silakan pilih kriteria dan kategori terlebih dahulu</td></tr>'
-                    );
-                    $('#pdfPreview').attr('src', '');
-                    $('#statusSelect').val('');
-                    $('#komentarInput').val('');
-                    $('#submitValidation').prop('disabled', true);
-                }
-            });
+            var selectedKategori = null; // Tambahkan deklarasi variabel ini
 
             $('#submitValidation').on('click', function() {
                 if (!selectedKriteria || !selectedKategori) {
@@ -355,7 +278,7 @@
                             Swal.fire({
                                 icon: 'success',
                                 title: 'Sukses',
-                                text: 'Validasi berhasil disimpan.'
+                                text: 'Status validasi berhasil diubah.'
                             });
                             // Refresh informasi dokumen setelah validasi
                             loadPdfAndData(selectedKriteria, selectedKategori);
@@ -376,6 +299,27 @@
                         });
                     }
                 });
+            });
+
+            var table;
+
+            $(document).ready(function() {
+                table = $('#p_dokumen_kriteria-table').DataTable();
+
+                $('#filterNoKriteria, #filterKategori, #filterStatus').on('change', function() {
+                    table.column(1).search($('#filterNoKriteria').val()).draw();
+                    table.column(3).search($('#filterKategori').val()).draw();
+                    table.column(5).search($('#filterStatus').val()).draw();
+                });
+            });
+
+            // Add event listener for preview buttons
+            $(document).on('click', '.preview-btn', function() {
+                var noKriteria = $(this).data('no-kriteria');
+                var kategori = $(this).data('kategori');
+                selectedKriteria = noKriteria; // Set selectedKriteria from button data
+                selectedKategori = kategori;   // Set selectedKategori from button data
+                loadPdfAndData(noKriteria, kategori);
             });
         });
     </script>

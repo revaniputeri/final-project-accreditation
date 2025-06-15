@@ -142,16 +142,23 @@
                                             <h3 class="card-title mb-0">Edit Isi Dokumen</h3>
                                         </div>
                                         <div class="card-body">
+                                            @if ($latestDokumen->status === 'tervalidasi')
+                                                <div class="alert alert-danger mb-3 text-center">
+                                                    Dokumen yang sudah tervalidasi tidak dapat diedit.
+                                                </div>
+                                            @endif
                                             <div class="form-group mb-3">
                                                 <div class="word-like-editor">
-                                                    <div class="editor-noneditable-area" style="background-color: transparent;">
+                                                    <div class="editor-noneditable-area"
+                                                        style="background-color: transparent;">
                                                         <textarea id="open-source-plugins" name="content_html">{!! old('content_html', $latestDokumen->content_html) !!}</textarea>
                                                     </div>
                                                     <div class="editor-noneditable-background"></div>
                                                 </div>
                                             </div>
                                             <div class="px-3 pb-3">
-                                                <button type="submit" name="action" value="save" class="btn btn-primary">
+                                                <button type="submit" name="action" value="save"
+                                                    class="btn btn-primary">
                                                     <i class="fas fa-save me-2"></i> Simpan
                                                 </button>
                                                 <button type="submit" name="action" value="submit"
@@ -247,26 +254,50 @@
                     });
                 @endif
 
-                // Disable editor and buttons if status is 'tervalidasi'
-                @if ($latestDokumen && $latestDokumen->status === 'tervalidasi')
-                    // Disable TinyMCE editor
-                    if (tinymce.get('open-source-plugins')) {
-                        tinymce.get('open-source-plugins').setMode('readonly');
-                    }
-                    // Disable buttons
-                    document.querySelectorAll('#dokumenForm button[type="submit"]').forEach(function(btn) {
-                        btn.disabled = true;
-                    });
+                // Store status per kategori in a JS object
+                var statusPerKategori = {
+                    @foreach ($kategoriList as $kategori)
+                        '{{ $kategori }}': '{{ $dokumenGrouped->get($kategori)->first()->status ?? '' }}',
+                    @endforeach
+                };
 
-                    // Show info alert about editing disabled
-                    Swal.fire({
-                        icon: 'info',
-                        title: 'Dokumen Tervalidasi',
-                        text: 'Dokumen yang sudah tervalidasi tidak dapat diedit.',
-                        timer: 4000,
-                        showConfirmButton: false
-                    });
-                @endif
+                function updateEditorAndButtons(kategori) {
+                    var status = statusPerKategori[kategori] || '';
+                    if (status === 'tervalidasi') {
+                        // Disable TinyMCE editor
+                        if (tinymce.get('open-source-plugins')) {
+                            tinymce.get('open-source-plugins').mode.set('readonly');
+                        }
+                        // Disable buttons
+                        document.querySelectorAll('#dokumenForm button[type="submit"]').forEach(function(btn) {
+                            btn.disabled = true;
+                        });
+                    } else {
+                        // Enable TinyMCE editor
+                        if (tinymce.get('open-source-plugins')) {
+                            tinymce.get('open-source-plugins').mode.set('design');
+                        }
+                        // Enable buttons
+                        document.querySelectorAll('#dokumenForm button[type="submit"]').forEach(function(btn) {
+                            btn.disabled = false;
+                        });
+
+                        // Remove alert if exists
+                        var alertDiv = document.getElementById('tervalidasi-alert');
+                        if (alertDiv) {
+                            alertDiv.remove();
+                        }
+                    }
+                }
+
+                // Initial update for the selected kategori
+                updateEditorAndButtons('{{ $selectedKategori }}');
+
+                // Update on tab change
+                $('a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
+                    var kategori = $(e.target).attr('href').replace('#custom-content-below-', '');
+                    updateEditorAndButtons(kategori);
+                });
             });
 
             // Initialize all dokumen-pendukung DataTables with kategori parameter
@@ -632,6 +663,27 @@
                                 paper.appendChild(body.firstChild);
                             }
                             body.appendChild(paper);
+                        }
+                    });
+
+                    // Add event listener to enforce saving alignment style on images
+                    editor.on('ExecCommand', function(e) {
+                        if (e.command === 'JustifyCenter' || e.command === 'JustifyLeft' || e.command ===
+                            'JustifyRight') {
+                            const selectedNode = editor.selection.getNode();
+                            if (selectedNode.nodeName === 'IMG') {
+                                // Apply text-align style to the parent <p> or container
+                                const parent = selectedNode.parentNode;
+                                if (parent && parent.nodeName === 'P') {
+                                    if (e.command === 'JustifyCenter') {
+                                        parent.style.textAlign = 'center';
+                                    } else if (e.command === 'JustifyLeft') {
+                                        parent.style.textAlign = 'left';
+                                    } else if (e.command === 'JustifyRight') {
+                                        parent.style.textAlign = 'right';
+                                    }
+                                }
+                            }
                         }
                     });
                 },

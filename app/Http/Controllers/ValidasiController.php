@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\DokumenKriteriaModel;
+use App\DataTables\DokumenKriteriaDataTable;
 use Illuminate\Http\Request;
 use App\Models\ProfileUser;
 use Illuminate\Support\Facades\Auth;
@@ -12,14 +13,14 @@ use Dompdf\Options;
 
 class ValidasiController extends Controller
 {
-    public function index()
+    public function index(DokumenKriteriaDataTable $dataTable)
     {
-        // Get unique no_kriteria only, ignoring versi and kategori
+        /** @var \Illuminate\Support\Collection $dokumenKriteria */
         $dokumenKriteria = DokumenKriteriaModel::select('no_kriteria', 'judul')
             ->groupBy('no_kriteria', 'judul')
             ->get();
 
-        return view('validasi.index', compact('dokumenKriteria'));
+        return $dataTable->render('validasi.index', compact('dokumenKriteria'));
     }
 
     public function showFile(Request $request)
@@ -29,6 +30,7 @@ class ValidasiController extends Controller
             $kategori = $request->kategori;
 
             if (!$kriteria || !$kategori) {
+                Log::error('showFile: Kriteria dan kategori tidak boleh kosong', ['kriteria' => $kriteria, 'kategori' => $kategori]);
                 return response()->json([
                     'success' => false,
                     'message' => 'Kriteria dan kategori tidak boleh kosong'
@@ -40,6 +42,7 @@ class ValidasiController extends Controller
                 ->latest('versi')->first();
 
             if (!$dokumen) {
+                Log::error('showFile: Dokumen kriteria tidak ditemukan', ['kriteria' => $kriteria, 'kategori' => $kategori]);
                 return response()->json([
                     'success' => false,
                     'message' => 'Dokumen kriteria tidak ditemukan'
@@ -73,21 +76,46 @@ class ValidasiController extends Controller
                 }
             }
 
-            // Replace hyperlinks href to local file paths for dompdf
             $anchors = $dom->getElementsByTagName('a');
             foreach ($anchors as $a) {
                 $href = $a->getAttribute('href');
 
-                // Handle both formats:
-                // 1. http://127.0.0.1:8000/storage/dokumen_pendukung/...
-                // 2. /storage/dokumen_pendukung/...
-                if (preg_match('/^(https?:\/\/127\.0\.0\.1:8000)?(\/storage\/dokumen_pendukung\/.+)$/', $href, $matches)) {
-                    $relativePath = $matches[2]; // This will capture the /storage/... part in both cases
+                $isLocalLink = preg_match('/^(https?:\/\/(?:localhost|127\.0\.0\.1|[^\/]+))?(\/storage\/dokumen_pendukung\/.+)$/', $href, $matches) || preg_match('/^storage\/dokumen_pendukung\/.+$/', $href);
+
+                if (!$isLocalLink) {
+                    // External link handling
+                    if (preg_match('/^(?!https?:\/\/)/i', $href)) {
+                        $href = 'http://' . $href;
+                    }
+                    $a->setAttribute('href', $href);
+                    $a->setAttribute('target', '_blank');
+                } else {
+                    // Local link handling
+                    if (preg_match('/^(https?:\/\/(?:localhost|127\.0\.0\.1|[^\/]+))?(\/storage\/dokumen_pendukung\/.+)$/', $href, $matches)) {
+                        $relativePath = $matches[2];
+                    } else {
+                        $relativePath = '/' . $href;
+                    }
                     $localPath = public_path(ltrim($relativePath, '/'));
 
                     if (file_exists($localPath)) {
-                        // Pastikan URL yang dihasilkan bisa diakses publik
-                        $a->setAttribute('href', asset($relativePath));
+                        $appUrl = config('app.url');
+                        $parsedUrl = parse_url($appUrl);
+                        $appHost = $parsedUrl['host'] ?? 'localhost';
+
+                        $requestHost = request()->getHost();
+                        $hostToUse = $appHost;
+
+                        if (($appHost === 'localhost' && $requestHost === '127.0.0.1') || ($appHost === '127.0.0.1' && $requestHost === 'localhost')) {
+                            $hostToUse = $requestHost;
+                        }
+
+                        $port = '';
+                        if ($hostToUse === '127.0.0.1') {
+                            $port = ':8000';
+                        }
+                        $newHref = rtrim($parsedUrl['scheme'] . '://' . $hostToUse . $port, '/') . $relativePath;
+                        $a->setAttribute('href', $newHref);
                         $a->setAttribute('target', '_blank');
                     }
                 }
@@ -118,6 +146,7 @@ class ValidasiController extends Controller
                 'komentar' => $dokumen->komentar ?? null,
             ]);
         } catch (\Exception $e) {
+            Log::error('showFile exception: ' . $e->getMessage(), ['kriteria' => $request->kriteria, 'kategori' => $request->kategori]);
             return response()->json([
                 'success' => false,
                 'message' => 'Error: ' . $e->getMessage()
@@ -197,6 +226,7 @@ class ValidasiController extends Controller
         $noKriteria = $request->no_kriteria;
         $kategori = $request->kategori;
         if (!$noKriteria || !$kategori) {
+            Log::error('getDokumenInfo: Nomor kriteria dan kategori tidak boleh kosong', ['no_kriteria' => $noKriteria, 'kategori' => $kategori]);
             return response()->json([
                 'success' => false,
                 'message' => 'Nomor kriteria dan kategori tidak boleh kosong'
@@ -206,6 +236,7 @@ class ValidasiController extends Controller
             ->where('kategori', $kategori)
             ->latest('versi')->first();
         if (!$dokumen) {
+            Log::error('getDokumenInfo: Dokumen kriteria tidak ditemukan', ['no_kriteria' => $noKriteria, 'kategori' => $kategori]);
             return response()->json([
                 'success' => false,
                 'message' => 'Dokumen kriteria tidak ditemukan'
