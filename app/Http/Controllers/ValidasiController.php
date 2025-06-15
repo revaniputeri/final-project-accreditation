@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\DokumenKriteriaModel;
+use App\DataTables\DokumenKriteriaDataTable;
 use Illuminate\Http\Request;
 use App\Models\ProfileUser;
 use Illuminate\Support\Facades\Auth;
@@ -12,14 +13,14 @@ use Dompdf\Options;
 
 class ValidasiController extends Controller
 {
-    public function index()
+    public function index(DokumenKriteriaDataTable $dataTable)
     {
-        // Get unique no_kriteria only, ignoring versi and kategori
+        /** @var \Illuminate\Support\Collection $dokumenKriteria */
         $dokumenKriteria = DokumenKriteriaModel::select('no_kriteria', 'judul')
             ->groupBy('no_kriteria', 'judul')
             ->get();
 
-        return view('validasi.index', compact('dokumenKriteria'));
+        return $dataTable->render('validasi.index', compact('dokumenKriteria'));
     }
 
     public function showFile(Request $request)
@@ -29,6 +30,7 @@ class ValidasiController extends Controller
             $kategori = $request->kategori;
 
             if (!$kriteria || !$kategori) {
+                Log::error('showFile: Kriteria dan kategori tidak boleh kosong', ['kriteria' => $kriteria, 'kategori' => $kategori]);
                 return response()->json([
                     'success' => false,
                     'message' => 'Kriteria dan kategori tidak boleh kosong'
@@ -40,6 +42,7 @@ class ValidasiController extends Controller
                 ->latest('versi')->first();
 
             if (!$dokumen) {
+                Log::error('showFile: Dokumen kriteria tidak ditemukan', ['kriteria' => $kriteria, 'kategori' => $kategori]);
                 return response()->json([
                     'success' => false,
                     'message' => 'Dokumen kriteria tidak ditemukan'
@@ -138,6 +141,7 @@ class ValidasiController extends Controller
                 'komentar' => $dokumen->komentar ?? null,
             ]);
         } catch (\Exception $e) {
+            Log::error('showFile exception: ' . $e->getMessage(), ['kriteria' => $request->kriteria, 'kategori' => $request->kategori]);
             return response()->json([
                 'success' => false,
                 'message' => 'Error: ' . $e->getMessage()
@@ -217,6 +221,7 @@ class ValidasiController extends Controller
         $noKriteria = $request->no_kriteria;
         $kategori = $request->kategori;
         if (!$noKriteria || !$kategori) {
+            Log::error('getDokumenInfo: Nomor kriteria dan kategori tidak boleh kosong', ['no_kriteria' => $noKriteria, 'kategori' => $kategori]);
             return response()->json([
                 'success' => false,
                 'message' => 'Nomor kriteria dan kategori tidak boleh kosong'
@@ -226,6 +231,7 @@ class ValidasiController extends Controller
             ->where('kategori', $kategori)
             ->latest('versi')->first();
         if (!$dokumen) {
+            Log::error('getDokumenInfo: Dokumen kriteria tidak ditemukan', ['no_kriteria' => $noKriteria, 'kategori' => $kategori]);
             return response()->json([
                 'success' => false,
                 'message' => 'Dokumen kriteria tidak ditemukan'
