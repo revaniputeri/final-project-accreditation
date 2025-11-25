@@ -4,10 +4,6 @@
 
 @section('content')
     <div class="video-background">
-        <video autoplay muted loop id="loginVideo">
-            <source src="{{ asset('videos/login-background.mp4') }}" type="video/mp4">
-            Your browser does not support HTML5 video.
-        </video>
         <div class="video-overlay"></div>
     </div>
 
@@ -153,18 +149,10 @@
             width: 100%;
             height: 100%;
             z-index: -1;
-        }
-
-        .video-background video {
-            min-width: 100%;
-            min-height: 100%;
-            width: auto;
-            height: auto;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            object-fit: cover;
+            background-image: url('{{ asset('img/background-login.jpg') }}');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
         }
 
         .video-overlay {

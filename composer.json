@@ -8,7 +8,7 @@
     ],
     "license": "MIT",
     "require": {
-        "php": "^8.1",
+        "php": "^8.2",
         "barryvdh/laravel-dompdf": "^3.1",
         "guzzlehttp/guzzle": "^7.2",
         "jeroennoten/laravel-adminlte": "^3.15",
@@ -16,6 +16,7 @@
         "laravel/sanctum": "^3.3",
         "laravel/tinker": "^2.8",
         "laravel/ui": "^4.6",
+        "ext-gd": "*",
         "phpoffice/phpspreadsheet": "^4.2",
         "yajra/laravel-datatables-buttons": "^10.0",
         "yajra/laravel-datatables-editor": "^1.25",
@@ -61,6 +62,9 @@
         ],
         "post-create-project-cmd": [
             "@php artisan key:generate --ansi"
+        ],
+        "post-install-cmd": [
+            "composer install --ignore-platform-req=ext-gd"
         ]
     },
     "extra": {
@@ -75,6 +79,13 @@
         "allow-plugins": {
             "pestphp/pest-plugin": true,
             "php-http/discovery": true
+        },
+        "platform": {
+            "php": "8.2.28",
+            "ext-gd": "8.3",
+            "ext-mbstring": "8.3",
+            "ext-dom": "8.3",
+            "ext-pdo": "8.3"
         }
     },
     "minimum-stability": "stable",
